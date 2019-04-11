@@ -1,1 +1,1 @@
-# MuMuTauTauTreeMakerThis tool is under developing...Introduction for setting up the environment:$ export SCRAM_ARCH=slc6_amd64_gcc630$ cmsrel CMSSW_9_4_0$ cd CMSSW_9_4_0/src/$ git clone https://github.com/Fengwangdong/MuMuTauTauTreeMaker.git$ scram b -j8
+# MuMuTauTauTreelizerThis tool is under developing...Introduction for setting up the environment:$ export SCRAM_ARCH=slc6_amd64_gcc630$ cmsrel CMSSW_9_4_9_cand2$ cd CMSSW_9_4_9_cand2/src/$ git clone https://github.com/Fengwangdong/MuMuTauTauTreeMaker.git$ scram b -j8
