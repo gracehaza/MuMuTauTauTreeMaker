@@ -107,6 +107,7 @@ TrigMuMatcher::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
    std::unique_ptr<std::vector<pat::Muon>> muonColl = std::make_unique<std::vector<pat::Muon>>();
+   std::unique_ptr<std::vector<pat::Muon>> leadMuonColl = std::make_unique<std::vector<pat::Muon>>();
    edm::Handle<edm::View<pat::Muon>> pMuons;
    edm::Handle<edm::TriggerResults> pTriggerBits;
    edm::Handle<std::vector<pat::TriggerObjectStandAlone> > pTriggerObjects;
@@ -141,7 +142,7 @@ TrigMuMatcher::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
            const std::string& name = names.triggerName(num);
            if (TO.hasPathName(name, true) && !checkObjMatch) // if there is no yet matched objects matched with the reconstructed muon candidate
            {
-               for(edm::View<pat::Muon>::const_iterator iMuon=pMuons->begin(); iMuon!=pMuons->end();++iMuon) // loop through the leading muon
+               for(edm::View<pat::Muon>::const_iterator iMuon=pMuons->begin(); iMuon!=pMuons->end();++iMuon) // loop through the muons
                {
                    double dRCurr = deltaR(*iMuon, TO);
                    if (iMuon->pt() > mu1PtCut_ && dRCurr < dRCut_) // select the muon closest to the reconstructed muon and having highest pt
@@ -156,7 +157,22 @@ TrigMuMatcher::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
        } // end loop of customized trigger muon paths
    } // end loop of pat trigger objects
 
-   iEvent.put(std::move(muonColl),"muonColls");
+   // we are going to find the leading muon 
+   if (muonColl->size() > 0){
+      double highestPt = -1;
+      pat::Muon highestPtMuon;
+      for (std::vector<pat::Muon>::iterator iMuon=muonColl->begin(); iMuon!=muonColl->end(); ++iMuon)
+      {
+          if (iMuon->pt() > highestPt)
+          {
+              highestPt = iMuon->pt();
+              highestPtMuon = *iMuon;
+          }
+      }
+
+      leadMuonColl->push_back(highestPtMuon);
+      iEvent.put(std::move(leadMuonColl),"leadMuonColls");
+   }
 
    return (checkPassEvent);
 }
