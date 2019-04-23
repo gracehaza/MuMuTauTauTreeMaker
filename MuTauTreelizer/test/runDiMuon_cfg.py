@@ -14,7 +14,6 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-
 process.treelizer = cms.Sequence(
         process.lumiTree*
         process.HLTEle*
@@ -23,7 +22,8 @@ process.treelizer = cms.Sequence(
         process.LeadingMuonIso*
         #process.TrigMuMatcher*
         process.SecondMuonSelector*
-        process.DiMuonMassSelector
+        process.DiMuonMassSelector*
+        process.DiMuonAnalyzer
 )
 
 process.options = cms.untracked.PSet(

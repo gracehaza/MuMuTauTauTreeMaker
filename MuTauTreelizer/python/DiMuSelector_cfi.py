@@ -6,7 +6,6 @@ lumiTree = cms.EDAnalyzer("LumiTree",
         summedWeights = cms.InputTag('lumiSummary','sumOfWeightedEvents')
 )
 
-import HLTrigger.HLTfilters.hltHighLevel_cfi
 HLTEle = cms.EDFilter("HLTHighLevel",
         TriggerResultsTag = cms.InputTag("TriggerResults","","HLT"),
         HLTPaths = cms.vstring("HLT_IsoMu24_v*","HLT_IsoTkMu24_v*"),
@@ -61,5 +60,8 @@ DiMuonMassSelector = cms.EDFilter("DiMuonMassSelector",
         maxMass = cms.double(120)
 )
 
-demo = cms.EDAnalyzer('DiMuonAnalyzer'
+DiMuonAnalyzer = cms.EDAnalyzer('DiMuonAnalyzer',
+        Mu1Mu2 = cms.InputTag("DiMuonMassSelector"),
+        isMC = cms.bool(False),
+        Generator = cms.InputTag("generator")
 )

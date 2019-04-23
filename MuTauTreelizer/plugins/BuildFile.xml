@@ -5,4 +5,5 @@
 <use name="DataFormats/ParticleFlowReco"/>
 <use name="DataFormats/PatCandidates"/>
 <use name="DataFormats/VertexReco"/>
+<use name="PhysicsTools/UtilAlgos"/>
 <flags EDM_PLUGIN="1"/>
