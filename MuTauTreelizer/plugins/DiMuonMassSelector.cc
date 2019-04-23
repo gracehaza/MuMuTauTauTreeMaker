@@ -115,7 +115,7 @@ DiMuonMassSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
    {
        muonColl->push_back(mu1);
        muonColl->push_back(mu2);
-       iEvent.put(std::move(muonColl),"muonColls");
+       iEvent.put(std::move(muonColl));
        return true;
    }
 

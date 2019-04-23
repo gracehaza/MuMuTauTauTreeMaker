@@ -118,7 +118,7 @@ LeadingMuonIso::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
    if (CountMuon >= 1)
    {
-       iEvent.put(std::move(muonColl),"muonColls");
+       iEvent.put(std::move(muonColl));
        return true;
    }
 

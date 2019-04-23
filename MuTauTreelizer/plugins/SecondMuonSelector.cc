@@ -58,7 +58,7 @@ class SecondMuonSelector : public edm::stream::EDFilter<> {
       double relIsoCutVal_;
       bool passRelIso_;
       double dRCut_;
-      bool isolatedORBoosted;
+      bool isolatedORBoosted_;
       bool oppositeSign_;
 };
 
@@ -83,7 +83,7 @@ SecondMuonSelector::SecondMuonSelector(const edm::ParameterSet& iConfig):
    passRelIso_ = iConfig.getParameter<bool>("passRelIso");
    dRCut_ = iConfig.getParameter<double>("dRCut");
    oppositeSign_ = iConfig.getParameter<bool>("oppositeSign");
-   isolatedORBoosted = iConfig.getParameter<bool>("isolatedORBoosted");
+   isolatedORBoosted_ = iConfig.getParameter<bool>("isolatedORBoosted");
 }
 
 
@@ -119,7 +119,7 @@ SecondMuonSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
    for(edm::View<pat::Muon>::const_iterator iMuon=pMuons->begin(); iMuon!=pMuons->end(); ++iMuon)
    {
        double dR = deltaR(*iMuon, mu1);
-       if ((isolatedORBoosted && (dR < dRCut_)) || (!isolatedORBoosted && (dR > dRCut_))) continue;
+       if ((isolatedORBoosted_ && (dR < dRCut_)) || (!isolatedORBoosted_ && (dR > dRCut_))) continue;
        reco::MuonPFIsolation iso = iMuon->pfIsolationR04();
        double reliso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / iMuon->pt();
        if ((reliso < relIsoCutVal_ && passRelIso_) || (reliso > relIsoCutVal_ && !passRelIso_) || relIsoCutVal_ == -1)
@@ -146,7 +146,7 @@ SecondMuonSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
        }
 
        secondMuonColl->push_back(highestPtMuon);
-       iEvent.put(std::move(secondMuonColl),"secondMuonColls");
+       iEvent.put(std::move(secondMuonColl));
        return true;
    }
 

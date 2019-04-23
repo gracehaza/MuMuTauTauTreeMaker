@@ -171,7 +171,7 @@ TrigMuMatcher::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       }
 
       leadMuonColl->push_back(highestPtMuon);
-      iEvent.put(std::move(leadMuonColl),"leadMuonColls");
+      iEvent.put(std::move(leadMuonColl));
    }
 
    return (checkPassEvent);

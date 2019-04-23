@@ -114,7 +114,7 @@ MuonPtEtaCut::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
        }
    }
 
-   iEvent.put(std::move(muonColl), "muonColls");
+   iEvent.put(std::move(muonColl));
 
    return (nPassingMuons >= minNumObjsToPassFilter_);
 }

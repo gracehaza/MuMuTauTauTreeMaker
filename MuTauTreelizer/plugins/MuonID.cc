@@ -120,7 +120,7 @@ MuonID::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
    if (CountMuon>=2)
    {
-       iEvent.put(std::move(muonColl), "muonColls");
+       iEvent.put(std::move(muonColl));
        return true;
    }
 
