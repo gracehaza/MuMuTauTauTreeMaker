@@ -17,7 +17,7 @@ HLTEle = cms.EDFilter("HLTHighLevel",
 MuonPtEtaCut = cms.EDFilter("MuonPtEtaCut",
         muonTag=cms.InputTag("slimmedMuons"),
         Eta=cms.double(2.4),
-        Pt=cms.double(5.0),
+        Pt=cms.double(3.0),
         minNumObjsToPassFilter=cms.uint32(2)
 )
 
@@ -43,21 +43,19 @@ TrigMuMatcher = cms.EDFilter("TrigMuMatcher",
 
 SecondMuonSelector = cms.EDFilter("SecondMuonSelector",
         muonTag = cms.InputTag('MuonID'),
-        #mu1Tag = cms.InputTag('LeadingMuonIso'),
         mu1Tag = cms.InputTag('TrigMuMatcher'),
         relIsoCutVal = cms.double(0.25), # .25 for iso, -1 for ignoring iso
         passRelIso = cms.bool(True), #False = Non-Iso DiMu, True = Iso-DiMu
-        dRCut = cms.double(0.5),
+        #dRCut = cms.double(0.5),
+        #isolatedORBoosted = cms.bool(True) # False = boosted, True = isolated
         oppositeSign = cms.bool(True), # False for SameSignDiMu, True regular
-        isolatedORBoosted = cms.bool(True) # False = boosted, True = isolated
 )
 
 DiMuonMassSelector = cms.EDFilter("DiMuonMassSelector",
-        #mu1Tag = cms.InputTag('LeadingMuonIso'),
         mu1Tag = cms.InputTag('TrigMuMatcher'),
         mu2Tag = cms.InputTag('SecondMuonSelector'),
-        minMass = cms.double(60),
-        maxMass = cms.double(120)
+        minMass = cms.double(30),
+        maxMass = cms.double(200)
 )
 
 DiMuonAnalyzer = cms.EDAnalyzer('DiMuonAnalyzer',
