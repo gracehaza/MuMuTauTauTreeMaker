@@ -23,7 +23,7 @@ MuonPtEtaCut = cms.EDFilter("MuonPtEtaCut",
 
 MuonID = cms.EDFilter("MuonID",
         muonTag = cms.InputTag('MuonPtEtaCut'),
-        muonID = cms.string('medium')
+        muonID = cms.string('loose')
 )
 
 LeadingMuonIso = cms.EDFilter("LeadingMuonIso",
@@ -35,7 +35,7 @@ LeadingMuonIso = cms.EDFilter("LeadingMuonIso",
 TrigMuMatcher = cms.EDFilter("TrigMuMatcher",
         muonsTag = cms.InputTag('LeadingMuonIso'),
         bits = cms.InputTag("TriggerResults","","HLT"),
-        triggerObjects = cms.InputTag("selectedPatTrigger"),
+        triggerObjects = cms.InputTag("slimmedPatTrigger"),
         trigNames = cms.vstring("HLT_IsoMu24_v","HLT_IsoTkMu24_v"),
         dRCut = cms.double(0.1),
         mu1PtCut = cms.double(26.0)
@@ -43,8 +43,8 @@ TrigMuMatcher = cms.EDFilter("TrigMuMatcher",
 
 SecondMuonSelector = cms.EDFilter("SecondMuonSelector",
         muonTag = cms.InputTag('MuonID'),
-        mu1Tag = cms.InputTag('LeadingMuonIso'),
-        #mu1Tag = cms.InputTag('TrigMuMatcher'),
+        #mu1Tag = cms.InputTag('LeadingMuonIso'),
+        mu1Tag = cms.InputTag('TrigMuMatcher'),
         relIsoCutVal = cms.double(0.25), # .25 for iso, -1 for ignoring iso
         passRelIso = cms.bool(True), #False = Non-Iso DiMu, True = Iso-DiMu
         dRCut = cms.double(0.5),
@@ -53,8 +53,8 @@ SecondMuonSelector = cms.EDFilter("SecondMuonSelector",
 )
 
 DiMuonMassSelector = cms.EDFilter("DiMuonMassSelector",
-        mu1Tag = cms.InputTag('LeadingMuonIso'),
-        #mu1Tag = cms.InputTag('TrigMuMatcher'),
+        #mu1Tag = cms.InputTag('LeadingMuonIso'),
+        mu1Tag = cms.InputTag('TrigMuMatcher'),
         mu2Tag = cms.InputTag('SecondMuonSelector'),
         minMass = cms.double(60),
         maxMass = cms.double(120)
@@ -62,6 +62,7 @@ DiMuonMassSelector = cms.EDFilter("DiMuonMassSelector",
 
 DiMuonAnalyzer = cms.EDAnalyzer('DiMuonAnalyzer',
         Mu1Mu2 = cms.InputTag("DiMuonMassSelector"),
+        Vertex = cms.InputTag("offlineSlimmedPrimaryVertices"),
         isMC = cms.bool(False),
         Generator = cms.InputTag("generator")
 )

@@ -32,6 +32,7 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "DataFormats/PatCandidates/interface/Vertexing.h"
 #include "TTree.h"
 #include <math.h> 
 //
@@ -59,9 +60,10 @@ class DiMuonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
       // ----------member data ---------------------------
       edm::EDGetTokenT<edm::View<pat::Muon>> Mu1Mu2_;
+      edm::EDGetTokenT<edm::View<reco::Vertex>> Vertex_;
       bool isMC_;
-      // FIXME: we need pileup information for MC reweighting
       float EventWeight;
+      float NPVertex;
       edm::EDGetTokenT<GenEventInfoProduct> generator_;
 
       TTree *Mu1Mu2Tree;
@@ -95,6 +97,7 @@ class DiMuonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 //
 DiMuonAnalyzer::DiMuonAnalyzer(const edm::ParameterSet& iConfig):
     Mu1Mu2_(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("Mu1Mu2"))),
+    Vertex_(consumes<edm::View<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("Vertex"))),
     generator_(consumes<GenEventInfoProduct>(iConfig.existsAs<edm::InputTag>("Generator") ? iConfig.getParameter<edm::InputTag>("Generator") : edm::InputTag()))
 {
    //now do what ever initialization is needed
@@ -124,6 +127,9 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    edm::Handle<edm::View<pat::Muon>> pMu1Mu2;
    iEvent.getByToken(Mu1Mu2_, pMu1Mu2);
 
+   edm::Handle<edm::View<reco::Vertex>> pVertex;
+   iEvent.getByToken(Vertex_, pVertex);
+
    if (isMC_)
    {
        EventWeight = 1.0;
@@ -134,6 +140,15 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
    else{
        EventWeight = 1.0;
+   }
+
+   NPVertex = 0;
+   if (pVertex.isValid())
+   {
+       for(edm::View<reco::Vertex>::const_iterator iPV=pVertex->begin(); iPV!=pVertex->end(); iPV++)
+       {
+           NPVertex++;
+       }
    }
 
    pat::Muon Mu1 = pMu1Mu2->at(0);
@@ -189,6 +204,7 @@ DiMuonAnalyzer::beginJob()
     Mu1Mu2Tree->Branch("dPhiMu1Mu2", &dPhiMu1Mu2, "dPhiMu1Mu2/D");
 
     Mu1Mu2Tree->Branch("EventWeight", &EventWeight, "EventWeight/F");
+    Mu1Mu2Tree->Branch("NPVertex", &NPVertex, "NPVertex/F");
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

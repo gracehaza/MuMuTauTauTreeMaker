@@ -20,7 +20,7 @@ process.treelizer = cms.Sequence(
         process.MuonPtEtaCut*
         process.MuonID*
         process.LeadingMuonIso*
-        #process.TrigMuMatcher*
+        process.TrigMuMatcher*
         process.SecondMuonSelector*
         process.DiMuonMassSelector*
         process.DiMuonAnalyzer
