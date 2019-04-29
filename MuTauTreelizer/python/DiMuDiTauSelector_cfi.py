@@ -64,6 +64,17 @@ ThirdMuonSelector = cms.EDFilter("ThirdMuonSelector",
         dRCut = cms.double(0.4) # dRCut>0: dR(mu1mu2,mu3)>dRCut; dRCut<0: no requirement for dR(mu1mu2,mu3)
 )
 
+TauHadSelector = cms.EDFilter("TauHadSelector",
+        tauTag = cms.InputTag('selectedPatTausMuonCleaned'),
+        mu1mu2Tag = cms.InputTag('DiMuonMassSelector'),
+        #tauDiscriminatorTag = cms.vstring('byMediumIsolationMVArun2v1DBnewDMwLT'),
+        tauDiscriminatorTag = cms.vstring('decayModeFindingNewDMs'),
+        passDiscriminator = cms.bool(True),
+        pTMin = cms.double(8.0),
+        etaMax = cms.double(2.4),
+        dROverlapMin = cms.double(0.4) # deltaR between Tau and Mu1 & Mu2
+)
+
 #DiMuonAnalyzer = cms.EDAnalyzer('DiMuonAnalyzer',
 #        Mu1Mu2 = cms.InputTag("DiMuonMassSelector"),
 #        Vertex = cms.InputTag("offlineSlimmedPrimaryVertices"),
