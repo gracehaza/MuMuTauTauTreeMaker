@@ -24,9 +24,7 @@ process.treelizer = cms.Sequence(
         process.MuonID*
         process.LeadingMuonIso*
         process.TrigMuMatcher*
-        process.SecondMuonSelector*
-        process.DiMuonMassSelector*
-        process.ThirdMuonSelector*
+        process.SecondThirdMuonSelector*
         process.TauHadSelector
 )
 
