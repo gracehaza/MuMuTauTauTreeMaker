@@ -17,6 +17,18 @@ process.source = cms.Source("PoolSource",
     )
 )
 
+######### embed 2017v2 tauID into the miniAOD ###############
+# reference: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePFTauID#Rerunning_of_the_tau_ID_on_M_AN1
+
+from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA import *
+myTool = TauIDEmbedder(process, cms,
+        debug = True,
+        toKeep = ["2017v2"]
+)
+myTool.runTauID()
+
+############################################################
+
 process.treelizer = cms.Sequence(
         process.lumiTree*
         process.HLTEle*
@@ -25,6 +37,8 @@ process.treelizer = cms.Sequence(
         process.LeadingMuonIso*
         process.TrigMuMatcher*
         process.SecondThirdMuonSelector*
+        process.rerunMvaIsolationSequence*
+        process.NewTauIDsEmbedded*
         process.TauHadSelector
 )
 

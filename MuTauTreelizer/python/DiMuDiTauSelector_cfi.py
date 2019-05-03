@@ -50,9 +50,10 @@ SecondThirdMuonSelector = cms.EDFilter("SecondThirdMuonSelector",
 )
 
 TauHadSelector = cms.EDFilter("TauHadSelector",
-        tauTag = cms.InputTag('selectedPatTausMuonCleaned'),
-        #tauDiscriminatorTag = cms.vstring('byMediumIsolationMVArun2v1DBnewDMwLT'),
-        tauDiscriminatorTag = cms.vstring('decayModeFindingNewDMs'),
+        tauTag = cms.InputTag('NewTauIDsEmbedded'), # output of configuration: "TauIdMVA.py"
+        #tauTag = cms.InputTag('selectedPatTausMuonCleaned'),
+        tauDiscriminatorTag = cms.vstring('byIsolationMVArun2017v2DBoldDMwLTraw2017'),
+        #tauDiscriminatorTag = cms.vstring('decayModeFindingNewDMs'),
         passDiscriminator = cms.bool(True),
         pTMin = cms.double(8.0),
         etaMax = cms.double(2.4),
