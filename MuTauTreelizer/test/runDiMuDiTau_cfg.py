@@ -39,7 +39,8 @@ process.treelizer = cms.Sequence(
         process.SecondThirdMuonSelector*
         process.rerunMvaIsolationSequence*
         process.NewTauIDsEmbedded*
-        process.TauHadSelector
+        process.TauHadSelector*
+        process.MuMuTauTauAnalyzer
 )
 
 process.options = cms.untracked.PSet(

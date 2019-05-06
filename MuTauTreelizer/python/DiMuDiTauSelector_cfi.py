@@ -52,16 +52,18 @@ SecondThirdMuonSelector = cms.EDFilter("SecondThirdMuonSelector",
 TauHadSelector = cms.EDFilter("TauHadSelector",
         tauTag = cms.InputTag('NewTauIDsEmbedded'), # output of configuration: "TauIdMVA.py"
         #tauTag = cms.InputTag('selectedPatTausMuonCleaned'),
-        tauDiscriminatorTag = cms.vstring('byIsolationMVArun2017v2DBoldDMwLTraw2017'),
-        #tauDiscriminatorTag = cms.vstring('decayModeFindingNewDMs'),
+        tauDiscriminatorTag = cms.vstring('decayModeFinding'),
         passDiscriminator = cms.bool(True),
         pTMin = cms.double(8.0),
         etaMax = cms.double(2.4),
 )
 
-#DiMuonAnalyzer = cms.EDAnalyzer('DiMuonAnalyzer',
-#        Mu1Mu2 = cms.InputTag("DiMuonMassSelector"),
-#        Vertex = cms.InputTag("offlineSlimmedPrimaryVertices"),
-#        isMC = cms.bool(False),
-#        Generator = cms.InputTag("generator")
-#)
+MuMuTauTauAnalyzer = cms.EDAnalyzer('MuMuTauTauAnalyzer',
+        Mu1Tag = cms.InputTag("TrigMuMatcher"),
+        Mu2Mu3Tag = cms.InputTag("SecondThirdMuonSelector"),
+        TauHadTag = cms.InputTag("TauHadSelector"),
+        Vertex = cms.InputTag("offlineSlimmedPrimaryVertices"),
+        tauDiscriminatorTags = cms.vstring('byIsolationMVArun2017v2DBoldDMwLTraw2017','byLooseIsolationMVArun2017v2DBoldDMwLT2017','byMediumIsolationMVArun2017v2DBoldDMwLT2017','byTightIsolationMVArun2017v2DBoldDMwLT2017'),
+        isMC = cms.bool(False),
+        Generator = cms.InputTag("generator"),
+)
