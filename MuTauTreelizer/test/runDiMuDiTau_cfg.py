@@ -11,9 +11,9 @@ process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
         '/store/group/phys_higgs/HiggsExo/fengwang/SingleMuon/MiniAOD_SMu_DataF_17Nov2017_v1/190327_151854/0006/mumutautau_6131.root',
-        '/store/group/phys_higgs/HiggsExo/fengwang/SingleMuon/MiniAOD_SMu_DataB_17Nov2017_v2/190327_111844/0000/mumutautau_12.root',
-        '/store/group/phys_higgs/HiggsExo/fengwang/SingleMuon/MiniAOD_SMu_DataB_17Nov2017_v2/190327_111844/0000/mumutautau_15.root',
-        '/store/group/phys_higgs/HiggsExo/fengwang/SingleMuon/MiniAOD_SMu_DataB_17Nov2017_v2/190327_111844/0000/mumutautau_16.root',
+        '/store/group/phys_higgs/HiggsExo/fengwang/SingleMuon/MiniAOD_SMu_DataF_17Nov2017_v2/190327_111844/0000/mumutautau_12.root',
+        '/store/group/phys_higgs/HiggsExo/fengwang/SingleMuon/MiniAOD_SMu_DataF_17Nov2017_v2/190327_111844/0000/mumutautau_15.root',
+        '/store/group/phys_higgs/HiggsExo/fengwang/SingleMuon/MiniAOD_SMu_DataF_17Nov2017_v2/190327_111844/0000/mumutautau_16.root',
     )
 )
 

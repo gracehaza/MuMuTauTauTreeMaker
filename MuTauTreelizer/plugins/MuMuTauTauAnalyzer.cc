@@ -37,6 +37,7 @@
 #include "TTree.h"
 #include <math.h>
 #include <string>
+#include <iostream>
 //
 // class declaration
 //
@@ -93,9 +94,13 @@ class MuMuTauTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources
       double Mu3Iso;
       // ---- below is variables for Tau discriminators ---
       double tauIsolationMVArawValue;
+      double tauIsolationMVAVVLoose;
+      double tauIsolationMVAVLoose;
       double tauIsolationMVALoose;
       double tauIsolationMVAMedium;
       double tauIsolationMVATight;
+      double tauIsolationMVAVTight;
+      double tauIsolationMVAVVTight;
 };
 
 //
@@ -121,9 +126,13 @@ MuMuTauTauAnalyzer::MuMuTauTauAnalyzer(const edm::ParameterSet& iConfig):
    isMC_ = iConfig.getParameter<bool>("isMC");
    tauDiscriminatorTags_ = iConfig.getParameter<std::vector<std::string>>("tauDiscriminatorTags");
    tauIsolationMVArawValue = -999.0;
+   tauIsolationMVAVVLoose = -999.0;
+   tauIsolationMVAVLoose = -999.0;
    tauIsolationMVALoose = -999.0;
    tauIsolationMVAMedium = -999.0;
    tauIsolationMVATight = -999.0;
+   tauIsolationMVAVTight = -999.0;
+   tauIsolationMVAVVTight = -999.0;
 }
 
 
@@ -219,19 +228,45 @@ MuMuTauTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
            tauIsolationMVArawValue = tauHad.tauID(tauDiscriminatorTags_[i]); 
        }
 
-       else if(tauDiscriminatorTags_[i].find("loose")!=std::string::npos || tauDiscriminatorTags_[i].find("Loose")!=std::string::npos)
+       else if(tauDiscriminatorTags_[i].find("VVLoose")!=std::string::npos)
+       {
+           tauIsolationMVAVVLoose = tauHad.tauID(tauDiscriminatorTags_[i]); 
+       }
+
+       else if(tauDiscriminatorTags_[i].find("VLoose")!=std::string::npos && tauDiscriminatorTags_[i].find("VVLoose")==std::string::npos)
+       {
+           tauIsolationMVAVLoose = tauHad.tauID(tauDiscriminatorTags_[i]); 
+       }
+
+       else if(tauDiscriminatorTags_[i].find("Loose")!=std::string::npos && tauDiscriminatorTags_[i].find("VLoose")==std::string::npos && tauDiscriminatorTags_[i].find("VVLoose")==std::string::npos)
        {
            tauIsolationMVALoose = tauHad.tauID(tauDiscriminatorTags_[i]); 
        }
 
-       else if(tauDiscriminatorTags_[i].find("medium")!=std::string::npos || tauDiscriminatorTags_[i].find("Medium")!=std::string::npos)
+       else if(tauDiscriminatorTags_[i].find("Medium")!=std::string::npos)
        {
            tauIsolationMVAMedium = tauHad.tauID(tauDiscriminatorTags_[i]); 
        }
 
-       else if(tauDiscriminatorTags_[i].find("tight")!=std::string::npos || tauDiscriminatorTags_[i].find("Tight")!=std::string::npos)
+       else if(tauDiscriminatorTags_[i].find("Tight")!=std::string::npos && tauDiscriminatorTags_[i].find("VTight")==std::string::npos && tauDiscriminatorTags_[i].find("VVTight")==std::string::npos)
        {
            tauIsolationMVATight = tauHad.tauID(tauDiscriminatorTags_[i]); 
+       }
+
+       else if(tauDiscriminatorTags_[i].find("VTight")!=std::string::npos && tauDiscriminatorTags_[i].find("VVTight")==std::string::npos)
+       {
+           tauIsolationMVAVTight = tauHad.tauID(tauDiscriminatorTags_[i]); 
+       }
+
+       else if(tauDiscriminatorTags_[i].find("VVTight")!=std::string::npos)
+       {
+           tauIsolationMVAVVTight = tauHad.tauID(tauDiscriminatorTags_[i]); 
+       }
+
+       else{
+           std::cout << "Unknown category of tau discriminator: " << tauDiscriminatorTags_[i] << std::endl;
+           std::cout << "Please make sure you are using the right name." << std::endl;
+           continue;
        }
    }
 
@@ -269,9 +304,13 @@ MuMuTauTauAnalyzer::beginJob()
     MuMuTauTauTree->Branch("tauHadEta", &tauHadEta, "tauHadEta/D");
     MuMuTauTauTree->Branch("tauHadPhi", &tauHadPhi, "tauHadPhi/D");
     MuMuTauTauTree->Branch("tauIsolationMVArawValue", &tauIsolationMVArawValue, "tauIsolationMVArawValue/D");
+    MuMuTauTauTree->Branch("tauIsolationMVAVVLoose", &tauIsolationMVAVVLoose, "tauIsolationMVAVVLoose/D");
+    MuMuTauTauTree->Branch("tauIsolationMVAVLoose", &tauIsolationMVAVLoose, "tauIsolationMVAVLoose/D");
     MuMuTauTauTree->Branch("tauIsolationMVALoose", &tauIsolationMVALoose, "tauIsolationMVALoose/D");
     MuMuTauTauTree->Branch("tauIsolationMVAMedium", &tauIsolationMVAMedium, "tauIsolationMVAMedium/D");
     MuMuTauTauTree->Branch("tauIsolationMVATight", &tauIsolationMVATight, "tauIsolationMVATight/D");
+    MuMuTauTauTree->Branch("tauIsolationMVAVTight", &tauIsolationMVAVTight, "tauIsolationMVAVTight/D");
+    MuMuTauTauTree->Branch("tauIsolationMVAVVTight", &tauIsolationMVAVVTight, "tauIsolationMVAVVTight/D");
 
     MuMuTauTauTree->Branch("EventWeight", &EventWeight, "EventWeight/F");
     MuMuTauTauTree->Branch("NPVertex", &NPVertex, "NPVertex/F");
