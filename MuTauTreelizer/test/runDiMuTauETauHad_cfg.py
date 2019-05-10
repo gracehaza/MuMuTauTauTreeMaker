@@ -1,9 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("DiMuonDiTauTreelizer")
+process = cms.Process("DiMuonTauETauHadTreelizer")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuDiTauSelector_cfi")
+process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuTauETauHadSelector_cfi")
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
@@ -36,11 +36,12 @@ process.treelizer = cms.Sequence(
         process.MuonID*
         process.LeadingMuonIso*
         process.TrigMuMatcher*
-        process.SecondThirdMuonSelector*
+        process.SecondMuonSelector*
+        process.DiMuonMassSelector*
+        process.ElectronSelector*
         process.rerunMvaIsolationSequence*
         process.NewTauIDsEmbedded*
-        process.TauHadSelector*
-        process.MuMuTauTauAnalyzer
+        process.TauHadSelector
 )
 
 process.options = cms.untracked.PSet(
