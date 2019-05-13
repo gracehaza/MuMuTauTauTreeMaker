@@ -55,6 +55,7 @@ class MuonID : public edm::stream::EDFilter<> {
       // ----------member data ---------------------------
       edm::EDGetTokenT<edm::View<pat::Muon>> muonTag_;
       std::string muonID_;
+      int minNumObjsToPassFilter_;
 };
 
 //
@@ -74,7 +75,7 @@ MuonID::MuonID(const edm::ParameterSet& iConfig):
 {
    //now do what ever initialization is needed
    produces<std::vector<pat::Muon>>();
-
+   minNumObjsToPassFilter_ = iConfig.getParameter<int>("minNumObjsToPassFilter");
 }
 
 
@@ -118,10 +119,10 @@ MuonID::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
        }
    }
 
-   if (CountMuon>=2)
+   if (CountMuon>=1)
    {
        iEvent.put(std::move(muonColl));
-       return true;
+       return (CountMuon >= minNumObjsToPassFilter_);
    }
 
    return false;

@@ -15,15 +15,16 @@ HLTEle = cms.EDFilter("HLTHighLevel",
 )
 
 MuonPtEtaCut = cms.EDFilter("MuonPtEtaCut",
-        muonTag=cms.InputTag("slimmedMuons"),
-        Eta=cms.double(2.4),
-        Pt=cms.double(3.0),
-        minNumObjsToPassFilter=cms.uint32(2)
+        muonTag = cms.InputTag("slimmedMuons"),
+        Eta = cms.double(2.4),
+        Pt = cms.double(3.0),
+        minNumObjsToPassFilter = cms.uint32(2)
 )
 
 MuonID = cms.EDFilter("MuonID",
         muonTag = cms.InputTag('MuonPtEtaCut'),
-        muonID = cms.string('loose')
+        muonID = cms.string('loose'),
+        minNumObjsToPassFilter = cms.int32(2)
 )
 
 LeadingMuonIso = cms.EDFilter("LeadingMuonIso",
@@ -52,8 +53,8 @@ SecondMuonSelector = cms.EDFilter("SecondMuonSelector",
 DiMuonMassSelector = cms.EDFilter("DiMuonMassSelector",
         mu1Tag = cms.InputTag('TrigMuMatcher'),
         mu2Tag = cms.InputTag('SecondMuonSelector'),
-        minMass = cms.double(30),
-        maxMass = cms.double(200)
+        minMass = cms.double(3),
+        maxMass = cms.double(400)
 )
 
 ElectronSelector = cms.EDFilter("ElectronSelector",
