@@ -32,6 +32,7 @@
 
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include <string>
+#include <math.h>
 //
 // class declaration
 //
@@ -57,6 +58,8 @@ class ElectronSelector : public edm::stream::EDFilter<> {
       edm::EDGetTokenT<edm::View<pat::Electron>> electronTag_;
       std::string relIdName_;
       bool passRelId_;
+      double Eta_;
+      double Pt_;
 };
 
 //
@@ -77,6 +80,8 @@ ElectronSelector::ElectronSelector(const edm::ParameterSet& iConfig):
    produces<std::vector<pat::Electron>>();
    relIdName_ = iConfig.getParameter<std::string>("relIdName");
    passRelId_ = iConfig.getParameter<bool>("passRelId");
+   Eta_ = iConfig.getParameter<double>("etaCut");
+   Pt_ = iConfig.getParameter<double>("ptCut");
 }
 
 
@@ -107,7 +112,7 @@ ElectronSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
    int CountElectron = 0;
    for(edm::View<pat::Electron>::const_iterator iElectron=pElectrons->begin(); iElectron!=pElectrons->end(); ++iElectron)
    {
-       if (iElectron->electronID(relIdName_) == passRelId_)
+       if ((iElectron->electronID(relIdName_) == passRelId_) && (iElectron->pt() > Pt_) && (fabs(iElectron->eta()) < Eta_))
        {
            CountElectron++;
            electronColl->push_back(*iElectron);

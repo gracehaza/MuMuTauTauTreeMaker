@@ -58,8 +58,12 @@ DiMuonMassSelector = cms.EDFilter("DiMuonMassSelector",
 
 ElectronSelector = cms.EDFilter("ElectronSelector",
         electronTag = cms.InputTag('slimmedElectrons'),
+        # --- customize your own electron ID ---
         relIdName = cms.string("cutBasedElectronID-Fall17-94X-V1-loose"),
+        # Refer to: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaMiniAODV2#ID_information
         passRelId = cms.bool(True),
+        etaCut = cms.double(2.5),
+        ptCut = cms.double(3),
 )
 
 TauHadSelector = cms.EDFilter("TauHadSelector",
@@ -71,20 +75,21 @@ TauHadSelector = cms.EDFilter("TauHadSelector",
         etaMax = cms.double(2.4),
 )
 
-#MuMuTauTauAnalyzer = cms.EDAnalyzer('MuMuTauTauAnalyzer',
-#        Mu1Tag = cms.InputTag("TrigMuMatcher"),
-#        Mu2Mu3Tag = cms.InputTag("SecondThirdMuonSelector"),
-#        TauHadTag = cms.InputTag("TauHadSelector"),
-#        Vertex = cms.InputTag("offlineSlimmedPrimaryVertices"),
-#        tauDiscriminatorTags = cms.vstring('byIsolationMVArun2017v2DBoldDMwLTraw2017',
-#            'byVVLooseIsolationMVArun2017v2DBoldDMwLT2017',
-#            'byVLooseIsolationMVArun2017v2DBoldDMwLT2017',
-#            'byLooseIsolationMVArun2017v2DBoldDMwLT2017',
-#            'byMediumIsolationMVArun2017v2DBoldDMwLT2017',
-#            'byTightIsolationMVArun2017v2DBoldDMwLT2017',
-#            'byVTightIsolationMVArun2017v2DBoldDMwLT2017',
-#            'byVVTightIsolationMVArun2017v2DBoldDMwLT2017',
-#        ),
-#        isMC = cms.bool(False),
-#        Generator = cms.InputTag("generator"),
-#)
+MuMuTauETauHadAnalyzer = cms.EDAnalyzer('MuMuTauETauHadAnalyzer',
+        Mu1Mu2Tag = cms.InputTag("DiMuonMassSelector"),
+        EleTag = cms.InputTag("ElectronSelector"),
+        TauHadTag = cms.InputTag("TauHadSelector"),
+        Vertex = cms.InputTag("offlineSlimmedPrimaryVertices"),
+        tauDiscriminatorTags = cms.vstring(
+            'byIsolationMVArun2017v2DBoldDMwLTraw2017',
+            'byVVLooseIsolationMVArun2017v2DBoldDMwLT2017',
+            'byVLooseIsolationMVArun2017v2DBoldDMwLT2017',
+            'byLooseIsolationMVArun2017v2DBoldDMwLT2017',
+            'byMediumIsolationMVArun2017v2DBoldDMwLT2017',
+            'byTightIsolationMVArun2017v2DBoldDMwLT2017',
+            'byVTightIsolationMVArun2017v2DBoldDMwLT2017',
+            'byVVTightIsolationMVArun2017v2DBoldDMwLT2017',
+        ),
+        isMC = cms.bool(False),
+        Generator = cms.InputTag("generator"),
+)
