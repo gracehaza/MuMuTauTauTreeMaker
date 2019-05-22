@@ -140,8 +140,8 @@ SecondThirdMuonSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetu
            if ((deltaR(*iMuon, mu1) < 0.0001) && (fabs(iMuon->pt()-mu1.pt()) < 0.0001)) // exclude mu1 from the collection
                continue;
 
-           if ((deltaR(*iMuon, mu1) < smallestDR) && 
-               ((oppositeSign_ && (mu1.pdgId() == (-1)* iMuon->pdgId())) || (!oppositeSign_ && (mu1.pdgId() == iMuon->pdgId()))))
+           else if ((deltaR(*iMuon, mu1) < smallestDR) && 
+                    ((oppositeSign_ && (mu1.pdgId() == (-1)* iMuon->pdgId())) || (!oppositeSign_ && (mu1.pdgId() == iMuon->pdgId()))))
            {
                smallestDR = deltaR(mu1, *iMuon);
                smallestDRMuon = *iMuon;
@@ -158,7 +158,10 @@ SecondThirdMuonSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetu
        for (std::vector<pat::Muon>::iterator iMuon=muonColl->begin(); iMuon!=muonColl->end(); ++iMuon)
        {
            iteratorMuon++;
-           if ((iMuon->pt() > highestPt) && (iteratorMuon!=indexSecondMuon))
+           if ((deltaR(*iMuon, mu1) < 0.0001) && (fabs(iMuon->pt()-mu1.pt()) < 0.0001)) // exclude mu1 from the collection
+               continue;
+
+           else if ((iMuon->pt() > highestPt) && (iteratorMuon!=indexSecondMuon))
            {
                highestPt = iMuon->pt();
                highestPtMuon = *iMuon;

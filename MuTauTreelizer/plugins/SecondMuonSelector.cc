@@ -139,7 +139,7 @@ SecondMuonSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
            if ((deltaR(*iMuon, mu1) < 0.0001) && (fabs(iMuon->pt()-mu1.pt()) < 0.0001)) // exclude mu1 from the collection
                continue;
 
-           if (deltaR(*iMuon, mu1) < smallestDR)
+           else if (deltaR(*iMuon, mu1) < smallestDR)
            {
                smallestDR = deltaR(*iMuon, mu1);
                smallestDRMuon = *iMuon;
