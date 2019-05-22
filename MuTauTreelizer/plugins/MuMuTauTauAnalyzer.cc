@@ -215,7 +215,18 @@ MuMuTauTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
    iso = Mu3.pfIsolationR04();
    Mu3Iso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / Mu3.pt();
 
-   pat::Tau tauHad = pTau->at(0);
+   // select the tau with the smallest dR from mu3
+   double smallestDR = 99.0;
+   pat::Tau tauHad;
+   for(edm::View<pat::Tau>::const_iterator iTau=pTau->begin(); iTau!=pTau->end(); ++iTau)
+   {
+       if(deltaR(Mu3, *iTau) < smallestDR)
+       {
+           smallestDR = deltaR(Mu3, *iTau);
+           tauHad = *iTau;
+       }
+   }
+
    tauHadEnergy = tauHad.energy();
    tauHadPt = tauHad.pt();
    tauHadEta = tauHad.eta();

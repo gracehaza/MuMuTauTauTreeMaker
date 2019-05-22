@@ -124,30 +124,36 @@ SecondThirdMuonSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetu
        }
    }
 
-   // below we are going to select the muon with second and third highest pt, and one of them should be oppositely charged to mu1
+   // below we are going to select the second muon with smallest dR from the leading muon, and the third muon with highest pt 
+   // from the rest of muon collection, and second muon should be oppositely charged to mu1
    if (CountMuon >= 1)
    {
        // select the second muon
-       double highestPt = -1;
+       double smallestDR = 99.0;
        int iteratorMuon = 0;
        int indexSecondMuon = 0;
-       pat::Muon highestPtMuon;
+       pat::Muon smallestDRMuon;
 
        for (std::vector<pat::Muon>::iterator iMuon=muonColl->begin(); iMuon!=muonColl->end(); ++iMuon)
        {
            iteratorMuon++;
-           if (iMuon->pt() > highestPt)
+           if ((deltaR(*iMuon, mu1) < 0.0001) && (fabs(iMuon->pt()-mu1.pt()) < 0.0001)) // exclude mu1 from the collection
+               continue;
+
+           if ((deltaR(*iMuon, mu1) < smallestDR) && 
+               ((oppositeSign_ && (mu1.pdgId() == (-1)* iMuon->pdgId())) || (!oppositeSign_ && (mu1.pdgId() == iMuon->pdgId()))))
            {
-               highestPt = iMuon->pt();
-               highestPtMuon = *iMuon;
+               smallestDR = deltaR(mu1, *iMuon);
+               smallestDRMuon = *iMuon;
                indexSecondMuon = iteratorMuon;
            }
        }
 
-       secondThirdMuonColl->push_back(highestPtMuon);
+       secondThirdMuonColl->push_back(smallestDRMuon);
        
-       // select the third muon
-       highestPt = -1;
+       // select the third muon with highest pt besides mu1 and mu2 
+       double highestPt = -1;
+       pat::Muon highestPtMuon;
        iteratorMuon = 0;
        for (std::vector<pat::Muon>::iterator iMuon=muonColl->begin(); iMuon!=muonColl->end(); ++iMuon)
        {
@@ -160,24 +166,12 @@ SecondThirdMuonSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetu
        }
 
        secondThirdMuonColl->push_back(highestPtMuon);
-   }
 
-   // at least one of mu2 and mu3 should have opposite charge from mu1
-   if (oppositeSign_ && (mu1.pdgId() == (-1)* secondThirdMuonColl->at(0).pdgId() || mu1.pdgId() == (-1)* secondThirdMuonColl->at(1).pdgId()))
-   {
        iEvent.put(std::move(secondThirdMuonColl));
        return true;
    }
 
-   else if (!oppositeSign_ && mu1.pdgId() == secondThirdMuonColl->at(0).pdgId() && mu1.pdgId() == secondThirdMuonColl->at(1).pdgId())
-   {
-       iEvent.put(std::move(secondThirdMuonColl));
-       return true;
-   }
-   
-   else{
-       return false;
-   }
+   return false;
 }
 
 // ------------ method called once each stream before processing any runs, lumis or events  ------------

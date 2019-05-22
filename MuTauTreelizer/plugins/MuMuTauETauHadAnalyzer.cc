@@ -228,7 +228,18 @@ MuMuTauETauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
    ecalTrkEnergyPostCorr = Ele.userFloat("ecalTrkEnergyPostCorr");
    ecalTrkEnergyErrPostCorr = Ele.userFloat("ecalTrkEnergyErrPostCorr");
 
-   pat::Tau tauHad = pTau->at(0);
+   // select the tau with the smallest dR from electron
+   double smallestDR = 99.0;
+   pat::Tau tauHad;
+   for(edm::View<pat::Tau>::const_iterator iTau=pTau->begin(); iTau!=pTau->end(); ++iTau)
+   {
+       if(deltaR(Ele, *iTau) < smallestDR)
+       {
+           smallestDR = deltaR(Ele, *iTau);
+           tauHad = *iTau;
+       }
+   }
+
    tauHadEnergy = tauHad.energy();
    tauHadPt = tauHad.pt();
    tauHadEta = tauHad.eta();

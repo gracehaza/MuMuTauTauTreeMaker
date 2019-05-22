@@ -57,8 +57,7 @@ class SecondMuonSelector : public edm::stream::EDFilter<> {
       edm::EDGetTokenT<edm::View<pat::Muon>> mu1Tag_;
       double relIsoCutVal_;
       bool passRelIso_;
-      //double dRCut_;
-      //bool isolatedORBoosted_;
+      double dRCut_;
       bool oppositeSign_;
 };
 
@@ -81,9 +80,8 @@ SecondMuonSelector::SecondMuonSelector(const edm::ParameterSet& iConfig):
    produces<std::vector<pat::Muon>>();
    relIsoCutVal_ = iConfig.getParameter<double>("relIsoCutVal");
    passRelIso_ = iConfig.getParameter<bool>("passRelIso");
-   //dRCut_ = iConfig.getParameter<double>("dRCut");
+   dRCut_ = iConfig.getParameter<double>("dRCut");
    oppositeSign_ = iConfig.getParameter<bool>("oppositeSign");
-   //isolatedORBoosted_ = iConfig.getParameter<bool>("isolatedORBoosted");
 }
 
 
@@ -118,8 +116,8 @@ SecondMuonSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
    int CountMuon=0;
    for(edm::View<pat::Muon>::const_iterator iMuon=pMuons->begin(); iMuon!=pMuons->end(); ++iMuon)
    {
-       //double dR = deltaR(*iMuon, mu1);
-       //if ((isolatedORBoosted_ && (dR < dRCut_)) || (!isolatedORBoosted_ && (dR > dRCut_))) continue;
+       double dR = deltaR(*iMuon, mu1);
+       if (dRCut_ > 0 && dR < dRCut_) continue;
        reco::MuonPFIsolation iso = iMuon->pfIsolationR04();
        double reliso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / iMuon->pt();
        if ((reliso < relIsoCutVal_ && passRelIso_) || (reliso > relIsoCutVal_ && !passRelIso_) || relIsoCutVal_ == -1)
@@ -131,21 +129,24 @@ SecondMuonSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
        }
    }
 
-   // below we are going to select the muon with second highest pt
+   // below we are going to select the second muon with smallest dR from mu1
    if (CountMuon >= 1)
    {
-       double highestPt = -1;
-       pat::Muon highestPtMuon;
+       double smallestDR = 99.0;
+       pat::Muon smallestDRMuon;
        for (std::vector<pat::Muon>::iterator iMuon=muonColl->begin(); iMuon!=muonColl->end(); ++iMuon)
        {
-           if (iMuon->pt() > highestPt)
+           if ((deltaR(*iMuon, mu1) < 0.0001) && (fabs(iMuon->pt()-mu1.pt()) < 0.0001)) // exclude mu1 from the collection
+               continue;
+
+           if (deltaR(*iMuon, mu1) < smallestDR)
            {
-               highestPt = iMuon->pt();
-               highestPtMuon = *iMuon;
+               smallestDR = deltaR(*iMuon, mu1);
+               smallestDRMuon = *iMuon;
            }
        }
 
-       secondMuonColl->push_back(highestPtMuon);
+       secondMuonColl->push_back(smallestDRMuon);
        iEvent.put(std::move(secondMuonColl));
        return true;
    }

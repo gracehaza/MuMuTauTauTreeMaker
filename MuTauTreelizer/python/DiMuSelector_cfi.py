@@ -47,8 +47,7 @@ SecondMuonSelector = cms.EDFilter("SecondMuonSelector",
         mu1Tag = cms.InputTag('TrigMuMatcher'),
         relIsoCutVal = cms.double(0.25), # .25 for iso, -1 for ignoring iso
         passRelIso = cms.bool(True), #False = Non-Iso DiMu, True = Iso-DiMu
-        #dRCut = cms.double(0.5),
-        #isolatedORBoosted = cms.bool(True) # False = boosted, True = isolated
+        dRCut = cms.double(-1), # -1 = no dR cut, >0 for dR low threshold
         oppositeSign = cms.bool(True), # False for SameSignDiMu, True regular
 )
 

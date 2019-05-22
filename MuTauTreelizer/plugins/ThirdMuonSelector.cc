@@ -113,9 +113,9 @@ ThirdMuonSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
    int CountMuon=0;
    for(edm::View<pat::Muon>::const_iterator iMuon=pMuons->begin(); iMuon!=pMuons->end(); ++iMuon)
    {
-       if ((deltaR(*iMuon, mu1) < 0.0001) && ((fabs(iMuon->pt()-mu1.pt())/iMuon->pt()) < 0.0001) && (dRCut_ <= 0))
+       if ((deltaR(*iMuon, mu1) < 0.0001) && (fabs(iMuon->pt()-mu1.pt()) < 0.0001) && (dRCut_ <= 0))
            continue;
-       else if((deltaR(*iMuon, mu2) < 0.0001) && ((fabs(iMuon->pt()-mu2.pt())/iMuon->pt()) < 0.0001) && (dRCut_ <= 0)) 
+       else if((deltaR(*iMuon, mu2) < 0.0001) && (fabs(iMuon->pt()-mu2.pt()) < 0.0001) && (dRCut_ <= 0)) 
            continue;
        else if((deltaR(*iMuon, mu1) < dRCut_) && (dRCut_ > 0)) 
            continue;
