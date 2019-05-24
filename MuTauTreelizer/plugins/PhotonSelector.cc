@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    testED/ThirdMuonSelector
-// Class:      ThirdMuonSelector
+// Package:    testED/PhotonSelector
+// Class:      PhotonSelector
 // 
-/**\class ThirdMuonSelector ThirdMuonSelector.cc testED/ThirdMuonSelector/plugins/ThirdMuonSelector.cc
+/**\class PhotonSelector PhotonSelector.cc testED/PhotonSelector/plugins/PhotonSelector.cc
 
  Description: [one line class summary]
 
@@ -12,7 +12,7 @@
 */
 //
 // Original Author:  Fengwangdong Zhang
-//         Created:  Fri, 26 Apr 2019 13:15:29 GMT
+//         Created:  Fri, 24 May 2019 15:39:05 GMT
 //
 //
 
@@ -30,16 +30,17 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/StreamID.h"
 
-#include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Photon.h"
+#include <string>
 #include <math.h>
 //
 // class declaration
 //
 
-class ThirdMuonSelector : public edm::stream::EDFilter<> {
+class PhotonSelector : public edm::stream::EDFilter<> {
    public:
-      explicit ThirdMuonSelector(const edm::ParameterSet&);
-      ~ThirdMuonSelector();
+      explicit PhotonSelector(const edm::ParameterSet&);
+      ~PhotonSelector();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -54,9 +55,11 @@ class ThirdMuonSelector : public edm::stream::EDFilter<> {
       //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
 
       // ----------member data ---------------------------
-      edm::EDGetTokenT<edm::View<pat::Muon>> muonTag_;
-      edm::EDGetTokenT<edm::View<pat::Muon>> mu1mu2Tag_;
-      double dRCut_;
+      edm::EDGetTokenT<edm::View<pat::Photon>> photonTag_;
+      std::string relIdName_;
+      bool passRelId_;
+      double etaCut_;
+      double ptCut_;
 };
 
 //
@@ -70,17 +73,19 @@ class ThirdMuonSelector : public edm::stream::EDFilter<> {
 //
 // constructors and destructor
 //
-ThirdMuonSelector::ThirdMuonSelector(const edm::ParameterSet& iConfig):
-    muonTag_(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("muonTag"))),
-    mu1mu2Tag_(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("mu1mu2Tag")))
+PhotonSelector::PhotonSelector(const edm::ParameterSet& iConfig):
+    photonTag_(consumes<edm::View<pat::Photon>>(iConfig.getParameter<edm::InputTag>("photonTag")))
 {
    //now do what ever initialization is needed
-   produces<std::vector<pat::Muon>>();
-   dRCut_ = iConfig.getParameter<double>("dRCut");
+   produces<std::vector<pat::Photon>>();
+   relIdName_ = iConfig.getParameter<std::string>("relIdName");
+   passRelId_ = iConfig.getParameter<bool>("passRelId");
+   etaCut_ = iConfig.getParameter<double>("etaCut");
+   ptCut_ = iConfig.getParameter<double>("ptCut");
 }
 
 
-ThirdMuonSelector::~ThirdMuonSelector()
+PhotonSelector::~PhotonSelector()
 {
  
    // do anything here that needs to be done at destruction time
@@ -95,63 +100,48 @@ ThirdMuonSelector::~ThirdMuonSelector()
 
 // ------------ method called on each new Event  ------------
 bool
-ThirdMuonSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
+PhotonSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
-   std::unique_ptr<std::vector<pat::Muon>> muonColl = std::make_unique<std::vector<pat::Muon>>();
-   edm::Handle<edm::View<pat::Muon>> pMuons;
-   iEvent.getByToken(muonTag_, pMuons);
-   
-   if (pMuons->size() < 1) return 0;
-   edm::Handle<edm::View<pat::Muon>> pMu1Mu2;
-   iEvent.getByToken(mu1mu2Tag_, pMu1Mu2);
+   std::unique_ptr<std::vector<pat::Photon>> photonColl = std::make_unique<std::vector<pat::Photon>>();
+   edm::Handle<edm::View<pat::Photon>> pPhotons;
+   iEvent.getByToken(photonTag_, pPhotons);
 
-   pat::Muon mu1 = pMu1Mu2->at(0);
-   pat::Muon mu2 = pMu1Mu2->at(1);
-
-   int CountMuon=0;
-   // below we are going to select all the muon candidates which could be the third muon
-
-   for(edm::View<pat::Muon>::const_iterator iMuon=pMuons->begin(); iMuon!=pMuons->end(); ++iMuon)
+   if (pPhotons->size() < 1) 
    {
-       if ((deltaR(*iMuon, mu1) < 0.0001) && (fabs(iMuon->pt()-mu1.pt()) < 0.0001) && (dRCut_ <= 0))
-           continue;
-       else if((deltaR(*iMuon, mu2) < 0.0001) && (fabs(iMuon->pt()-mu2.pt()) < 0.0001) && (dRCut_ <= 0)) 
-           continue;
-       else if((deltaR(*iMuon, mu1) < dRCut_) && (dRCut_ > 0)) 
-           continue;
-       else if((deltaR(*iMuon, mu2) < dRCut_) && (dRCut_ > 0)) 
-           continue;
-       else{
-           CountMuon++;
-           muonColl->push_back(*iMuon);
-       }
-   }
-
-   if (CountMuon >= 1)
-   {
-       iEvent.put(std::move(muonColl));
+       iEvent.put(std::move(photonColl));
        return true;
    }
 
-   return false;
+   int CountPhoton = 0;
+   for(edm::View<pat::Photon>::const_iterator iPhoton=pPhotons->begin(); iPhoton!=pPhotons->end(); ++iPhoton)
+   {
+       if ((iPhoton->photonID(relIdName_) == passRelId_) && (iPhoton->pt() > ptCut_) && (fabs(iPhoton->eta()) < etaCut_))
+       {
+           CountPhoton++;
+           photonColl->push_back(*iPhoton);
+       }
+   }
+
+   iEvent.put(std::move(photonColl));
+   return true;
 }
 
 // ------------ method called once each stream before processing any runs, lumis or events  ------------
 void
-ThirdMuonSelector::beginStream(edm::StreamID)
+PhotonSelector::beginStream(edm::StreamID)
 {
 }
 
 // ------------ method called once each stream after processing all runs, lumis and events  ------------
 void
-ThirdMuonSelector::endStream() {
+PhotonSelector::endStream() {
 }
 
 // ------------ method called when starting to processes a run  ------------
 /*
 void
-ThirdMuonSelector::beginRun(edm::Run const&, edm::EventSetup const&)
+PhotonSelector::beginRun(edm::Run const&, edm::EventSetup const&)
 { 
 }
 */
@@ -159,7 +149,7 @@ ThirdMuonSelector::beginRun(edm::Run const&, edm::EventSetup const&)
 // ------------ method called when ending the processing of a run  ------------
 /*
 void
-ThirdMuonSelector::endRun(edm::Run const&, edm::EventSetup const&)
+PhotonSelector::endRun(edm::Run const&, edm::EventSetup const&)
 {
 }
 */
@@ -167,7 +157,7 @@ ThirdMuonSelector::endRun(edm::Run const&, edm::EventSetup const&)
 // ------------ method called when starting to processes a luminosity block  ------------
 /*
 void
-ThirdMuonSelector::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+PhotonSelector::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
 */
@@ -175,14 +165,14 @@ ThirdMuonSelector::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventS
 // ------------ method called when ending the processing of a luminosity block  ------------
 /*
 void
-ThirdMuonSelector::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+PhotonSelector::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
 */
  
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-ThirdMuonSelector::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+PhotonSelector::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -190,4 +180,4 @@ ThirdMuonSelector::fillDescriptions(edm::ConfigurationDescriptions& descriptions
   descriptions.addDefault(desc);
 }
 //define this as a plug-in
-DEFINE_FWK_MODULE(ThirdMuonSelector);
+DEFINE_FWK_MODULE(PhotonSelector);

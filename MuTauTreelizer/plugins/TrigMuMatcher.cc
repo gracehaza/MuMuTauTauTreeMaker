@@ -60,7 +60,7 @@ class TrigMuMatcher : public edm::stream::EDFilter<> {
       edm::EDGetTokenT<std::vector<pat::TriggerObjectStandAlone>> triggerObjects_;
       std::vector<std::string> trigNames_;
       double dRCut_;
-      double mu1PtCut_;
+      double muPtCut_;
 };
 
 //
@@ -83,7 +83,7 @@ TrigMuMatcher::TrigMuMatcher(const edm::ParameterSet& iConfig):
    produces<std::vector<pat::Muon>>();
    trigNames_ = iConfig.getParameter<std::vector<std::string>>("trigNames");
    dRCut_ = iConfig.getParameter<double>("dRCut");
-   mu1PtCut_ = iConfig.getParameter<double>("mu1PtCut");
+   muPtCut_ = iConfig.getParameter<double>("muPtCut");
 
 }
 
@@ -107,7 +107,6 @@ TrigMuMatcher::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
    std::unique_ptr<std::vector<pat::Muon>> muonColl = std::make_unique<std::vector<pat::Muon>>();
-   std::unique_ptr<std::vector<pat::Muon>> leadMuonColl = std::make_unique<std::vector<pat::Muon>>();
    edm::Handle<edm::View<pat::Muon>> pMuons;
    edm::Handle<edm::TriggerResults> pTriggerBits;
    edm::Handle<std::vector<pat::TriggerObjectStandAlone> > pTriggerObjects;
@@ -119,6 +118,7 @@ TrigMuMatcher::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
    const edm::TriggerNames &names = iEvent.triggerNames(*pTriggerBits);
    std::vector<unsigned int> corrTrigSpot;
 
+   // --- find the user customized trigger path names in the existing trigger path list in TriggerResults of HLT ---
    for (unsigned int i = 0, n = pTriggerBits->size(); i<n; ++i)
    {
        for ( std::string iName : trigNames_ ){
@@ -129,49 +129,44 @@ TrigMuMatcher::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
        }
    }
 
+   // --- prepare for the muon collection --- 
+   // --- it will be selected if at least one muon match with trigger muon --- 
+   for(edm::View<pat::Muon>::const_iterator iMuon=pMuons->begin(); iMuon!=pMuons->end(); ++iMuon)
+   {
+       muonColl->push_back(*iMuon);
+   }
+
    pat::TriggerObjectStandAlone TO;
    bool checkPassEvent = false;
-   for ( uint iobj = 0; iobj <pTriggerObjects->size(); iobj++ )
+
+   for (uint iobj = 0; iobj < pTriggerObjects->size(); iobj++)
    {
        TO = pTriggerObjects->at(iobj);
-       TO.unpackPathNames(names); // get the list of trigger paths in the input file
+       TO.unpackPathNames(names); // get the list of trigger paths of each triggered object
        bool checkObjMatch = false; // This variable will be used to check if this object(muon) passes at least one customized trigger path
 
        for (unsigned int num : corrTrigSpot) // Loop through the customized trigger paths
        {
            const std::string& name = names.triggerName(num);
-           if (TO.hasPathName(name, true) && !checkObjMatch) // if there is no yet matched objects matched with the reconstructed muon candidate
+           if (TO.hasPathName(name, true) && !checkObjMatch) // if there is no yet reconstructed muon candidates matched with the triggered object
            {
-               for(edm::View<pat::Muon>::const_iterator iMuon=pMuons->begin(); iMuon!=pMuons->end();++iMuon) // loop through the muons
+               for(edm::View<pat::Muon>::const_iterator iMuon=pMuons->begin(); iMuon!=pMuons->end(); ++iMuon) // loop through the reco-muons
                {
-                   double dRCurr = deltaR(*iMuon, TO);
-                   if (iMuon->pt() > mu1PtCut_ && dRCurr < dRCut_) // select the muon closest to the reconstructed muon and having highest pt
+                   double dRCurr = deltaR(*iMuon, TO); // use dR to match the reco-muon and the triggered object
+                   if (iMuon->pt() > muPtCut_ && dRCurr < dRCut_) // select the muon closest to the reconstructed muon and having highest pt
                    {
                        checkPassEvent = true;
                        checkObjMatch = true;
-                       muonColl->push_back(*iMuon);
                        break;
                    } // end if pt/dR requirement
                } // end loop of reconstructed muons 
-           } // end if there is matched objects with the reco-muon candidate
+           } // end if there is at least one reco-muon candidate matched with the triggered object
        } // end loop of customized trigger muon paths
-   } // end loop of pat trigger objects
+   } // end loop of all the triggered objects
 
-   // we are going to find the leading muon 
-   if (muonColl->size() > 0){
-      double highestPt = -1;
-      pat::Muon highestPtMuon;
-      for (std::vector<pat::Muon>::iterator iMuon=muonColl->begin(); iMuon!=muonColl->end(); ++iMuon)
-      {
-          if (iMuon->pt() > highestPt)
-          {
-              highestPt = iMuon->pt();
-              highestPtMuon = *iMuon;
-          }
-      }
-
-      leadMuonColl->push_back(highestPtMuon);
-      iEvent.put(std::move(leadMuonColl));
+   if (checkPassEvent)
+   {
+      iEvent.put(std::move(muonColl));
    }
 
    return (checkPassEvent);
