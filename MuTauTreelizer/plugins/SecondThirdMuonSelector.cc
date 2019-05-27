@@ -151,9 +151,7 @@ SecondThirdMuonSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetu
 
        secondThirdMuonColl->push_back(smallestDRMuon);
        
-       // select the third muon with highest pt besides mu1 and mu2 
-       double highestPt = -1;
-       pat::Muon highestPtMuon;
+       // select other muons besides mu1 and mu2 
        iteratorMuon = 0;
        for (std::vector<pat::Muon>::iterator iMuon=muonColl->begin(); iMuon!=muonColl->end(); ++iMuon)
        {
@@ -161,14 +159,11 @@ SecondThirdMuonSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetu
            if ((deltaR(*iMuon, mu1) < 0.0001) && (fabs(iMuon->pt()-mu1.pt()) < 0.0001)) // exclude mu1 from the collection
                continue;
 
-           else if ((iMuon->pt() > highestPt) && (iteratorMuon!=indexSecondMuon))
+           else if (iteratorMuon!=indexSecondMuon)
            {
-               highestPt = iMuon->pt();
-               highestPtMuon = *iMuon;
+               secondThirdMuonColl->push_back(*iMuon);
            }
        }
-
-       secondThirdMuonColl->push_back(highestPtMuon);
 
        iEvent.put(std::move(secondThirdMuonColl));
        return true;

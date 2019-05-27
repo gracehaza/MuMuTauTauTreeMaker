@@ -33,12 +33,17 @@
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/PatCandidates/interface/Photon.h"
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/PatCandidates/interface/Vertexing.h"
 #include "TTree.h"
 #include <math.h>
 #include <string>
 #include <iostream>
+
+using namespace std;
 //
 // class declaration
 //
@@ -63,49 +68,74 @@ class MuMuTauETauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResou
       virtual void endJob() override;
 
       // ----------member data ---------------------------
-      edm::EDGetTokenT<edm::View<pat::Muon>> Mu1Mu2_;
-      edm::EDGetTokenT<edm::View<pat::Electron>> Ele_;
-      edm::EDGetTokenT<edm::View<pat::Tau>> TauHad_;
-      std::vector<std::string> tauDiscriminatorTags_;
-      edm::EDGetTokenT<edm::View<reco::Vertex>> Vertex_;
-      bool isMC_;
-      float EventWeight;
-      float NPVertex;
-      edm::EDGetTokenT<GenEventInfoProduct> generator_;
+      edm::EDGetTokenT<edm::View<pat::Muon>> Mu1Mu2Tag;
+      edm::EDGetTokenT<edm::View<pat::Muon>> Mu3Tag;
+      edm::EDGetTokenT<edm::View<pat::Electron>> EleTag;
+      edm::EDGetTokenT<edm::View<pat::Tau>> TauTag;
+      edm::EDGetTokenT<edm::View<pat::Jet>> JetTag;
+      edm::EDGetTokenT<edm::View<pat::Photon>> PhotonTag;
+      edm::EDGetTokenT<edm::View<reco::Vertex>> VertexTag;
+      bool isMC;
+      edm::EDGetTokenT<edm::View<PileupSummaryInfo>> PileupTag;
+      edm::EDGetTokenT<GenEventInfoProduct> generator;
 
-      TTree *MuMuTauETauHadTree;
-      double Mu1Energy;
-      double Mu2Energy;
-      double EleEnergy;
-      double tauHadEnergy;
-      double Mu1Pt;
-      double Mu2Pt;
-      double ElePt;
-      double tauHadPt;
-      double Mu1Eta;
-      double Mu2Eta;
-      double EleEta;
-      double tauHadEta;
-      double Mu1Phi;
-      double Mu2Phi;
-      double ElePhi;
-      double tauHadPhi;
-      double Mu1Iso;
-      double Mu2Iso;
-      // ---- below is variables for electron energy scale and smearing application ---
-      float ecalTrkEnergyPreCorr;
-      float ecalTrkEnergyErrPreCorr;
-      float ecalTrkEnergyPostCorr;
-      float ecalTrkEnergyErrPostCorr;
-      // ---- below is variables for Tau discriminators ---
-      float tauIsolationMVArawValue;
-      float tauIsolationMVAVVLoose;
-      float tauIsolationMVAVLoose;
-      float tauIsolationMVALoose;
-      float tauIsolationMVAMedium;
-      float tauIsolationMVATight;
-      float tauIsolationMVAVTight;
-      float tauIsolationMVAVVTight;
+      TTree *objectTree;
+      // --- below is the vectors of object variables ---
+      
+      // --- reconstructed muons ---
+      vector<float> recoMuonPt;
+      vector<float> recoMuonEta;
+      vector<float> recoMuonPhi;
+      vector<float> recoMuonEnergy;
+      vector<int> recoMuonPDGId;
+      vector<float> recoMuonIsolation;
+
+      // --- reconstructed electrons ---
+      vector<float> recoElectronPt;
+      vector<float> recoElectronEta;
+      vector<float> recoElectronPhi;
+      vector<float> recoElectronEnergy;
+      vector<int> recoElectronPDGId;
+      vector<float> recoElectronEcalTrkEnergyPostCorr;
+      vector<float> recoElectronEcalTrkEnergyErrPostCorr;
+
+      // --- reconstructed taus ---
+      vector<float> recoTauPt;
+      vector<float> recoTauEta;
+      vector<float> recoTauPhi;
+      vector<float> recoTauEnergy;
+      vector<int> recoTauPDGId;
+      vector<float> recoTauDecayModeFinding;
+      vector<float> recoTauIsoMVArawValue;
+      vector<float> recoTauIsoMVAVVLoose;
+      vector<float> recoTauIsoMVAVLoose;
+      vector<float> recoTauIsoMVALoose;
+      vector<float> recoTauIsoMVAMedium;
+      vector<float> recoTauIsoMVATight;
+      vector<float> recoTauIsoMVAVTight;
+      vector<float> recoTauIsoMVAVVTight;
+
+      // --- reconstructed jets ---
+      vector<float> recoJetPt;
+      vector<float> recoJetEta;
+      vector<float> recoJetPhi;
+      vector<float> recoJetEnergy;
+      
+      // --- reconstructed photons --- 
+      vector<float> recoPhotonPt;
+      vector<float> recoPhotonEta;
+      vector<float> recoPhotonPhi;
+      vector<float> recoPhotonEnergy;
+      vector<float> recoPhotonEnergyEcalTrkPostCorr;
+      vector<float> recoPhotonResolutionEcalTrkPostCorr;
+
+      // --- pileup and reconstructed vertices ---
+      int recoNPrimaryVertex;
+      int recoNPU;
+      int trueNInteraction;
+
+      // --- event weight for MC ---
+      float genEventWeight; 
 };
 
 //
@@ -120,28 +150,19 @@ class MuMuTauETauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResou
 // constructors and destructor
 //
 MuMuTauETauHadAnalyzer::MuMuTauETauHadAnalyzer(const edm::ParameterSet& iConfig):
-    Mu1Mu2_(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("Mu1Mu2Tag"))),
-    Ele_(consumes<edm::View<pat::Electron>>(iConfig.getParameter<edm::InputTag>("EleTag"))),
-    TauHad_(consumes<edm::View<pat::Tau>>(iConfig.getParameter<edm::InputTag>("TauHadTag"))),
-    Vertex_(consumes<edm::View<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("Vertex"))),
-    generator_(consumes<GenEventInfoProduct>(iConfig.existsAs<edm::InputTag>("Generator") ? iConfig.getParameter<edm::InputTag>("Generator") : edm::InputTag()))
+    Mu1Mu2Tag(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("Mu1Mu2Tag"))),
+    Mu3Tag(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("Mu3Tag"))),
+    EleTag(consumes<edm::View<pat::Electron>>(iConfig.getParameter<edm::InputTag>("EleTag"))),
+    TauTag(consumes<edm::View<pat::Tau>>(iConfig.getParameter<edm::InputTag>("TauTag"))),
+    JetTag(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("JetTag"))),
+    PhotonTag(consumes<edm::View<pat::Photon>>(iConfig.getParameter<edm::InputTag>("PhotonTag"))),
+    VertexTag(consumes<edm::View<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("VertexTag"))),
+    PileupTag(consumes<edm::View<PileupSummaryInfo>>(iConfig.existsAs<edm::InputTag>("PileupTag") ? iConfig.getParameter<edm::InputTag>("PileupTag") : edm::InputTag())),
+    generator(consumes<GenEventInfoProduct>(iConfig.existsAs<edm::InputTag>("Generator") ? iConfig.getParameter<edm::InputTag>("Generator") : edm::InputTag()))
 {
    //now do what ever initialization is needed
    usesResource("TFileService");
-   isMC_ = iConfig.getParameter<bool>("isMC");
-   ecalTrkEnergyPreCorr = -999.0;
-   ecalTrkEnergyErrPreCorr = -999.0;
-   ecalTrkEnergyPostCorr = -999.0;
-   ecalTrkEnergyErrPostCorr = -999.0;
-   tauDiscriminatorTags_ = iConfig.getParameter<std::vector<std::string>>("tauDiscriminatorTags");
-   tauIsolationMVArawValue = -999.0;
-   tauIsolationMVAVVLoose = -999.0;
-   tauIsolationMVAVLoose = -999.0;
-   tauIsolationMVALoose = -999.0;
-   tauIsolationMVAMedium = -999.0;
-   tauIsolationMVATight = -999.0;
-   tauIsolationMVAVTight = -999.0;
-   tauIsolationMVAVVTight = -999.0;
+   isMC = iConfig.getParameter<bool>("isMC");
 }
 
 
@@ -164,137 +185,165 @@ MuMuTauETauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
 {
    using namespace edm;
    edm::Handle<edm::View<pat::Muon>> pMu1Mu2;
-   iEvent.getByToken(Mu1Mu2_, pMu1Mu2);
+   iEvent.getByToken(Mu1Mu2Tag, pMu1Mu2);
+
+   edm::Handle<edm::View<pat::Muon>> pMu3;
+   iEvent.getByToken(Mu3Tag, pMu3);
 
    edm::Handle<edm::View<pat::Electron>> pElectron;
-   iEvent.getByToken(Ele_, pElectron);
+   iEvent.getByToken(EleTag, pElectron);
 
    edm::Handle<edm::View<pat::Tau>> pTau;
-   iEvent.getByToken(TauHad_, pTau);
+   iEvent.getByToken(TauTag, pTau);
+
+   edm::Handle<edm::View<pat::Photon>> pPhoton;
+   iEvent.getByToken(PhotonTag, pPhoton);
+
+   edm::Handle<edm::View<pat::Jet>> pJet;
+   iEvent.getByToken(JetTag, pJet);
 
    edm::Handle<edm::View<reco::Vertex>> pVertex;
-   iEvent.getByToken(Vertex_, pVertex);
+   iEvent.getByToken(VertexTag, pVertex);
 
-   if (isMC_)
+   if (isMC)
    {
-       EventWeight = 1.0;
        edm::Handle<GenEventInfoProduct> gen_ev_info;
-       iEvent.getByToken(generator_, gen_ev_info);
-       if(gen_ev_info.isValid()) EventWeight = gen_ev_info->weight();
+       iEvent.getByToken(generator, gen_ev_info);
+
+       edm::Handle<edm::View<PileupSummaryInfo>> pileup_info;
+       iEvent.getByToken(PileupTag, pileup_info);
+
+       if (gen_ev_info.isValid())
+       {
+           genEventWeight = gen_ev_info->weight();
+       }
+
+       if (pileup_info.isValid())
+       {
+           for(edm::View<PileupSummaryInfo>::const_iterator iPileup=pileup_info->begin(); iPileup!=pileup_info->end(); iPileup++)
+           {
+               if (iPileup->getBunchCrossing() == 0)
+               {
+                   trueNInteraction = iPileup->getTrueNumInteractions();
+                   recoNPU = iPileup->getPU_NumInteractions();
+               }
+           }
+       }
    }
 
-   else{
-       EventWeight = 1.0;
-   }
-
-   NPVertex = 0;
+   // --- prepare for offline primary vertices ---
+   recoNPrimaryVertex = 0; 
    if (pVertex.isValid())
    {
        for(edm::View<reco::Vertex>::const_iterator iPV=pVertex->begin(); iPV!=pVertex->end(); iPV++)
        {
-           NPVertex++;
+           recoNPrimaryVertex++;
        }
    }
 
+   // --- prepare muon vector ---
    pat::Muon Mu1 = pMu1Mu2->at(0);
    pat::Muon Mu2 = pMu1Mu2->at(1);
-   pat::Electron Ele = pElectron->at(0);
 
-   Mu1Energy = Mu1.energy();
-   Mu1Pt = Mu1.pt();
-   Mu1Eta = Mu1.eta();
-   Mu1Phi = Mu1.phi();
+   recoMuonPt.push_back(Mu1.pt());
+   recoMuonPt.push_back(Mu2.pt());
 
-   Mu2Energy = Mu2.energy();
-   Mu2Pt = Mu2.pt();
-   Mu2Eta = Mu2.eta();
-   Mu2Phi = Mu2.phi();
+   recoMuonEta.push_back(Mu1.eta());
+   recoMuonEta.push_back(Mu2.eta());
 
-   EleEnergy = Ele.energy();
-   ElePt = Ele.pt();
-   EleEta = Ele.eta();
-   ElePhi = Ele.phi();
+   recoMuonPhi.push_back(Mu1.phi());
+   recoMuonPhi.push_back(Mu2.phi());
 
+   recoMuonEnergy.push_back(Mu1.energy());
+   recoMuonEnergy.push_back(Mu2.energy());
+
+   recoMuonPDGId.push_back(Mu1.pdgId());
+   recoMuonPDGId.push_back(Mu2.pdgId());
+   
    reco::MuonPFIsolation iso = Mu1.pfIsolationR04();
-   Mu1Iso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / Mu1.pt();
+   double reliso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / Mu1.pt();
+   recoMuonIsolation.push_back(reliso);
 
    iso = Mu2.pfIsolationR04();
-   Mu2Iso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / Mu2.pt();
+   reliso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / Mu2.pt();
+   recoMuonIsolation.push_back(reliso);
 
-   // ---- electron energy scale correction & resolution smear ----
-   // refer to: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaMiniAODV2#Energy_Scale_and_Smearing
-   ecalTrkEnergyPreCorr = Ele.userFloat("ecalTrkEnergyPreCorr");
-   ecalTrkEnergyErrPreCorr = Ele.userFloat("ecalTrkEnergyErrPreCorr");
-   ecalTrkEnergyPostCorr = Ele.userFloat("ecalTrkEnergyPostCorr");
-   ecalTrkEnergyErrPostCorr = Ele.userFloat("ecalTrkEnergyErrPostCorr");
-
-   // select the tau with the smallest dR from electron
-   double smallestDR = 99.0;
-   pat::Tau tauHad;
-   for(edm::View<pat::Tau>::const_iterator iTau=pTau->begin(); iTau!=pTau->end(); ++iTau)
+   for(edm::View<pat::Muon>::const_iterator iMuon=pMu3->begin(); iMuon!=pMu3->end(); iMuon++)
    {
-       if(deltaR(Ele, *iTau) < smallestDR)
-       {
-           smallestDR = deltaR(Ele, *iTau);
-           tauHad = *iTau;
-       }
-   }
-
-   tauHadEnergy = tauHad.energy();
-   tauHadPt = tauHad.pt();
-   tauHadEta = tauHad.eta();
-   tauHadPhi = tauHad.phi();
-
-   for (unsigned int i=0; i<tauDiscriminatorTags_.size(); i++)
-   {
-       if(tauDiscriminatorTags_[i].find("raw")!=std::string::npos)
-       {
-           tauIsolationMVArawValue = tauHad.tauID(tauDiscriminatorTags_[i]); 
-       }
-
-       else if(tauDiscriminatorTags_[i].find("VVLoose")!=std::string::npos)
-       {
-           tauIsolationMVAVVLoose = tauHad.tauID(tauDiscriminatorTags_[i]); 
-       }
-
-       else if(tauDiscriminatorTags_[i].find("VLoose")!=std::string::npos && tauDiscriminatorTags_[i].find("VVLoose")==std::string::npos)
-       {
-           tauIsolationMVAVLoose = tauHad.tauID(tauDiscriminatorTags_[i]); 
-       }
-
-       else if(tauDiscriminatorTags_[i].find("Loose")!=std::string::npos && tauDiscriminatorTags_[i].find("VLoose")==std::string::npos && tauDiscriminatorTags_[i].find("VVLoose")==std::string::npos)
-       {
-           tauIsolationMVALoose = tauHad.tauID(tauDiscriminatorTags_[i]); 
-       }
-
-       else if(tauDiscriminatorTags_[i].find("Medium")!=std::string::npos)
-       {
-           tauIsolationMVAMedium = tauHad.tauID(tauDiscriminatorTags_[i]); 
-       }
-
-       else if(tauDiscriminatorTags_[i].find("Tight")!=std::string::npos && tauDiscriminatorTags_[i].find("VTight")==std::string::npos && tauDiscriminatorTags_[i].find("VVTight")==std::string::npos)
-       {
-           tauIsolationMVATight = tauHad.tauID(tauDiscriminatorTags_[i]); 
-       }
-
-       else if(tauDiscriminatorTags_[i].find("VTight")!=std::string::npos && tauDiscriminatorTags_[i].find("VVTight")==std::string::npos)
-       {
-           tauIsolationMVAVTight = tauHad.tauID(tauDiscriminatorTags_[i]); 
-       }
-
-       else if(tauDiscriminatorTags_[i].find("VVTight")!=std::string::npos)
-       {
-           tauIsolationMVAVVTight = tauHad.tauID(tauDiscriminatorTags_[i]); 
-       }
-
-       else{
-           std::cout << "Unknown category of tau discriminator: " << tauDiscriminatorTags_[i] << std::endl;
-           std::cout << "Please make sure you are using the right name." << std::endl;
+       if ((deltaR(*iMuon, Mu1) < 0.0001) && (fabs(iMuon->pt()-Mu1.pt()) < 0.0001)) // exclude mu1 from the collection
            continue;
+
+       else if ((deltaR(*iMuon, Mu2) < 0.0001) && (fabs(iMuon->pt()-Mu2.pt()) < 0.0001)) // exclude mu2 from the collection
+           continue;
+
+       recoMuonPt.push_back(iMuon->pt());
+       recoMuonEta.push_back(iMuon->eta());
+       recoMuonPhi.push_back(iMuon->phi());
+       recoMuonEnergy.push_back(iMuon->energy());
+       recoMuonPDGId.push_back(iMuon->pdgId());
+       iso = iMuon->pfIsolationR04();
+       reliso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / iMuon->pt();
+       recoMuonIsolation.push_back(reliso);
+   }
+
+   // --- prepare tau vector ---
+   for(edm::View<pat::Tau>::const_iterator iTau=pTau->begin(); iTau!=pTau->end(); iTau++)
+   {
+       recoTauPt.push_back(iTau->pt());
+       recoTauEta.push_back(iTau->eta());
+       recoTauPhi.push_back(iTau->phi());
+       recoTauEnergy.push_back(iTau->energy());
+       recoTauPDGId.push_back(iTau->pdgId());
+       recoTauDecayModeFinding.push_back(iTau->tauID("decayModeFinding"));
+       recoTauIsoMVArawValue.push_back(iTau->tauID("byIsolationMVArun2017v2DBoldDMwLTraw2017"));
+       recoTauIsoMVAVVLoose.push_back(iTau->tauID("byVVLooseIsolationMVArun2017v2DBoldDMwLT2017"));
+       recoTauIsoMVAVLoose.push_back(iTau->tauID("byVLooseIsolationMVArun2017v2DBoldDMwLT2017"));
+       recoTauIsoMVALoose.push_back(iTau->tauID("byLooseIsolationMVArun2017v2DBoldDMwLT2017"));
+       recoTauIsoMVAMedium.push_back(iTau->tauID("byMediumIsolationMVArun2017v2DBoldDMwLT2017"));
+       recoTauIsoMVATight.push_back(iTau->tauID("byTightIsolationMVArun2017v2DBoldDMwLT2017"));
+       recoTauIsoMVAVTight.push_back(iTau->tauID("byVTightIsolationMVArun2017v2DBoldDMwLT2017"));
+       recoTauIsoMVAVVTight.push_back(iTau->tauID("byVVTightIsolationMVArun2017v2DBoldDMwLT2017"));
+   }
+
+   // --- prepare electron vector ---
+   for(edm::View<pat::Electron>::const_iterator iElectron=pElectron->begin(); iElectron!=pElectron->end(); iElectron++)
+   {
+       recoElectronPt.push_back(iElectron->pt());
+       recoElectronEta.push_back(iElectron->eta());
+       recoElectronPhi.push_back(iElectron->phi());
+       recoElectronEnergy.push_back(iElectron->energy());
+       recoElectronPDGId.push_back(iElectron->pdgId());
+       recoElectronEcalTrkEnergyPostCorr.push_back(iElectron->userFloat("ecalTrkEnergyPostCorr"));
+       recoElectronEcalTrkEnergyErrPostCorr.push_back(iElectron->userFloat("ecalTrkEnergyErrPostCorr"));
+   }
+
+   // --- prepare jet vector ---
+   if(pJet->size()>0)
+   {
+       for(edm::View<pat::Jet>::const_iterator iJet=pJet->begin(); iJet!=pJet->end(); iJet++)
+       {
+           recoJetPt.push_back(iJet->pt());
+           recoJetEta.push_back(iJet->eta());
+           recoJetPhi.push_back(iJet->phi());
+           recoJetEnergy.push_back(iJet->energy());
        }
    }
 
-   MuMuTauETauHadTree->Fill();
+   // --- prepare photon vector ---
+   if(pPhoton->size()>0)
+   {
+       for(edm::View<pat::Photon>::const_iterator iPhoton=pPhoton->begin(); iPhoton!=pPhoton->end(); iPhoton++)
+       {
+           recoPhotonPt.push_back(iPhoton->pt());
+           recoPhotonEta.push_back(iPhoton->eta());
+           recoPhotonPhi.push_back(iPhoton->phi());
+           recoPhotonEnergy.push_back(iPhoton->energy());
+           recoPhotonEnergyEcalTrkPostCorr.push_back(iPhoton->userFloat("ecalEnergyPostCorr"));
+           recoPhotonResolutionEcalTrkPostCorr.push_back(iPhoton->userFloat("ecalEnergyErrPostCorr"));
+       }
+   }
+
+   objectTree->Fill();
 }
 
 
@@ -302,47 +351,60 @@ MuMuTauETauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
 void 
 MuMuTauETauHadAnalyzer::beginJob()
 {
-    // -- initialize the skimmed flat tree --
+    // -- initialize the skimmed object vector tree --
     edm::Service<TFileService> fileService;
-    MuMuTauETauHadTree = fileService->make<TTree>("MuMuTauETauHadTree","MuMuTauETauHadTree");
+    objectTree = fileService->make<TTree>("objectTree","objectTree");
+
+    objectTree->Branch("recoMuonPt", &recoMuonPt);
+    objectTree->Branch("recoMuonEta", &recoMuonEta);
+    objectTree->Branch("recoMuonPhi", &recoMuonPhi);
+    objectTree->Branch("recoMuonEnergy", &recoMuonEnergy);
+    objectTree->Branch("recoMuonPDGId", &recoMuonPDGId);
+    objectTree->Branch("recoMuonIsolation", &recoMuonIsolation);
+
+    objectTree->Branch("recoTauPt", &recoTauPt);
+    objectTree->Branch("recoTauEta", &recoTauEta);
+    objectTree->Branch("recoTauPhi", &recoTauPhi);
+    objectTree->Branch("recoTauEnergy", &recoTauEnergy);
+    objectTree->Branch("recoTauPDGId", &recoTauPDGId);
+    objectTree->Branch("recoTauDecayModeFinding", &recoTauDecayModeFinding);
+    objectTree->Branch("recoTauIsoMVArawValue", &recoTauIsoMVArawValue);
+    objectTree->Branch("recoTauIsoMVAVVLoose", &recoTauIsoMVAVVLoose);
+    objectTree->Branch("recoTauIsoMVAVLoose", &recoTauIsoMVAVLoose);
+    objectTree->Branch("recoTauIsoMVALoose", &recoTauIsoMVALoose);
+    objectTree->Branch("recoTauIsoMVAMedium", &recoTauIsoMVAMedium);
+    objectTree->Branch("recoTauIsoMVATight", &recoTauIsoMVATight);
+    objectTree->Branch("recoTauIsoMVAVTight", &recoTauIsoMVAVTight);
+    objectTree->Branch("recoTauIsoMVAVVTight", &recoTauIsoMVAVVTight);
     
-    MuMuTauETauHadTree->Branch("Mu1Energy", &Mu1Energy, "Mu1Energy/D");
-    MuMuTauETauHadTree->Branch("Mu2Energy", &Mu2Energy, "Mu2Energy/D");
-    MuMuTauETauHadTree->Branch("EleEnergy", &EleEnergy, "EleEnergy/D");
-    MuMuTauETauHadTree->Branch("Mu1Pt", &Mu1Pt, "Mu1Pt/D");
-    MuMuTauETauHadTree->Branch("Mu2Pt", &Mu2Pt, "Mu2Pt/D");
-    MuMuTauETauHadTree->Branch("ElePt", &ElePt, "ElePt/D");
-    MuMuTauETauHadTree->Branch("Mu1Eta", &Mu1Eta, "Mu1Eta/D");
-    MuMuTauETauHadTree->Branch("Mu2Eta", &Mu2Eta, "Mu2Eta/D");
-    MuMuTauETauHadTree->Branch("EleEta", &EleEta, "EleEta/D");
-    MuMuTauETauHadTree->Branch("Mu1Phi", &Mu1Phi, "Mu1Phi/D");
-    MuMuTauETauHadTree->Branch("Mu2Phi", &Mu2Phi, "Mu2Phi/D");
-    MuMuTauETauHadTree->Branch("ElePhi", &ElePhi, "ElePhi/D");
+    objectTree->Branch("recoElectronPt", &recoElectronPt);
+    objectTree->Branch("recoElectronEta", &recoElectronEta);
+    objectTree->Branch("recoElectronPhi", &recoElectronPhi);
+    objectTree->Branch("recoElectronEnergy", &recoElectronEnergy);
+    objectTree->Branch("recoElectronPDGId", &recoElectronPDGId);
+    objectTree->Branch("recoElectronEcalTrkEnergyPostCorr", &recoElectronEcalTrkEnergyPostCorr);
+    objectTree->Branch("recoElectronEcalTrkEnergyErrPostCorr", &recoElectronEcalTrkEnergyErrPostCorr);
+
+    objectTree->Branch("recoJetPt", &recoJetPt);
+    objectTree->Branch("recoJetEta", &recoJetEta);
+    objectTree->Branch("recoJetPhi", &recoJetPhi);
+    objectTree->Branch("recoJetEnergy", &recoJetEnergy);
     
-    MuMuTauETauHadTree->Branch("Mu1Iso", &Mu1Iso, "Mu1Iso/D");
-    MuMuTauETauHadTree->Branch("Mu2Iso", &Mu2Iso, "Mu2Iso/D");
+    objectTree->Branch("recoPhotonPt", &recoPhotonPt);
+    objectTree->Branch("recoPhotonEta", &recoPhotonEta);
+    objectTree->Branch("recoPhotonPhi", &recoPhotonPhi);
+    objectTree->Branch("recoPhotonEnergy", &recoPhotonEnergy);
+    objectTree->Branch("recoPhotonEnergyEcalTrkPostCorr", &recoPhotonEnergyEcalTrkPostCorr);
+    objectTree->Branch("recoPhotonResolutionEcalTrkPostCorr", &recoPhotonResolutionEcalTrkPostCorr);
 
-    MuMuTauETauHadTree->Branch("ecalTrkEnergyPreCorr", &ecalTrkEnergyPreCorr, "ecalTrkEnergyPreCorr/F");
-    MuMuTauETauHadTree->Branch("ecalTrkEnergyErrPreCorr", &ecalTrkEnergyErrPreCorr, "ecalTrkEnergyErrPreCorr/F");
-    MuMuTauETauHadTree->Branch("ecalTrkEnergyPostCorr", &ecalTrkEnergyPostCorr, "ecalTrkEnergyPostCorr/F");
-    MuMuTauETauHadTree->Branch("ecalTrkEnergyErrPostCorr", &ecalTrkEnergyErrPostCorr, "ecalTrkEnergyErrPostCorr/F");
+    objectTree->Branch("recoNPrimaryVertex", &recoNPrimaryVertex, "recoNPrimaryVertex/I");
 
-    MuMuTauETauHadTree->Branch("tauHadEnergy", &tauHadEnergy, "tauHadEnergy/D");
-    MuMuTauETauHadTree->Branch("tauHadPt", &tauHadPt, "tauHadPt/D");
-    MuMuTauETauHadTree->Branch("tauHadEta", &tauHadEta, "tauHadEta/D");
-    MuMuTauETauHadTree->Branch("tauHadPhi", &tauHadPhi, "tauHadPhi/D");
-
-    MuMuTauETauHadTree->Branch("tauIsolationMVArawValue", &tauIsolationMVArawValue, "tauIsolationMVArawValue/F");
-    MuMuTauETauHadTree->Branch("tauIsolationMVAVVLoose", &tauIsolationMVAVVLoose, "tauIsolationMVAVVLoose/F");
-    MuMuTauETauHadTree->Branch("tauIsolationMVAVLoose", &tauIsolationMVAVLoose, "tauIsolationMVAVLoose/F");
-    MuMuTauETauHadTree->Branch("tauIsolationMVALoose", &tauIsolationMVALoose, "tauIsolationMVALoose/F");
-    MuMuTauETauHadTree->Branch("tauIsolationMVAMedium", &tauIsolationMVAMedium, "tauIsolationMVAMedium/F");
-    MuMuTauETauHadTree->Branch("tauIsolationMVATight", &tauIsolationMVATight, "tauIsolationMVATight/F");
-    MuMuTauETauHadTree->Branch("tauIsolationMVAVTight", &tauIsolationMVAVTight, "tauIsolationMVAVTight/F");
-    MuMuTauETauHadTree->Branch("tauIsolationMVAVVTight", &tauIsolationMVAVVTight, "tauIsolationMVAVVTight/F");
-
-    MuMuTauETauHadTree->Branch("EventWeight", &EventWeight, "EventWeight/F");
-    MuMuTauETauHadTree->Branch("NPVertex", &NPVertex, "NPVertex/F");
+    if (isMC)
+    {
+        objectTree->Branch("recoNPU", &recoNPU, "recoNPU/I");
+        objectTree->Branch("trueNInteraction", &trueNInteraction, "trueNInteraction/I");
+        objectTree->Branch("genEventWeight", &genEventWeight, "genEventWeight/F");
+    }
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

@@ -101,5 +101,7 @@ MuMuTauETauHadAnalyzer = cms.EDAnalyzer('MuMuTauETauHadAnalyzer',
         JetTag = cms.InputTag("JetSelector"),
         PhotonTag = cms.InputTag("PhotonSelector"),
         VertexTag = cms.InputTag("offlineSlimmedPrimaryVertices"),
-        isMC = cms.bool(False),
+        isMC = cms.bool(True),
+        PileupTag = cms.InputTag("slimmedAddPileupInfo"),
+        Generator = cms.InputTag("generator"),
 )
