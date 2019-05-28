@@ -80,22 +80,11 @@ JetSelector = cms.EDFilter("JetSelector",
         ptCut = cms.double(3.0),
 )
 
-PhotonSelector = cms.EDFilter("PhotonSelector",
-        photonTag = cms.InputTag("slimmedPhotons"),
-        relIdName = cms.string('cutBasedPhotonID-Fall17-94X-V1-loose'),
-        #reference 1: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaMiniAODV2#ID_information
-        #reference 2: https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedPhotonIdentificationRun2
-        passRelId = cms.bool(True),
-        etaCut = cms.double(2.5),
-        ptCut = cms.double(3),
-)
-
 MuMuTauMuTauHadAnalyzer = cms.EDAnalyzer('MuMuTauMuTauHadAnalyzer',
         Mu1Mu2Tag = cms.InputTag("DiMuonMassSelector"),
         Mu3Tag = cms.InputTag("ThirdMuonSelector"),
         TauTag = cms.InputTag("TauHadSelector"),
         JetTag = cms.InputTag("JetSelector"),
-        PhotonTag = cms.InputTag("PhotonSelector"),
         VertexTag = cms.InputTag("offlineSlimmedPrimaryVertices"),
         isMC = cms.bool(True),
         PileupTag = cms.InputTag("slimmedAddPileupInfo"),

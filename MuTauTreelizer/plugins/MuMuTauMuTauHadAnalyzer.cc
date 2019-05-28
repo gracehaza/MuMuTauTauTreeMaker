@@ -33,7 +33,6 @@
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
-#include "DataFormats/PatCandidates/interface/Photon.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/PatCandidates/interface/Vertexing.h"
@@ -71,7 +70,6 @@ class MuMuTauMuTauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedReso
       edm::EDGetTokenT<edm::View<pat::Muon>> Mu3Tag;
       edm::EDGetTokenT<edm::View<pat::Tau>> TauTag;
       edm::EDGetTokenT<edm::View<pat::Jet>> JetTag;
-      edm::EDGetTokenT<edm::View<pat::Photon>> PhotonTag;
       edm::EDGetTokenT<edm::View<reco::Vertex>> VertexTag;
       bool isMC;
       edm::EDGetTokenT<edm::View<PileupSummaryInfo>> PileupTag;
@@ -110,14 +108,6 @@ class MuMuTauMuTauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedReso
       vector<float> recoJetPhi;
       vector<float> recoJetEnergy;
       
-      // --- reconstructed photons --- 
-      vector<float> recoPhotonPt;
-      vector<float> recoPhotonEta;
-      vector<float> recoPhotonPhi;
-      vector<float> recoPhotonEnergy;
-      vector<float> recoPhotonEnergyEcalTrkPostCorr;
-      vector<float> recoPhotonResolutionEcalTrkPostCorr;
-
       // --- pileup and reconstructed vertices ---
       int recoNPrimaryVertex;
       int recoNPU;
@@ -143,7 +133,6 @@ MuMuTauMuTauHadAnalyzer::MuMuTauMuTauHadAnalyzer(const edm::ParameterSet& iConfi
     Mu3Tag(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("Mu3Tag"))),
     TauTag(consumes<edm::View<pat::Tau>>(iConfig.getParameter<edm::InputTag>("TauTag"))),
     JetTag(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("JetTag"))),
-    PhotonTag(consumes<edm::View<pat::Photon>>(iConfig.getParameter<edm::InputTag>("PhotonTag"))),
     VertexTag(consumes<edm::View<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("VertexTag"))),
     PileupTag(consumes<edm::View<PileupSummaryInfo>>(iConfig.existsAs<edm::InputTag>("PileupTag") ? iConfig.getParameter<edm::InputTag>("PileupTag") : edm::InputTag())),
     generator(consumes<GenEventInfoProduct>(iConfig.existsAs<edm::InputTag>("Generator") ? iConfig.getParameter<edm::InputTag>("Generator") : edm::InputTag()))
@@ -180,9 +169,6 @@ MuMuTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
 
    edm::Handle<edm::View<pat::Tau>> pTau;
    iEvent.getByToken(TauTag, pTau);
-
-   edm::Handle<edm::View<pat::Photon>> pPhoton;
-   iEvent.getByToken(PhotonTag, pPhoton);
 
    edm::Handle<edm::View<pat::Jet>> pJet;
    iEvent.getByToken(JetTag, pJet);
@@ -296,20 +282,6 @@ MuMuTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
        }
    }
 
-   // --- prepare photon vector ---
-   if(pPhoton->size()>0)
-   {
-       for(edm::View<pat::Photon>::const_iterator iPhoton=pPhoton->begin(); iPhoton!=pPhoton->end(); iPhoton++)
-       {
-           recoPhotonPt.push_back(iPhoton->pt());
-           recoPhotonEta.push_back(iPhoton->eta());
-           recoPhotonPhi.push_back(iPhoton->phi());
-           recoPhotonEnergy.push_back(iPhoton->energy());
-           recoPhotonEnergyEcalTrkPostCorr.push_back(iPhoton->userFloat("ecalEnergyPostCorr"));
-           recoPhotonResolutionEcalTrkPostCorr.push_back(iPhoton->userFloat("ecalEnergyErrPostCorr"));
-       }
-   }
-
    objectTree->Fill();
 }
 
@@ -349,13 +321,6 @@ MuMuTauMuTauHadAnalyzer::beginJob()
     objectTree->Branch("recoJetPhi", &recoJetPhi);
     objectTree->Branch("recoJetEnergy", &recoJetEnergy);
     
-    objectTree->Branch("recoPhotonPt", &recoPhotonPt);
-    objectTree->Branch("recoPhotonEta", &recoPhotonEta);
-    objectTree->Branch("recoPhotonPhi", &recoPhotonPhi);
-    objectTree->Branch("recoPhotonEnergy", &recoPhotonEnergy);
-    objectTree->Branch("recoPhotonEnergyEcalTrkPostCorr", &recoPhotonEnergyEcalTrkPostCorr);
-    objectTree->Branch("recoPhotonResolutionEcalTrkPostCorr", &recoPhotonResolutionEcalTrkPostCorr);
-
     objectTree->Branch("recoNPrimaryVertex", &recoNPrimaryVertex, "recoNPrimaryVertex/I");
 
     if (isMC)

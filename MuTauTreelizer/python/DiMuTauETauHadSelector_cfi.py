@@ -60,7 +60,7 @@ DiMuonMassSelector = cms.EDFilter("DiMuonMassSelector",
 ElectronSelector = cms.EDFilter("ElectronSelector",
         electronTag = cms.InputTag('slimmedElectrons'),
         # --- customize your own electron ID ---
-        relIdName = cms.string("cutBasedElectronID-Fall17-94X-V1-loose"),
+        relIdName = cms.string("cutBasedElectronID-Fall17-94X-V2-loose"),
         # Refer to: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaMiniAODV2#ID_information
         passRelId = cms.bool(True),
         etaCut = cms.double(2.5),
@@ -85,7 +85,7 @@ JetSelector = cms.EDFilter("JetSelector",
 
 PhotonSelector = cms.EDFilter("PhotonSelector",
         photonTag = cms.InputTag("slimmedPhotons"),
-        relIdName = cms.string('cutBasedPhotonID-Fall17-94X-V1-loose'),
+        relIdName = cms.string('cutBasedPhotonID-Fall17-94X-V2-loose'),
         #reference 1: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaMiniAODV2#ID_information
         #reference 2: https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedPhotonIdentificationRun2
         passRelId = cms.bool(True),
