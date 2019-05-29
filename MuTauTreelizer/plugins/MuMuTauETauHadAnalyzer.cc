@@ -34,6 +34,7 @@
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/Photon.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
@@ -73,6 +74,7 @@ class MuMuTauETauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResou
       edm::EDGetTokenT<edm::View<pat::Electron>> EleTag;
       edm::EDGetTokenT<edm::View<pat::Tau>> TauTag;
       edm::EDGetTokenT<edm::View<pat::Jet>> JetTag;
+      edm::EDGetTokenT<edm::View<pat::MET>> MetTag;
       edm::EDGetTokenT<edm::View<pat::Photon>> PhotonTag;
       edm::EDGetTokenT<edm::View<reco::Vertex>> VertexTag;
       bool isMC;
@@ -121,6 +123,10 @@ class MuMuTauETauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResou
       vector<float> recoJetPhi;
       vector<float> recoJetEnergy;
       
+      // --- reconstructed MET ---
+      vector<float> recoMET;
+      vector<float> recoMETPhi;
+
       // --- reconstructed photons --- 
       vector<float> recoPhotonPt;
       vector<float> recoPhotonEta;
@@ -155,6 +161,7 @@ MuMuTauETauHadAnalyzer::MuMuTauETauHadAnalyzer(const edm::ParameterSet& iConfig)
     EleTag(consumes<edm::View<pat::Electron>>(iConfig.getParameter<edm::InputTag>("EleTag"))),
     TauTag(consumes<edm::View<pat::Tau>>(iConfig.getParameter<edm::InputTag>("TauTag"))),
     JetTag(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("JetTag"))),
+    MetTag(consumes<edm::View<pat::MET>>(iConfig.getParameter<edm::InputTag>("MetTag"))),
     PhotonTag(consumes<edm::View<pat::Photon>>(iConfig.getParameter<edm::InputTag>("PhotonTag"))),
     VertexTag(consumes<edm::View<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("VertexTag"))),
     PileupTag(consumes<edm::View<PileupSummaryInfo>>(iConfig.existsAs<edm::InputTag>("PileupTag") ? iConfig.getParameter<edm::InputTag>("PileupTag") : edm::InputTag())),
@@ -201,6 +208,9 @@ MuMuTauETauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
 
    edm::Handle<edm::View<pat::Jet>> pJet;
    iEvent.getByToken(JetTag, pJet);
+
+   edm::Handle<edm::View<pat::MET>> pMet;
+   iEvent.getByToken(MetTag, pMet);
 
    edm::Handle<edm::View<reco::Vertex>> pVertex;
    iEvent.getByToken(VertexTag, pVertex);
@@ -343,6 +353,17 @@ MuMuTauETauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
        }
    }
 
+   // --- prepare MET vector ---
+   if(pMet->size()>0)
+   {
+       for(edm::View<pat::MET>::const_iterator iMet=pMet->begin(); iMet!=pMet->end(); iMet++)
+       {
+           recoMET.push_back(iMet->pt());
+           recoMETPhi.push_back(iMet->phi());
+       }
+   }
+
+   // --- fill the object tree ---
    objectTree->Fill();
 }
 
@@ -396,6 +417,9 @@ MuMuTauETauHadAnalyzer::beginJob()
     objectTree->Branch("recoPhotonEnergy", &recoPhotonEnergy);
     objectTree->Branch("recoPhotonEnergyEcalTrkPostCorr", &recoPhotonEnergyEcalTrkPostCorr);
     objectTree->Branch("recoPhotonResolutionEcalTrkPostCorr", &recoPhotonResolutionEcalTrkPostCorr);
+
+    objectTree->Branch("recoMET", &recoMET);
+    objectTree->Branch("recoMETPhi", &recoMETPhi);
 
     objectTree->Branch("recoNPrimaryVertex", &recoNPrimaryVertex, "recoNPrimaryVertex/I");
 
