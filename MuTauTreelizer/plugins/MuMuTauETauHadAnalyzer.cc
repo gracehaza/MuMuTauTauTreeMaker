@@ -35,10 +35,10 @@
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
-#include "DataFormats/PatCandidates/interface/Photon.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/PatCandidates/interface/Vertexing.h"
+#include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
 #include "TTree.h"
 #include <math.h>
 #include <string>
@@ -75,8 +75,9 @@ class MuMuTauETauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResou
       edm::EDGetTokenT<edm::View<pat::Tau>> TauTag;
       edm::EDGetTokenT<edm::View<pat::Jet>> JetTag;
       edm::EDGetTokenT<edm::View<pat::MET>> MetTag;
-      edm::EDGetTokenT<edm::View<pat::Photon>> PhotonTag;
       edm::EDGetTokenT<edm::View<reco::Vertex>> VertexTag;
+      edm::EDGetTokenT<double> rhoTag;
+      EffectiveAreas effectiveAreas;
       bool isMC;
       edm::EDGetTokenT<edm::View<PileupSummaryInfo>> PileupTag;
       edm::EDGetTokenT<GenEventInfoProduct> generator;
@@ -98,6 +99,7 @@ class MuMuTauETauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResou
       vector<float> recoElectronPhi;
       vector<float> recoElectronEnergy;
       vector<int> recoElectronPDGId;
+      vector<float> recoElectronIsolation;
       vector<float> recoElectronEcalTrkEnergyPostCorr;
       vector<float> recoElectronEcalTrkEnergyErrPostCorr;
 
@@ -127,14 +129,6 @@ class MuMuTauETauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResou
       vector<float> recoMET;
       vector<float> recoMETPhi;
 
-      // --- reconstructed photons --- 
-      vector<float> recoPhotonPt;
-      vector<float> recoPhotonEta;
-      vector<float> recoPhotonPhi;
-      vector<float> recoPhotonEnergy;
-      vector<float> recoPhotonEnergyEcalTrkPostCorr;
-      vector<float> recoPhotonResolutionEcalTrkPostCorr;
-
       // --- pileup and reconstructed vertices ---
       int recoNPrimaryVertex;
       int recoNPU;
@@ -162,8 +156,9 @@ MuMuTauETauHadAnalyzer::MuMuTauETauHadAnalyzer(const edm::ParameterSet& iConfig)
     TauTag(consumes<edm::View<pat::Tau>>(iConfig.getParameter<edm::InputTag>("TauTag"))),
     JetTag(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("JetTag"))),
     MetTag(consumes<edm::View<pat::MET>>(iConfig.getParameter<edm::InputTag>("MetTag"))),
-    PhotonTag(consumes<edm::View<pat::Photon>>(iConfig.getParameter<edm::InputTag>("PhotonTag"))),
     VertexTag(consumes<edm::View<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("VertexTag"))),
+    rhoTag(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoTag"))),
+    effectiveAreas((iConfig.getParameter<edm::FileInPath>("effAreasConfigFile")).fullPath()),
     PileupTag(consumes<edm::View<PileupSummaryInfo>>(iConfig.existsAs<edm::InputTag>("PileupTag") ? iConfig.getParameter<edm::InputTag>("PileupTag") : edm::InputTag())),
     generator(consumes<GenEventInfoProduct>(iConfig.existsAs<edm::InputTag>("Generator") ? iConfig.getParameter<edm::InputTag>("Generator") : edm::InputTag()))
 {
@@ -203,9 +198,6 @@ MuMuTauETauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
    edm::Handle<edm::View<pat::Tau>> pTau;
    iEvent.getByToken(TauTag, pTau);
 
-   edm::Handle<edm::View<pat::Photon>> pPhoton;
-   iEvent.getByToken(PhotonTag, pPhoton);
-
    edm::Handle<edm::View<pat::Jet>> pJet;
    iEvent.getByToken(JetTag, pJet);
 
@@ -214,6 +206,9 @@ MuMuTauETauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
 
    edm::Handle<edm::View<reco::Vertex>> pVertex;
    iEvent.getByToken(VertexTag, pVertex);
+
+   edm::Handle<double> pRho;
+   iEvent.getByToken(rhoTag, pRho);
 
    if (isMC)
    {
@@ -318,11 +313,22 @@ MuMuTauETauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
    // --- prepare electron vector ---
    for(edm::View<pat::Electron>::const_iterator iElectron=pElectron->begin(); iElectron!=pElectron->end(); iElectron++)
    {
+       // --- variables for relIsoWithEffectiveArea ---
+       float chad = iElectron->pfIsolationVariables().sumChargedHadronPt;
+       float nhad = iElectron->pfIsolationVariables().sumNeutralHadronEt;
+       float pho = iElectron->pfIsolationVariables().sumPhotonEt;
+       float elePt = iElectron->pt();
+       float eleEta = iElectron->superCluster()->eta();
+       float rho = pRho.isValid() ? (*pRho) : 0;
+       float eArea = effectiveAreas.getEffectiveArea(fabs(eleEta));
+       float relIsoWithEffectiveArea = (chad + std::max(0.0f, nhad + pho - rho*eArea)) / elePt;
+
        recoElectronPt.push_back(iElectron->pt());
-       recoElectronEta.push_back(iElectron->eta());
-       recoElectronPhi.push_back(iElectron->phi());
-       recoElectronEnergy.push_back(iElectron->energy());
+       recoElectronEta.push_back(iElectron->superCluster()->eta());
+       recoElectronPhi.push_back(iElectron->superCluster()->phi());
+       recoElectronEnergy.push_back(iElectron->superCluster()->energy());
        recoElectronPDGId.push_back(iElectron->pdgId());
+       recoElectronIsolation.push_back(relIsoWithEffectiveArea);
        recoElectronEcalTrkEnergyPostCorr.push_back(iElectron->userFloat("ecalTrkEnergyPostCorr"));
        recoElectronEcalTrkEnergyErrPostCorr.push_back(iElectron->userFloat("ecalTrkEnergyErrPostCorr"));
    }
@@ -336,20 +342,6 @@ MuMuTauETauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
            recoJetEta.push_back(iJet->eta());
            recoJetPhi.push_back(iJet->phi());
            recoJetEnergy.push_back(iJet->energy());
-       }
-   }
-
-   // --- prepare photon vector ---
-   if(pPhoton->size()>0)
-   {
-       for(edm::View<pat::Photon>::const_iterator iPhoton=pPhoton->begin(); iPhoton!=pPhoton->end(); iPhoton++)
-       {
-           recoPhotonPt.push_back(iPhoton->pt());
-           recoPhotonEta.push_back(iPhoton->eta());
-           recoPhotonPhi.push_back(iPhoton->phi());
-           recoPhotonEnergy.push_back(iPhoton->energy());
-           recoPhotonEnergyEcalTrkPostCorr.push_back(iPhoton->userFloat("ecalEnergyPostCorr"));
-           recoPhotonResolutionEcalTrkPostCorr.push_back(iPhoton->userFloat("ecalEnergyErrPostCorr"));
        }
    }
 
@@ -403,6 +395,7 @@ MuMuTauETauHadAnalyzer::beginJob()
     objectTree->Branch("recoElectronPhi", &recoElectronPhi);
     objectTree->Branch("recoElectronEnergy", &recoElectronEnergy);
     objectTree->Branch("recoElectronPDGId", &recoElectronPDGId);
+    objectTree->Branch("recoElectronIsolation", &recoElectronIsolation);
     objectTree->Branch("recoElectronEcalTrkEnergyPostCorr", &recoElectronEcalTrkEnergyPostCorr);
     objectTree->Branch("recoElectronEcalTrkEnergyErrPostCorr", &recoElectronEcalTrkEnergyErrPostCorr);
 
@@ -411,13 +404,6 @@ MuMuTauETauHadAnalyzer::beginJob()
     objectTree->Branch("recoJetPhi", &recoJetPhi);
     objectTree->Branch("recoJetEnergy", &recoJetEnergy);
     
-    objectTree->Branch("recoPhotonPt", &recoPhotonPt);
-    objectTree->Branch("recoPhotonEta", &recoPhotonEta);
-    objectTree->Branch("recoPhotonPhi", &recoPhotonPhi);
-    objectTree->Branch("recoPhotonEnergy", &recoPhotonEnergy);
-    objectTree->Branch("recoPhotonEnergyEcalTrkPostCorr", &recoPhotonEnergyEcalTrkPostCorr);
-    objectTree->Branch("recoPhotonResolutionEcalTrkPostCorr", &recoPhotonResolutionEcalTrkPostCorr);
-
     objectTree->Branch("recoMET", &recoMET);
     objectTree->Branch("recoMETPhi", &recoMETPhi);
 

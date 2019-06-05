@@ -59,10 +59,12 @@ DiMuonMassSelector = cms.EDFilter("DiMuonMassSelector",
 
 ElectronSelector = cms.EDFilter("ElectronSelector",
         electronTag = cms.InputTag('slimmedElectrons'),
-        # --- customize your own electron ID ---
-        relIdName = cms.string("cutBasedElectronID-Fall17-94X-V2-loose"),
-        # Refer to: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaMiniAODV2#ID_information
-        passRelId = cms.bool(True),
+        # --- need the two parameters below for electron isolation computation ---
+        rhoTag = cms.InputTag("fixedGridRhoAll"),
+        effAreasConfigFile = cms.FileInPath("MuMuTauTauTreeMaker/MuTauTreelizer/data/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt"),
+        # ========================================================================
+        relIdName = cms.string("Loose"), # customize electron ID options: Veto, Loose, Medium, Tight
+        passRelIso = cms.bool(False),
         etaCut = cms.double(2.5),
         ptCut = cms.double(3),
 )
@@ -80,17 +82,7 @@ JetSelector = cms.EDFilter("JetSelector",
         jetTag = cms.InputTag('slimmedJets'),
         jetIdName = cms.string("Tight"), # reference: https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2017
         etaCut = cms.double(2.4),
-        ptCut = cms.double(3.0),
-)
-
-PhotonSelector = cms.EDFilter("PhotonSelector",
-        photonTag = cms.InputTag("slimmedPhotons"),
-        relIdName = cms.string('cutBasedPhotonID-Fall17-94X-V2-loose'),
-        #reference 1: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaMiniAODV2#ID_information
-        #reference 2: https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedPhotonIdentificationRun2
-        passRelId = cms.bool(True),
-        etaCut = cms.double(2.5),
-        ptCut = cms.double(3),
+        ptCut = cms.double(20),
 )
 
 MuMuTauETauHadAnalyzer = cms.EDAnalyzer('MuMuTauETauHadAnalyzer',
@@ -100,7 +92,8 @@ MuMuTauETauHadAnalyzer = cms.EDAnalyzer('MuMuTauETauHadAnalyzer',
         TauTag = cms.InputTag("TauHadSelector"),
         JetTag = cms.InputTag("JetSelector"),
         MetTag = cms.InputTag("slimmedMETs"),
-        PhotonTag = cms.InputTag("PhotonSelector"),
         VertexTag = cms.InputTag("offlineSlimmedPrimaryVertices"),
+        rhoTag = cms.InputTag("fixedGridRhoAll"),
+        effAreasConfigFile = cms.FileInPath("MuMuTauTauTreeMaker/MuTauTreelizer/data/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt"),
         isMC = cms.bool(False),
 )

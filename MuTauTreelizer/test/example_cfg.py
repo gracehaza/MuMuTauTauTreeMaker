@@ -3,6 +3,9 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("DiMuonTauETauHadTreelizer")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
+process.load('Configuration.StandardSequences.GeometryRecoDB_cff') # need for RecoEgamma recipe
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff') # globaltag is also needed for RecoEgamma recipe inclusion
+from Configuration.AlCa.GlobalTag import GlobalTag
 ########## Please specify if you are running on data or MC: ##############
 isMC = True
 ##########################################################################
@@ -10,10 +13,12 @@ isMC = True
 if isMC == True:
     print " ****** we will run on sample of: MC ******"
     process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuTauETauHadSelectorMC_cfi")
+    process.GlobalTag.globaltag = '94X_mc2017_realistic_v12'
 
 else:
     print " ****** we will run on sample of: data ******"
     process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuTauETauHadSelector_cfi")
+    process.GlobalTag.globaltag ='94X_dataRun2_ReReco_EOY17_v6'
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100000) )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
@@ -73,6 +78,14 @@ myTool.runTauID()
 
 ############################################################
 
+######## implant the 2017v2 egamma ID into the miniAOD ############
+# reference: https://twiki.cern.ch/twiki/bin/view/CMS/EgammaMiniAODV2#2017_MiniAOD_V2
+
+from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
+setupEgammaPostRecoSeq(process,
+        runVID = True,
+        era = '2017-Nov17ReReco',
+)
 ############################################################
 process.treelizer = cms.Sequence(
         process.lumiTree*
@@ -83,6 +96,7 @@ process.treelizer = cms.Sequence(
         process.LeadingMuonIso*
         process.SecondThirdMuonSelector*
         process.DiMuonMassSelector*
+        process.egammaPostRecoSeq*
         process.ElectronSelector*
         process.rerunMvaIsolationSequence*
         process.NewTauIDsEmbedded*

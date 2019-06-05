@@ -77,7 +77,7 @@ JetSelector = cms.EDFilter("JetSelector",
         jetTag = cms.InputTag('slimmedJets'),
         jetIdName = cms.string("Tight"), # reference: https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2017
         etaCut = cms.double(2.4),
-        ptCut = cms.double(3.0),
+        ptCut = cms.double(20),
 )
 
 MuMuTauMuTauHadAnalyzer = cms.EDAnalyzer('MuMuTauMuTauHadAnalyzer',
