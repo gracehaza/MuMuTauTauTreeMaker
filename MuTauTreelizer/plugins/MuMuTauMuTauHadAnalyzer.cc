@@ -109,6 +109,7 @@ class MuMuTauMuTauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedReso
       vector<float> recoJetEta;
       vector<float> recoJetPhi;
       vector<float> recoJetEnergy;
+      vector<float> recoJetCSV;
       
       // --- reconstructed MET ---
       vector<float> recoMET;
@@ -289,6 +290,9 @@ MuMuTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
            recoJetEta.push_back(iJet->eta());
            recoJetPhi.push_back(iJet->phi());
            recoJetEnergy.push_back(iJet->energy());
+           // --- btag for jet ---
+           // reference: https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2017#Jets
+           recoJetCSV.push_back(iJet->bDiscriminator("pfCombinedSecondaryVertexV2BJetTags"));
        }
    }
 
@@ -341,6 +345,7 @@ MuMuTauMuTauHadAnalyzer::beginJob()
     objectTree->Branch("recoJetEta", &recoJetEta);
     objectTree->Branch("recoJetPhi", &recoJetPhi);
     objectTree->Branch("recoJetEnergy", &recoJetEnergy);
+    objectTree->Branch("recoJetCSV", &recoJetCSV);
     
     objectTree->Branch("recoMET", &recoMET);
     objectTree->Branch("recoMETPhi", &recoMETPhi);
