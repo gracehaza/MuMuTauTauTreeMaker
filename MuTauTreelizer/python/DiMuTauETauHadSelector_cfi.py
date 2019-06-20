@@ -8,7 +8,7 @@ lumiTree = cms.EDAnalyzer("LumiTree",
 
 HLTEle = cms.EDFilter("HLTHighLevel",
         TriggerResultsTag = cms.InputTag("TriggerResults","","HLT"),
-        HLTPaths = cms.vstring("HLT_IsoMu24_v*","HLT_IsoTkMu24_v*"),
+        HLTPaths = cms.vstring("HLT_IsoMu24_v*","HLT_IsoTkMu24_v*","HLT_IsoMu27_v*","HLT_IsoTkMu27_v*"),
         eventSetupPathsKey = cms.string(''),
         andOr = cms.bool(True), #----- True = OR, False = AND between the HLTPaths
         throw = cms.bool(False), # throw exception on unknown path names
@@ -18,7 +18,7 @@ TrigMuMatcher = cms.EDFilter("TrigMuMatcher",
         muonsTag = cms.InputTag('slimmedMuons'),
         bits = cms.InputTag("TriggerResults","","HLT"),
         triggerObjects = cms.InputTag("slimmedPatTrigger"),
-        trigNames = cms.vstring("HLT_IsoMu24_v","HLT_IsoTkMu24_v"),
+        trigNames = cms.vstring("HLT_IsoMu24_v","HLT_IsoTkMu24_v","HLT_IsoMu27_v*","HLT_IsoTkMu27_v*"),
         dRCut = cms.double(0.15),
         muPtCut = cms.double(26.0),
 )

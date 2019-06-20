@@ -308,6 +308,42 @@ MuMuTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
 
    // --- fill the object tree ---
    objectTree->Fill();
+
+   // ---- clear all the vectors for next event ----
+   // --- reconstructed muons ---
+   recoMuonPt.clear();
+   recoMuonEta.clear();
+   recoMuonPhi.clear();
+   recoMuonEnergy.clear();
+   recoMuonPDGId.clear();
+   recoMuonIsolation.clear();
+
+   // --- reconstructed taus ---
+   recoTauPt.clear();
+   recoTauEta.clear();
+   recoTauPhi.clear();
+   recoTauEnergy.clear();
+   recoTauPDGId.clear();
+   recoTauDecayModeFinding.clear();
+   recoTauIsoMVArawValue.clear();
+   recoTauIsoMVAVVLoose.clear();
+   recoTauIsoMVAVLoose.clear();
+   recoTauIsoMVALoose.clear();
+   recoTauIsoMVAMedium.clear();
+   recoTauIsoMVATight.clear();
+   recoTauIsoMVAVTight.clear();
+   recoTauIsoMVAVVTight.clear();
+
+   // --- reconstructed jets ---
+   recoJetPt.clear();
+   recoJetEta.clear();
+   recoJetPhi.clear();
+   recoJetEnergy.clear();
+   recoJetCSV.clear();
+   
+   // --- reconstructed MET ---
+   recoMET.clear();
+   recoMETPhi.clear();
 }
 
 
@@ -360,7 +396,7 @@ MuMuTauMuTauHadAnalyzer::beginJob()
     }
 }
 
-// ------------ method called once each job just after ending the event loop  ------------
+// ------------ method called once each job just after ending all the event loop  ------------
 void 
 MuMuTauMuTauHadAnalyzer::endJob() 
 {

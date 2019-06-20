@@ -361,6 +361,52 @@ MuMuTauETauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
 
    // --- fill the object tree ---
    objectTree->Fill();
+
+   // ---- clear all the vectors for next event ----
+   // --- reconstructed muons ---
+   recoMuonPt.clear();
+   recoMuonEta.clear();
+   recoMuonPhi.clear();
+   recoMuonEnergy.clear();
+   recoMuonPDGId.clear();
+   recoMuonIsolation.clear();
+
+   // --- reconstructed electrons ---
+   recoElectronPt.clear();
+   recoElectronEta.clear();
+   recoElectronPhi.clear();
+   recoElectronEnergy.clear();
+   recoElectronPDGId.clear();
+   recoElectronIsolation.clear();
+   recoElectronEcalTrkEnergyPostCorr.clear();
+   recoElectronEcalTrkEnergyErrPostCorr.clear();
+
+   // --- reconstructed taus ---
+   recoTauPt.clear();
+   recoTauEta.clear();
+   recoTauPhi.clear();
+   recoTauEnergy.clear();
+   recoTauPDGId.clear();
+   recoTauDecayModeFinding.clear();
+   recoTauIsoMVArawValue.clear();
+   recoTauIsoMVAVVLoose.clear();
+   recoTauIsoMVAVLoose.clear();
+   recoTauIsoMVALoose.clear();
+   recoTauIsoMVAMedium.clear();
+   recoTauIsoMVATight.clear();
+   recoTauIsoMVAVTight.clear();
+   recoTauIsoMVAVVTight.clear();
+
+   // --- reconstructed jets ---
+   recoJetPt.clear();
+   recoJetEta.clear();
+   recoJetPhi.clear();
+   recoJetEnergy.clear();
+   recoJetCSV.clear();
+   
+   // --- reconstructed MET ---
+   recoMET.clear();
+   recoMETPhi.clear();
 }
 
 
