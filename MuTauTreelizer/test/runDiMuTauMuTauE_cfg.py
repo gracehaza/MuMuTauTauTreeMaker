@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("DiMuonDiTauTreelizer")
+process = cms.Process("DiMuonTauMuTauETreelizer")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
@@ -10,11 +10,11 @@ isMC = True
 
 if isMC == True:
     print " ****** we will run on sample of: MC ******"
-    process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuTauMuTauHadSelectorMC_cfi")
+    process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuTauMuTauESelectorMC_cfi")
 
 else:
     print " ****** we will run on sample of: data ******"
-    process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuTauMuTauHadSelector_cfi")
+    process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuTauMuTauESelector_cfi")
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
@@ -53,16 +53,6 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-######### embed 2017v2 tauID into the miniAOD ###############
-# reference: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePFTauID#Rerunning_of_the_tau_ID_on_M_AN1
-
-from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA import *
-myTool = TauIDEmbedder(process, cms,
-        debug = True,
-        toKeep = ["2017v2"]
-)
-myTool.runTauID()
-
 ############################################################
 
 process.treelizer = cms.Sequence(
@@ -75,11 +65,9 @@ process.treelizer = cms.Sequence(
         process.SecondMuonSelector*
         process.DiMuonMassSelector*
         process.ThirdMuonSelector*
-        process.rerunMvaIsolationSequence*
-        process.NewTauIDsEmbedded*
-        process.TauHadSelector*
+        process.ElectronSelector*
         process.JetSelector*
-        process.MuMuTauMuTauHadAnalyzer
+        process.MuMuTauMuTauEAnalyzer
 )
 
 process.options = cms.untracked.PSet(
@@ -87,7 +75,7 @@ process.options = cms.untracked.PSet(
 )
 
 process.TFileService = cms.Service("TFileService",
-        fileName =  cms.string('MuMuTauTauTreelization.root')
+        fileName =  cms.string('MuMuTauMuTauETreelization.root')
 )
 
 process.p = cms.Path(process.treelizer)
