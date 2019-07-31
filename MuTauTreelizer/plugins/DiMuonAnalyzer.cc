@@ -31,10 +31,17 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/PatCandidates/interface/Vertexing.h"
 #include "TTree.h"
-#include <math.h> 
+#include <math.h>
+#include <string>
+#include <iostream>
+
+using namespace std;
 //
 // class declaration
 //
@@ -59,29 +66,44 @@ class DiMuonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       virtual void endJob() override;
 
       // ----------member data ---------------------------
-      edm::EDGetTokenT<edm::View<pat::Muon>> Mu1Mu2_;
-      edm::EDGetTokenT<edm::View<reco::Vertex>> Vertex_;
-      bool isMC_;
-      float EventWeight;
-      float NPVertex;
-      edm::EDGetTokenT<GenEventInfoProduct> generator_;
+      edm::EDGetTokenT<edm::View<pat::Muon>> Mu1Mu2Tag;
+      edm::EDGetTokenT<edm::View<pat::Muon>> Mu3Tag;
+      edm::EDGetTokenT<edm::View<pat::Jet>> JetTag;
+      edm::EDGetTokenT<edm::View<pat::MET>> MetTag;
+      edm::EDGetTokenT<edm::View<reco::Vertex>> VertexTag;
+      bool isMC;
+      edm::EDGetTokenT<edm::View<PileupSummaryInfo>> PileupTag;
+      edm::EDGetTokenT<GenEventInfoProduct> generator;
 
-      TTree *Mu1Mu2Tree;
-      double Mu1Energy;
-      double Mu2Energy;
-      double Mu1Pt;
-      double Mu2Pt;
-      double Mu1Eta;
-      double Mu2Eta;
-      double Mu1Phi;
-      double Mu2Phi;
-      double invMassMu1Mu2;
-      double PtMu1Mu2;
-      double EtaMu1Mu2;
-      double PhiMu1Mu2;
-      double dRMu1Mu2;
-      double dEtaMu1Mu2;
-      double dPhiMu1Mu2;
+      TTree *objectTree;
+      // --- below is the vectors of object variables ---
+      
+      // --- reconstructed muons ---
+      vector<float> recoMuonPt;
+      vector<float> recoMuonEta;
+      vector<float> recoMuonPhi;
+      vector<float> recoMuonEnergy;
+      vector<int> recoMuonPDGId;
+      vector<float> recoMuonIsolation;
+
+      // --- reconstructed jets ---
+      vector<float> recoJetPt;
+      vector<float> recoJetEta;
+      vector<float> recoJetPhi;
+      vector<float> recoJetEnergy;
+      vector<float> recoJetCSV;
+      
+      // --- reconstructed MET ---
+      vector<float> recoMET;
+      vector<float> recoMETPhi;
+
+      // --- pileup and reconstructed vertices ---
+      int recoNPrimaryVertex;
+      int recoNPU;
+      int trueNInteraction;
+
+      // --- event weight for MC ---
+      float genEventWeight; 
 };
 
 //
@@ -96,13 +118,17 @@ class DiMuonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 // constructors and destructor
 //
 DiMuonAnalyzer::DiMuonAnalyzer(const edm::ParameterSet& iConfig):
-    Mu1Mu2_(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("Mu1Mu2"))),
-    Vertex_(consumes<edm::View<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("Vertex"))),
-    generator_(consumes<GenEventInfoProduct>(iConfig.existsAs<edm::InputTag>("Generator") ? iConfig.getParameter<edm::InputTag>("Generator") : edm::InputTag()))
+    Mu1Mu2Tag(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("Mu1Mu2Tag"))),
+    Mu3Tag(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("Mu3Tag"))),
+    JetTag(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("JetTag"))),
+    MetTag(consumes<edm::View<pat::MET>>(iConfig.getParameter<edm::InputTag>("MetTag"))),
+    VertexTag(consumes<edm::View<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("VertexTag"))),
+    PileupTag(consumes<edm::View<PileupSummaryInfo>>(iConfig.existsAs<edm::InputTag>("PileupTag") ? iConfig.getParameter<edm::InputTag>("PileupTag") : edm::InputTag())),
+    generator(consumes<GenEventInfoProduct>(iConfig.existsAs<edm::InputTag>("Generator") ? iConfig.getParameter<edm::InputTag>("Generator") : edm::InputTag()))
 {
    //now do what ever initialization is needed
    usesResource("TFileService");
-   isMC_ = iConfig.getParameter<bool>("isMC");
+   isMC = iConfig.getParameter<bool>("isMC");
 }
 
 
@@ -125,56 +151,145 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
    edm::Handle<edm::View<pat::Muon>> pMu1Mu2;
-   iEvent.getByToken(Mu1Mu2_, pMu1Mu2);
+   iEvent.getByToken(Mu1Mu2Tag, pMu1Mu2);
+
+   edm::Handle<edm::View<pat::Muon>> pMu3;
+   iEvent.getByToken(Mu3Tag, pMu3);
+
+   edm::Handle<edm::View<pat::Jet>> pJet;
+   iEvent.getByToken(JetTag, pJet);
+
+   edm::Handle<edm::View<pat::MET>> pMet;
+   iEvent.getByToken(MetTag, pMet);
 
    edm::Handle<edm::View<reco::Vertex>> pVertex;
-   iEvent.getByToken(Vertex_, pVertex);
+   iEvent.getByToken(VertexTag, pVertex);
 
-   if (isMC_)
+   if (isMC)
    {
-       EventWeight = 1.0;
        edm::Handle<GenEventInfoProduct> gen_ev_info;
-       iEvent.getByToken(generator_, gen_ev_info);
-       if(gen_ev_info.isValid()) EventWeight = gen_ev_info->weight();
+       iEvent.getByToken(generator, gen_ev_info);
+
+       edm::Handle<edm::View<PileupSummaryInfo>> pileup_info;
+       iEvent.getByToken(PileupTag, pileup_info);
+
+       if (gen_ev_info.isValid())
+       {
+           genEventWeight = gen_ev_info->weight();
+       }
+
+       if (pileup_info.isValid())
+       {
+           for(edm::View<PileupSummaryInfo>::const_iterator iPileup=pileup_info->begin(); iPileup!=pileup_info->end(); iPileup++)
+           {
+               if (iPileup->getBunchCrossing() == 0)
+               {
+                   trueNInteraction = iPileup->getTrueNumInteractions();
+                   recoNPU = iPileup->getPU_NumInteractions();
+               }
+           }
+       }
    }
 
-   else{
-       EventWeight = 1.0;
-   }
-
-   NPVertex = 0;
+   // --- prepare for offline primary vertices ---
+   recoNPrimaryVertex = 0; 
    if (pVertex.isValid())
    {
        for(edm::View<reco::Vertex>::const_iterator iPV=pVertex->begin(); iPV!=pVertex->end(); iPV++)
        {
-           NPVertex++;
+           recoNPrimaryVertex++;
        }
    }
 
+   // --- prepare muon vector ---
    pat::Muon Mu1 = pMu1Mu2->at(0);
    pat::Muon Mu2 = pMu1Mu2->at(1);
 
-   Mu1Energy = Mu1.energy();
-   Mu1Pt = Mu1.pt();
-   Mu1Eta = Mu1.eta();
-   Mu1Phi = Mu1.phi();
+   recoMuonPt.push_back(Mu1.pt());
+   recoMuonPt.push_back(Mu2.pt());
 
-   Mu2Energy = Mu2.energy();
-   Mu2Pt = Mu2.pt();
-   Mu2Eta = Mu2.eta();
-   Mu2Phi = Mu2.phi();
+   recoMuonEta.push_back(Mu1.eta());
+   recoMuonEta.push_back(Mu2.eta());
 
-   reco::Candidate::LorentzVector p4DiMu = Mu1.p4() + Mu2.p4();
-   invMassMu1Mu2 = p4DiMu.mass();
-   PtMu1Mu2 = p4DiMu.pt();
-   EtaMu1Mu2 = p4DiMu.eta();
-   PhiMu1Mu2 = p4DiMu.phi();
+   recoMuonPhi.push_back(Mu1.phi());
+   recoMuonPhi.push_back(Mu2.phi());
 
-   dRMu1Mu2 = deltaR(Mu1,Mu2);
-   dEtaMu1Mu2 = fabs(Mu1.eta() - Mu2.eta());
-   dPhiMu1Mu2 = deltaPhi(Mu1.phi(),Mu2.phi());
+   recoMuonEnergy.push_back(Mu1.energy());
+   recoMuonEnergy.push_back(Mu2.energy());
 
-   Mu1Mu2Tree->Fill();
+   recoMuonPDGId.push_back(Mu1.pdgId());
+   recoMuonPDGId.push_back(Mu2.pdgId());
+   
+   reco::MuonPFIsolation iso = Mu1.pfIsolationR04();
+   double reliso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / Mu1.pt();
+   recoMuonIsolation.push_back(reliso);
+
+   iso = Mu2.pfIsolationR04();
+   reliso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / Mu2.pt();
+   recoMuonIsolation.push_back(reliso);
+
+   if(pMu3->size()>0)
+   {
+       for(edm::View<pat::Muon>::const_iterator iMuon=pMu3->begin(); iMuon!=pMu3->end(); iMuon++)
+       {
+           recoMuonPt.push_back(iMuon->pt());
+           recoMuonEta.push_back(iMuon->eta());
+           recoMuonPhi.push_back(iMuon->phi());
+           recoMuonEnergy.push_back(iMuon->energy());
+           recoMuonPDGId.push_back(iMuon->pdgId());
+           iso = iMuon->pfIsolationR04();
+           reliso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / iMuon->pt();
+           recoMuonIsolation.push_back(reliso);
+       }
+   }
+
+   // --- prepare jet vector ---
+   if(pJet->size()>0)
+   {
+       for(edm::View<pat::Jet>::const_iterator iJet=pJet->begin(); iJet!=pJet->end(); iJet++)
+       {
+           recoJetPt.push_back(iJet->pt());
+           recoJetEta.push_back(iJet->eta());
+           recoJetPhi.push_back(iJet->phi());
+           recoJetEnergy.push_back(iJet->energy());
+           // --- btag for jet ---
+           // reference: https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2017#Jets
+           recoJetCSV.push_back(iJet->bDiscriminator("pfCombinedSecondaryVertexV2BJetTags"));
+       }
+   }
+
+   // --- prepare MET vector ---
+   if(pMet->size()>0)
+   {
+       for(edm::View<pat::MET>::const_iterator iMet=pMet->begin(); iMet!=pMet->end(); iMet++)
+       {
+           recoMET.push_back(iMet->pt());
+           recoMETPhi.push_back(iMet->phi());
+       }
+   }
+
+   // --- fill the object tree ---
+   objectTree->Fill();
+
+   // ---- clear all the vectors for next event ----
+   // --- reconstructed muons ---
+   recoMuonPt.clear();
+   recoMuonEta.clear();
+   recoMuonPhi.clear();
+   recoMuonEnergy.clear();
+   recoMuonPDGId.clear();
+   recoMuonIsolation.clear();
+
+   // --- reconstructed jets ---
+   recoJetPt.clear();
+   recoJetEta.clear();
+   recoJetPhi.clear();
+   recoJetEnergy.clear();
+   recoJetCSV.clear();
+   
+   // --- reconstructed MET ---
+   recoMET.clear();
+   recoMETPhi.clear();
 }
 
 
@@ -182,29 +297,34 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 void 
 DiMuonAnalyzer::beginJob()
 {
-    // -- initialize the skimmed flat tree --
+    // -- initialize the skimmed object vector tree --
     edm::Service<TFileService> fileService;
-    Mu1Mu2Tree = fileService->make<TTree>("Mu1Mu2Tree","Mu1Mu2Tree");
-    
-    Mu1Mu2Tree->Branch("Mu1Energy", &Mu1Energy, "Mu1Energy/D");
-    Mu1Mu2Tree->Branch("Mu2Energy", &Mu2Energy, "Mu2Energy/D");
-    Mu1Mu2Tree->Branch("Mu1Pt", &Mu1Pt, "Mu1Pt/D");
-    Mu1Mu2Tree->Branch("Mu2Pt", &Mu2Pt, "Mu2Pt/D");
-    Mu1Mu2Tree->Branch("Mu1Eta", &Mu1Eta, "Mu1Eta/D");
-    Mu1Mu2Tree->Branch("Mu2Eta", &Mu2Eta, "Mu2Eta/D");
-    Mu1Mu2Tree->Branch("Mu1Phi", &Mu1Phi, "Mu1Phi/D");
-    Mu1Mu2Tree->Branch("Mu2Phi", &Mu2Phi, "Mu2Phi/D");
-    
-    Mu1Mu2Tree->Branch("invMassMu1Mu2", &invMassMu1Mu2, "invMassMu1Mu2/D");
-    Mu1Mu2Tree->Branch("PtMu1Mu2", &PtMu1Mu2, "PtMu1Mu2/D");
-    Mu1Mu2Tree->Branch("EtaMu1Mu2", &EtaMu1Mu2, "EtaMu1Mu2/D");
-    Mu1Mu2Tree->Branch("PhiMu1Mu2", &PhiMu1Mu2, "PhiMu1Mu2/D");
-    Mu1Mu2Tree->Branch("dRMu1Mu2", &dRMu1Mu2, "dRMu1Mu2/D");
-    Mu1Mu2Tree->Branch("dEtaMu1Mu2", &dEtaMu1Mu2, "dEtaMu1Mu2/D");
-    Mu1Mu2Tree->Branch("dPhiMu1Mu2", &dPhiMu1Mu2, "dPhiMu1Mu2/D");
+    objectTree = fileService->make<TTree>("objectTree","objectTree");
 
-    Mu1Mu2Tree->Branch("EventWeight", &EventWeight, "EventWeight/F");
-    Mu1Mu2Tree->Branch("NPVertex", &NPVertex, "NPVertex/F");
+    objectTree->Branch("recoMuonPt", &recoMuonPt);
+    objectTree->Branch("recoMuonEta", &recoMuonEta);
+    objectTree->Branch("recoMuonPhi", &recoMuonPhi);
+    objectTree->Branch("recoMuonEnergy", &recoMuonEnergy);
+    objectTree->Branch("recoMuonPDGId", &recoMuonPDGId);
+    objectTree->Branch("recoMuonIsolation", &recoMuonIsolation);
+    
+    objectTree->Branch("recoJetPt", &recoJetPt);
+    objectTree->Branch("recoJetEta", &recoJetEta);
+    objectTree->Branch("recoJetPhi", &recoJetPhi);
+    objectTree->Branch("recoJetEnergy", &recoJetEnergy);
+    objectTree->Branch("recoJetCSV", &recoJetCSV);
+    
+    objectTree->Branch("recoMET", &recoMET);
+    objectTree->Branch("recoMETPhi", &recoMETPhi);
+
+    objectTree->Branch("recoNPrimaryVertex", &recoNPrimaryVertex, "recoNPrimaryVertex/I");
+
+    if (isMC)
+    {
+        objectTree->Branch("recoNPU", &recoNPU, "recoNPU/I");
+        objectTree->Branch("trueNInteraction", &trueNInteraction, "trueNInteraction/I");
+        objectTree->Branch("genEventWeight", &genEventWeight, "genEventWeight/F");
+    }
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

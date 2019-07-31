@@ -77,5 +77,7 @@ DiMuonAnalyzer = cms.EDAnalyzer('DiMuonAnalyzer',
         JetTag = cms.InputTag("JetSelector"),
         MetTag = cms.InputTag("slimmedMETs"),
         VertexTag = cms.InputTag("offlineSlimmedPrimaryVertices"),
-        isMC = cms.bool(False),
+        isMC = cms.bool(True),
+        PileupTag = cms.InputTag("slimmedAddPileupInfo"),
+        Generator = cms.InputTag("generator"),
 )
