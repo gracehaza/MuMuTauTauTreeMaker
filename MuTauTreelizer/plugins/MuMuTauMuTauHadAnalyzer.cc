@@ -94,7 +94,7 @@ class MuMuTauMuTauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedReso
       vector<float> recoTauPhi;
       vector<float> recoTauEnergy;
       vector<int> recoTauPDGId;
-      vector<float> recoTauDecayModeFinding;
+      vector<float> recoTauDecayMode;
       vector<float> recoTauIsoMVArawValue;
       vector<float> recoTauIsoMVAVVLoose;
       vector<float> recoTauIsoMVAVLoose;
@@ -270,7 +270,7 @@ MuMuTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
        recoTauPhi.push_back(iTau->phi());
        recoTauEnergy.push_back(iTau->energy());
        recoTauPDGId.push_back(iTau->pdgId());
-       recoTauDecayModeFinding.push_back(iTau->tauID("decayModeFinding"));
+       recoTauDecayMode.push_back(iTau->tauID("decayMode"));
        recoTauIsoMVArawValue.push_back(iTau->tauID("byIsolationMVArun2017v2DBoldDMwLTraw2017"));
        recoTauIsoMVAVVLoose.push_back(iTau->tauID("byVVLooseIsolationMVArun2017v2DBoldDMwLT2017"));
        recoTauIsoMVAVLoose.push_back(iTau->tauID("byVLooseIsolationMVArun2017v2DBoldDMwLT2017"));
@@ -324,7 +324,7 @@ MuMuTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
    recoTauPhi.clear();
    recoTauEnergy.clear();
    recoTauPDGId.clear();
-   recoTauDecayModeFinding.clear();
+   recoTauDecayMode.clear();
    recoTauIsoMVArawValue.clear();
    recoTauIsoMVAVVLoose.clear();
    recoTauIsoMVAVLoose.clear();
@@ -367,7 +367,7 @@ MuMuTauMuTauHadAnalyzer::beginJob()
     objectTree->Branch("recoTauPhi", &recoTauPhi);
     objectTree->Branch("recoTauEnergy", &recoTauEnergy);
     objectTree->Branch("recoTauPDGId", &recoTauPDGId);
-    objectTree->Branch("recoTauDecayModeFinding", &recoTauDecayModeFinding);
+    objectTree->Branch("recoTauDecayMode", &recoTauDecayMode);
     objectTree->Branch("recoTauIsoMVArawValue", &recoTauIsoMVArawValue);
     objectTree->Branch("recoTauIsoMVAVVLoose", &recoTauIsoMVAVVLoose);
     objectTree->Branch("recoTauIsoMVAVLoose", &recoTauIsoMVAVLoose);
