@@ -270,7 +270,7 @@ MuMuTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
        recoTauPhi.push_back(iTau->phi());
        recoTauEnergy.push_back(iTau->energy());
        recoTauPDGId.push_back(iTau->pdgId());
-       recoTauDecayMode.push_back(iTau->tauID("decayMode"));
+       recoTauDecayMode.push_back(iTau->decayMode());
        recoTauIsoMVArawValue.push_back(iTau->tauID("byIsolationMVArun2017v2DBoldDMwLTraw2017"));
        recoTauIsoMVAVVLoose.push_back(iTau->tauID("byVVLooseIsolationMVArun2017v2DBoldDMwLT2017"));
        recoTauIsoMVAVLoose.push_back(iTau->tauID("byVLooseIsolationMVArun2017v2DBoldDMwLT2017"));
