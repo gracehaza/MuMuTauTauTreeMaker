@@ -1,4 +1,5 @@
 *.pyc
 *.root
+*.sh
 crab*
 MuTauTreelizer/python/__init__.py
