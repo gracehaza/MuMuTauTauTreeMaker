@@ -64,6 +64,14 @@ ThirdMuonIso = cms.EDFilter("ThirdMuonIso",
         dRCut = cms.double(-1), # -1 = no dR cut, >0 for dR(of mu3 from mu1 and mu2) low threshold
 )
 
+TauCandSelector = cms.EDFilter("TauCandSelector",
+        tauTag = cms.InputTag('NewTauIDsEmbedded'), # output of configuration: "TauIdMVA.py"
+        tauDiscriminatorTag = cms.vstring('decayModeFinding'),
+        passDiscriminator = cms.bool(True),
+        pTMin = cms.double(8.0),
+        etaMax = cms.double(2.4),
+)
+
 JetSelector = cms.EDFilter("JetSelector",
         jetTag = cms.InputTag('slimmedJets'),
         jetIdName = cms.string("Tight"), # reference: https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2017
@@ -74,6 +82,7 @@ JetSelector = cms.EDFilter("JetSelector",
 DiMuonAnalyzer = cms.EDAnalyzer('DiMuonAnalyzer',
         Mu1Mu2Tag = cms.InputTag("DiMuonMassSelector"),
         Mu3Tag = cms.InputTag("ThirdMuonIso"),
+        TauTag = cms.InputTag("TauCandSelector"),
         JetTag = cms.InputTag("JetSelector"),
         MetTag = cms.InputTag("slimmedMETs"),
         VertexTag = cms.InputTag("offlineSlimmedPrimaryVertices"),

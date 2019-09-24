@@ -31,6 +31,7 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
@@ -68,6 +69,7 @@ class DiMuonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       // ----------member data ---------------------------
       edm::EDGetTokenT<edm::View<pat::Muon>> Mu1Mu2Tag;
       edm::EDGetTokenT<edm::View<pat::Muon>> Mu3Tag;
+      edm::EDGetTokenT<edm::View<pat::Tau>> TauTag;
       edm::EDGetTokenT<edm::View<pat::Jet>> JetTag;
       edm::EDGetTokenT<edm::View<pat::MET>> MetTag;
       edm::EDGetTokenT<edm::View<reco::Vertex>> VertexTag;
@@ -85,6 +87,22 @@ class DiMuonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       vector<float> recoMuonEnergy;
       vector<int> recoMuonPDGId;
       vector<float> recoMuonIsolation;
+
+      // --- reconstructed taus ---
+      vector<float> recoTauPt;
+      vector<float> recoTauEta;
+      vector<float> recoTauPhi;
+      vector<float> recoTauEnergy;
+      vector<int> recoTauPDGId;
+      vector<float> recoTauDecayMode;
+      vector<float> recoTauIsoMVArawValue;
+      vector<float> recoTauIsoMVAVVLoose;
+      vector<float> recoTauIsoMVAVLoose;
+      vector<float> recoTauIsoMVALoose;
+      vector<float> recoTauIsoMVAMedium;
+      vector<float> recoTauIsoMVATight;
+      vector<float> recoTauIsoMVAVTight;
+      vector<float> recoTauIsoMVAVVTight;
 
       // --- reconstructed jets ---
       vector<float> recoJetPt;
@@ -120,6 +138,7 @@ class DiMuonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 DiMuonAnalyzer::DiMuonAnalyzer(const edm::ParameterSet& iConfig):
     Mu1Mu2Tag(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("Mu1Mu2Tag"))),
     Mu3Tag(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("Mu3Tag"))),
+    TauTag(consumes<edm::View<pat::Tau>>(iConfig.getParameter<edm::InputTag>("TauTag"))),
     JetTag(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("JetTag"))),
     MetTag(consumes<edm::View<pat::MET>>(iConfig.getParameter<edm::InputTag>("MetTag"))),
     VertexTag(consumes<edm::View<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("VertexTag"))),
@@ -155,6 +174,9 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
    edm::Handle<edm::View<pat::Muon>> pMu3;
    iEvent.getByToken(Mu3Tag, pMu3);
+
+   edm::Handle<edm::View<pat::Tau>> pTau;
+   iEvent.getByToken(TauTag, pTau);
 
    edm::Handle<edm::View<pat::Jet>> pJet;
    iEvent.getByToken(JetTag, pJet);
@@ -243,6 +265,28 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        }
    }
 
+   // --- prepare tau vector ---
+   if (pTau->size()>0)
+   {
+       for(edm::View<pat::Tau>::const_iterator iTau=pTau->begin(); iTau!=pTau->end(); iTau++)
+       {
+           recoTauPt.push_back(iTau->pt());
+           recoTauEta.push_back(iTau->eta());
+           recoTauPhi.push_back(iTau->phi());
+           recoTauEnergy.push_back(iTau->energy());
+           recoTauPDGId.push_back(iTau->pdgId());
+           recoTauDecayMode.push_back(iTau->decayMode());
+           recoTauIsoMVArawValue.push_back(iTau->tauID("byIsolationMVArun2017v2DBoldDMwLTraw2017"));
+           recoTauIsoMVAVVLoose.push_back(iTau->tauID("byVVLooseIsolationMVArun2017v2DBoldDMwLT2017"));
+           recoTauIsoMVAVLoose.push_back(iTau->tauID("byVLooseIsolationMVArun2017v2DBoldDMwLT2017"));
+           recoTauIsoMVALoose.push_back(iTau->tauID("byLooseIsolationMVArun2017v2DBoldDMwLT2017"));
+           recoTauIsoMVAMedium.push_back(iTau->tauID("byMediumIsolationMVArun2017v2DBoldDMwLT2017"));
+           recoTauIsoMVATight.push_back(iTau->tauID("byTightIsolationMVArun2017v2DBoldDMwLT2017"));
+           recoTauIsoMVAVTight.push_back(iTau->tauID("byVTightIsolationMVArun2017v2DBoldDMwLT2017"));
+           recoTauIsoMVAVVTight.push_back(iTau->tauID("byVVTightIsolationMVArun2017v2DBoldDMwLT2017"));
+       }
+   }
+
    // --- prepare jet vector ---
    if(pJet->size()>0)
    {
@@ -280,6 +324,22 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    recoMuonPDGId.clear();
    recoMuonIsolation.clear();
 
+   // --- reconstructed taus ---
+   recoTauPt.clear();
+   recoTauEta.clear();
+   recoTauPhi.clear();
+   recoTauEnergy.clear();
+   recoTauPDGId.clear();
+   recoTauDecayMode.clear();
+   recoTauIsoMVArawValue.clear();
+   recoTauIsoMVAVVLoose.clear();
+   recoTauIsoMVAVLoose.clear();
+   recoTauIsoMVALoose.clear();
+   recoTauIsoMVAMedium.clear();
+   recoTauIsoMVATight.clear();
+   recoTauIsoMVAVTight.clear();
+   recoTauIsoMVAVVTight.clear();
+
    // --- reconstructed jets ---
    recoJetPt.clear();
    recoJetEta.clear();
@@ -307,7 +367,22 @@ DiMuonAnalyzer::beginJob()
     objectTree->Branch("recoMuonEnergy", &recoMuonEnergy);
     objectTree->Branch("recoMuonPDGId", &recoMuonPDGId);
     objectTree->Branch("recoMuonIsolation", &recoMuonIsolation);
-    
+
+    objectTree->Branch("recoTauPt", &recoTauPt);
+    objectTree->Branch("recoTauEta", &recoTauEta);
+    objectTree->Branch("recoTauPhi", &recoTauPhi);
+    objectTree->Branch("recoTauEnergy", &recoTauEnergy);
+    objectTree->Branch("recoTauPDGId", &recoTauPDGId);
+    objectTree->Branch("recoTauDecayMode", &recoTauDecayMode);
+    objectTree->Branch("recoTauIsoMVArawValue", &recoTauIsoMVArawValue);
+    objectTree->Branch("recoTauIsoMVAVVLoose", &recoTauIsoMVAVVLoose);
+    objectTree->Branch("recoTauIsoMVAVLoose", &recoTauIsoMVAVLoose);
+    objectTree->Branch("recoTauIsoMVALoose", &recoTauIsoMVALoose);
+    objectTree->Branch("recoTauIsoMVAMedium", &recoTauIsoMVAMedium);
+    objectTree->Branch("recoTauIsoMVATight", &recoTauIsoMVATight);
+    objectTree->Branch("recoTauIsoMVAVTight", &recoTauIsoMVAVTight);
+    objectTree->Branch("recoTauIsoMVAVVTight", &recoTauIsoMVAVVTight);
+
     objectTree->Branch("recoJetPt", &recoJetPt);
     objectTree->Branch("recoJetEta", &recoJetEta);
     objectTree->Branch("recoJetPhi", &recoJetPhi);

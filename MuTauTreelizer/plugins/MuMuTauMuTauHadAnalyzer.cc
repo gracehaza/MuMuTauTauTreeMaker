@@ -376,7 +376,7 @@ MuMuTauMuTauHadAnalyzer::beginJob()
     objectTree->Branch("recoTauIsoMVATight", &recoTauIsoMVATight);
     objectTree->Branch("recoTauIsoMVAVTight", &recoTauIsoMVAVTight);
     objectTree->Branch("recoTauIsoMVAVVTight", &recoTauIsoMVAVVTight);
-    
+
     objectTree->Branch("recoJetPt", &recoJetPt);
     objectTree->Branch("recoJetEta", &recoJetEta);
     objectTree->Branch("recoJetPhi", &recoJetPhi);
