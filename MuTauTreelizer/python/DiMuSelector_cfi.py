@@ -64,6 +64,18 @@ ThirdMuonIso = cms.EDFilter("ThirdMuonIso",
         dRCut = cms.double(-1), # -1 = no dR cut, >0 for dR(of mu3 from mu1 and mu2) low threshold
 )
 
+ElectronCandSelector = cms.EDFilter("ElectronCandSelector",
+        electronTag = cms.InputTag('slimmedElectrons'),
+        # --- need the two parameters below for electron isolation computation ---
+        rhoTag = cms.InputTag("fixedGridRhoAll"),
+        effAreasConfigFile = cms.FileInPath("MuMuTauTauTreeMaker/MuTauTreelizer/data/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt"),
+        # ========================================================================
+        relIdName = cms.string("Loose"), # customize electron ID options: Veto, Loose, Medium, Tight
+        passRelIso = cms.bool(False),
+        etaCut = cms.double(2.5),
+        ptCut = cms.double(3),
+)
+
 TauCandSelector = cms.EDFilter("TauCandSelector",
         tauTag = cms.InputTag('NewTauIDsEmbedded'), # output of configuration: "TauIdMVA.py"
         tauDiscriminatorTag = cms.vstring('decayModeFinding'),
@@ -82,9 +94,12 @@ JetSelector = cms.EDFilter("JetSelector",
 DiMuonAnalyzer = cms.EDAnalyzer('DiMuonAnalyzer',
         Mu1Mu2Tag = cms.InputTag("DiMuonMassSelector"),
         Mu3Tag = cms.InputTag("ThirdMuonIso"),
+        EleTag = cms.InputTag("ElectronCandSelector"),
         TauTag = cms.InputTag("TauCandSelector"),
         JetTag = cms.InputTag("JetSelector"),
         MetTag = cms.InputTag("slimmedMETs"),
         VertexTag = cms.InputTag("offlineSlimmedPrimaryVertices"),
+        rhoTag = cms.InputTag("fixedGridRhoAll"),
+        effAreasConfigFile = cms.FileInPath("MuMuTauTauTreeMaker/MuTauTreelizer/data/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt"),
         isMC = cms.bool(False),
 )

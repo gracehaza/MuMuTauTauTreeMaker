@@ -31,12 +31,14 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/PatCandidates/interface/Vertexing.h"
+#include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
 #include "TTree.h"
 #include <math.h>
 #include <string>
@@ -69,10 +71,13 @@ class DiMuonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       // ----------member data ---------------------------
       edm::EDGetTokenT<edm::View<pat::Muon>> Mu1Mu2Tag;
       edm::EDGetTokenT<edm::View<pat::Muon>> Mu3Tag;
+      edm::EDGetTokenT<edm::View<pat::Electron>> EleTag;
       edm::EDGetTokenT<edm::View<pat::Tau>> TauTag;
       edm::EDGetTokenT<edm::View<pat::Jet>> JetTag;
       edm::EDGetTokenT<edm::View<pat::MET>> MetTag;
       edm::EDGetTokenT<edm::View<reco::Vertex>> VertexTag;
+      edm::EDGetTokenT<double> rhoTag;
+      EffectiveAreas effectiveAreas;
       bool isMC;
       edm::EDGetTokenT<edm::View<PileupSummaryInfo>> PileupTag;
       edm::EDGetTokenT<GenEventInfoProduct> generator;
@@ -87,6 +92,16 @@ class DiMuonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       vector<float> recoMuonEnergy;
       vector<int> recoMuonPDGId;
       vector<float> recoMuonIsolation;
+
+      // --- reconstructed electrons ---
+      vector<float> recoElectronPt;
+      vector<float> recoElectronEta;
+      vector<float> recoElectronPhi;
+      vector<float> recoElectronEnergy;
+      vector<int> recoElectronPDGId;
+      vector<float> recoElectronIsolation;
+      vector<float> recoElectronEcalTrkEnergyPostCorr;
+      vector<float> recoElectronEcalTrkEnergyErrPostCorr;
 
       // --- reconstructed taus ---
       vector<float> recoTauPt;
@@ -138,10 +153,13 @@ class DiMuonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 DiMuonAnalyzer::DiMuonAnalyzer(const edm::ParameterSet& iConfig):
     Mu1Mu2Tag(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("Mu1Mu2Tag"))),
     Mu3Tag(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("Mu3Tag"))),
+    EleTag(consumes<edm::View<pat::Electron>>(iConfig.getParameter<edm::InputTag>("EleTag"))),
     TauTag(consumes<edm::View<pat::Tau>>(iConfig.getParameter<edm::InputTag>("TauTag"))),
     JetTag(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("JetTag"))),
     MetTag(consumes<edm::View<pat::MET>>(iConfig.getParameter<edm::InputTag>("MetTag"))),
     VertexTag(consumes<edm::View<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("VertexTag"))),
+    rhoTag(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoTag"))),
+    effectiveAreas((iConfig.getParameter<edm::FileInPath>("effAreasConfigFile")).fullPath()),
     PileupTag(consumes<edm::View<PileupSummaryInfo>>(iConfig.existsAs<edm::InputTag>("PileupTag") ? iConfig.getParameter<edm::InputTag>("PileupTag") : edm::InputTag())),
     generator(consumes<GenEventInfoProduct>(iConfig.existsAs<edm::InputTag>("Generator") ? iConfig.getParameter<edm::InputTag>("Generator") : edm::InputTag()))
 {
@@ -175,6 +193,9 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    edm::Handle<edm::View<pat::Muon>> pMu3;
    iEvent.getByToken(Mu3Tag, pMu3);
 
+   edm::Handle<edm::View<pat::Electron>> pElectron;
+   iEvent.getByToken(EleTag, pElectron);
+
    edm::Handle<edm::View<pat::Tau>> pTau;
    iEvent.getByToken(TauTag, pTau);
 
@@ -186,6 +207,9 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
    edm::Handle<edm::View<reco::Vertex>> pVertex;
    iEvent.getByToken(VertexTag, pVertex);
+
+   edm::Handle<double> pRho;
+   iEvent.getByToken(rhoTag, pRho);
 
    if (isMC)
    {
@@ -265,6 +289,32 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        }
    }
 
+   // --- prepare electron vector ---
+   if (pElectron->size()>0)
+   {
+       for(edm::View<pat::Electron>::const_iterator iElectron=pElectron->begin(); iElectron!=pElectron->end(); iElectron++)
+       {
+           // --- variables for relIsoWithEffectiveArea ---
+           float chad = iElectron->pfIsolationVariables().sumChargedHadronPt;
+           float nhad = iElectron->pfIsolationVariables().sumNeutralHadronEt;
+           float pho = iElectron->pfIsolationVariables().sumPhotonEt;
+           float elePt = iElectron->pt();
+           float eleEta = iElectron->superCluster()->eta();
+           float rho = pRho.isValid() ? (*pRho) : 0;
+           float eArea = effectiveAreas.getEffectiveArea(fabs(eleEta));
+           float relIsoWithEffectiveArea = (chad + std::max(0.0f, nhad + pho - rho*eArea)) / elePt;
+
+           recoElectronPt.push_back(iElectron->pt());
+           recoElectronEta.push_back(iElectron->superCluster()->eta());
+           recoElectronPhi.push_back(iElectron->superCluster()->phi());
+           recoElectronEnergy.push_back(iElectron->superCluster()->energy());
+           recoElectronPDGId.push_back(iElectron->pdgId());
+           recoElectronIsolation.push_back(relIsoWithEffectiveArea);
+           recoElectronEcalTrkEnergyPostCorr.push_back(iElectron->userFloat("ecalTrkEnergyPostCorr"));
+           recoElectronEcalTrkEnergyErrPostCorr.push_back(iElectron->userFloat("ecalTrkEnergyErrPostCorr"));
+       }
+   }
+   
    // --- prepare tau vector ---
    if (pTau->size()>0)
    {
@@ -324,6 +374,16 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    recoMuonPDGId.clear();
    recoMuonIsolation.clear();
 
+   // --- reconstructed electrons ---
+   recoElectronPt.clear();
+   recoElectronEta.clear();
+   recoElectronPhi.clear();
+   recoElectronEnergy.clear();
+   recoElectronPDGId.clear();
+   recoElectronIsolation.clear();
+   recoElectronEcalTrkEnergyPostCorr.clear();
+   recoElectronEcalTrkEnergyErrPostCorr.clear();
+
    // --- reconstructed taus ---
    recoTauPt.clear();
    recoTauEta.clear();
@@ -367,6 +427,15 @@ DiMuonAnalyzer::beginJob()
     objectTree->Branch("recoMuonEnergy", &recoMuonEnergy);
     objectTree->Branch("recoMuonPDGId", &recoMuonPDGId);
     objectTree->Branch("recoMuonIsolation", &recoMuonIsolation);
+
+    objectTree->Branch("recoElectronPt", &recoElectronPt);
+    objectTree->Branch("recoElectronEta", &recoElectronEta);
+    objectTree->Branch("recoElectronPhi", &recoElectronPhi);
+    objectTree->Branch("recoElectronEnergy", &recoElectronEnergy);
+    objectTree->Branch("recoElectronPDGId", &recoElectronPDGId);
+    objectTree->Branch("recoElectronIsolation", &recoElectronIsolation);
+    objectTree->Branch("recoElectronEcalTrkEnergyPostCorr", &recoElectronEcalTrkEnergyPostCorr);
+    objectTree->Branch("recoElectronEcalTrkEnergyErrPostCorr", &recoElectronEcalTrkEnergyErrPostCorr);
 
     objectTree->Branch("recoTauPt", &recoTauPt);
     objectTree->Branch("recoTauEta", &recoTauEta);

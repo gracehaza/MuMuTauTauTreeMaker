@@ -53,6 +53,7 @@ process.treelizer = cms.Sequence(
         process.SecondMuonIso*
         process.DiMuonMassSelector*
         process.ThirdMuonIso*
+        process.ElectronCandSelector*
         process.rerunMvaIsolationSequence*
         process.NewTauIDsEmbedded*
         process.TauCandSelector*
