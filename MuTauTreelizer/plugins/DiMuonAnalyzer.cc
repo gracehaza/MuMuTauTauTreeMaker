@@ -92,6 +92,7 @@ class DiMuonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       vector<float> recoMuonEnergy;
       vector<int> recoMuonPDGId;
       vector<float> recoMuonIsolation;
+      vector<int> recoMuonNTrackerLayers;
 
       // --- reconstructed electrons ---
       vector<float> recoElectronPt;
@@ -274,6 +275,9 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    reliso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / Mu2.pt();
    recoMuonIsolation.push_back(reliso);
 
+   recoMuonNTrackerLayers.push_back(Mu1.innerTrack()->hitPattern().trackerLayersWithMeasurement());
+   recoMuonNTrackerLayers.push_back(Mu2.innerTrack()->hitPattern().trackerLayersWithMeasurement());
+
    if(pMu3->size()>0)
    {
        for(edm::View<pat::Muon>::const_iterator iMuon=pMu3->begin(); iMuon!=pMu3->end(); iMuon++)
@@ -286,6 +290,7 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
            iso = iMuon->pfIsolationR04();
            reliso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / iMuon->pt();
            recoMuonIsolation.push_back(reliso);
+           recoMuonNTrackerLayers.push_back(iMuon->innerTrack()->hitPattern().trackerLayersWithMeasurement());
        }
    }
 
@@ -373,6 +378,7 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    recoMuonEnergy.clear();
    recoMuonPDGId.clear();
    recoMuonIsolation.clear();
+   recoMuonNTrackerLayers.clear();
 
    // --- reconstructed electrons ---
    recoElectronPt.clear();
@@ -427,6 +433,7 @@ DiMuonAnalyzer::beginJob()
     objectTree->Branch("recoMuonEnergy", &recoMuonEnergy);
     objectTree->Branch("recoMuonPDGId", &recoMuonPDGId);
     objectTree->Branch("recoMuonIsolation", &recoMuonIsolation);
+    objectTree->Branch("recoMuonNTrackerLayers", &recoMuonNTrackerLayers);
 
     objectTree->Branch("recoElectronPt", &recoElectronPt);
     objectTree->Branch("recoElectronEta", &recoElectronEta);
