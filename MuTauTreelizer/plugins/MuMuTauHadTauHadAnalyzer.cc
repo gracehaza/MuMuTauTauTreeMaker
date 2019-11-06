@@ -129,6 +129,7 @@ class MuMuTauHadTauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedRes
       int recoNPrimaryVertex;
       int recoNPU;
       int trueNInteraction;
+      int eventID;
 
       // --- event weight for MC ---
       float genEventWeight; 
@@ -232,6 +233,8 @@ MuMuTauHadTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
            recoNPrimaryVertex++;
        }
    }
+
+   eventID = iEvent.eventAuxiliary().event();
 
    // --- prepare muon vector ---
    pat::Muon Mu1 = pMu1Mu2->at(0);
@@ -433,6 +436,7 @@ MuMuTauHadTauHadAnalyzer::beginJob()
     objectTree->Branch("recoMETPhi", &recoMETPhi);
 
     objectTree->Branch("recoNPrimaryVertex", &recoNPrimaryVertex, "recoNPrimaryVertex/I");
+    objectTree->Branch("eventID", &eventID, "eventID/I");
 
     if (isMC)
     {

@@ -135,6 +135,7 @@ class DiMuonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       int recoNPrimaryVertex;
       int recoNPU;
       int trueNInteraction;
+      int eventID;
 
       // --- event weight for MC ---
       float genEventWeight; 
@@ -247,6 +248,8 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
            recoNPrimaryVertex++;
        }
    }
+
+   eventID = iEvent.eventAuxiliary().event();
 
    // --- prepare muon vector ---
    pat::Muon Mu1 = pMu1Mu2->at(0);
@@ -469,6 +472,7 @@ DiMuonAnalyzer::beginJob()
     objectTree->Branch("recoMETPhi", &recoMETPhi);
 
     objectTree->Branch("recoNPrimaryVertex", &recoNPrimaryVertex, "recoNPrimaryVertex/I");
+    objectTree->Branch("eventID", &eventID, "eventID/I");
 
     if (isMC)
     {

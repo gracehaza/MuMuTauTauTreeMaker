@@ -65,7 +65,7 @@ process.options = cms.untracked.PSet(
 )
 
 process.TFileService = cms.Service("TFileService",
-        fileName =  cms.string('MuMuTauTauTreelization.root')
+        fileName =  cms.string('MuMuTauMuTauHadTreelization.root')
 )
 
 process.p = cms.Path(process.treelizer)
