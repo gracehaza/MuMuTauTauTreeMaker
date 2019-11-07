@@ -119,6 +119,16 @@ class DiMuonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       vector<float> recoTauIsoMVATight;
       vector<float> recoTauIsoMVAVTight;
       vector<float> recoTauIsoMVAVVTight;
+      
+      vector<float> recoTauAntiMuMVALoose;
+      vector<float> recoTauAntiMuMVATight;
+
+      vector<float> recoTauAntiEleMVArawValue;
+      vector<float> recoTauAntiEleMVAVLoose;
+      vector<float> recoTauAntiEleMVALoose;
+      vector<float> recoTauAntiEleMVAMedium;
+      vector<float> recoTauAntiEleMVATight;
+      vector<float> recoTauAntiEleMVAVTight;
 
       // --- reconstructed jets ---
       vector<float> recoJetPt;
@@ -342,6 +352,16 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
            recoTauIsoMVATight.push_back(iTau->tauID("byTightIsolationMVArun2017v2DBoldDMwLT2017"));
            recoTauIsoMVAVTight.push_back(iTau->tauID("byVTightIsolationMVArun2017v2DBoldDMwLT2017"));
            recoTauIsoMVAVVTight.push_back(iTau->tauID("byVVTightIsolationMVArun2017v2DBoldDMwLT2017"));
+       
+           recoTauAntiMuMVALoose.push_back(iTau->tauID("againstMuonLoose3"));
+           recoTauAntiMuMVATight.push_back(iTau->tauID("againstMuonTight3"));
+       
+           recoTauAntiEleMVArawValue.push_back(iTau->tauID("againstElectronMVA6Raw"));
+           recoTauAntiEleMVAVLoose.push_back(iTau->tauID("againstElectronVLooseMVA6"));
+           recoTauAntiEleMVALoose.push_back(iTau->tauID("againstElectronLooseMVA6"));
+           recoTauAntiEleMVAMedium.push_back(iTau->tauID("againstElectronMediumMVA6"));
+           recoTauAntiEleMVATight.push_back(iTau->tauID("againstElectronTightMVA6"));
+           recoTauAntiEleMVAVTight.push_back(iTau->tauID("againstElectronVTightMVA6"));
        }
    }
 
@@ -408,6 +428,16 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    recoTauIsoMVATight.clear();
    recoTauIsoMVAVTight.clear();
    recoTauIsoMVAVVTight.clear();
+   
+   recoTauAntiMuMVALoose.clear();
+   recoTauAntiMuMVATight.clear();
+
+   recoTauAntiEleMVArawValue.clear();
+   recoTauAntiEleMVAVLoose.clear();
+   recoTauAntiEleMVALoose.clear();
+   recoTauAntiEleMVAMedium.clear();
+   recoTauAntiEleMVATight.clear();
+   recoTauAntiEleMVAVTight.clear();
 
    // --- reconstructed jets ---
    recoJetPt.clear();
@@ -461,6 +491,16 @@ DiMuonAnalyzer::beginJob()
     objectTree->Branch("recoTauIsoMVATight", &recoTauIsoMVATight);
     objectTree->Branch("recoTauIsoMVAVTight", &recoTauIsoMVAVTight);
     objectTree->Branch("recoTauIsoMVAVVTight", &recoTauIsoMVAVVTight);
+    
+    objectTree->Branch("recoTauAntiMuMVALoose", &recoTauAntiMuMVALoose);
+    objectTree->Branch("recoTauAntiMuMVATight", &recoTauAntiMuMVATight);
+    
+    objectTree->Branch("recoTauAntiEleMVArawValue", &recoTauAntiEleMVArawValue);
+    objectTree->Branch("recoTauAntiEleMVAVLoose", &recoTauAntiEleMVAVLoose);
+    objectTree->Branch("recoTauAntiEleMVALoose", &recoTauAntiEleMVALoose);
+    objectTree->Branch("recoTauAntiEleMVAMedium", &recoTauAntiEleMVAMedium);
+    objectTree->Branch("recoTauAntiEleMVATight", &recoTauAntiEleMVATight);
+    objectTree->Branch("recoTauAntiEleMVAVTight", &recoTauAntiEleMVAVTight);
 
     objectTree->Branch("recoJetPt", &recoJetPt);
     objectTree->Branch("recoJetEta", &recoJetEta);
