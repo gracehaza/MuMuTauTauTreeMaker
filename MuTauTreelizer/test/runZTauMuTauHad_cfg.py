@@ -42,19 +42,36 @@ myTool = TauIDEmbedder(process, cms,
 myTool.runTauID()
 
 ############################################################
+if options.isMC == 1:
+    process.treelizer = cms.Sequence(
+            process.lumiTree*
+            process.HLTEle*
+            process.TrigMuMatcher*
+            process.MuonPtEtaCut*
+            process.MuonID*
+            process.rerunMvaIsolationSequence*
+            process.NewTauIDsEmbedded*
+            process.TauHadSelector*
+            process.JetSelector*
+            process.GenMuonCandSelector*
+            process.GenTauMuCandSelector*
+            process.GenTauHadCandSelector*
+            process.ZTauMuTauHadAnalyzer
+    )
 
-process.treelizer = cms.Sequence(
-        process.lumiTree*
-        process.HLTEle*
-        process.TrigMuMatcher*
-        process.MuonPtEtaCut*
-        process.MuonID*
-        process.rerunMvaIsolationSequence*
-        process.NewTauIDsEmbedded*
-        process.TauHadSelector*
-        process.JetSelector*
-        process.ZTauMuTauHadAnalyzer
-)
+else:
+    process.treelizer = cms.Sequence(
+            process.lumiTree*
+            process.HLTEle*
+            process.TrigMuMatcher*
+            process.MuonPtEtaCut*
+            process.MuonID*
+            process.rerunMvaIsolationSequence*
+            process.NewTauIDsEmbedded*
+            process.TauHadSelector*
+            process.JetSelector*
+            process.ZTauMuTauHadAnalyzer
+    )
 
 process.options = cms.untracked.PSet(
         wantSummary = cms.untracked.bool(True),

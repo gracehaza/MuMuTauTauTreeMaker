@@ -36,8 +36,10 @@
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/PatCandidates/interface/Vertexing.h"
 #include "TTree.h"
+#include "TLorentzVector.h"
 #include <math.h>
 #include <string>
 #include <iostream>
@@ -59,6 +61,10 @@ class ZTauMuTauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResourc
       ~ZTauMuTauHadAnalyzer();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+      std::vector<const reco::Candidate*> findTauMuVisDaughters(const reco::Candidate*);
+      std::vector<const reco::Candidate*> findTauHadVisDaughters(const reco::Candidate*);
+      int findTauPiZeros(const reco::Candidate*);
+      int findTauChargedHadrons(const reco::Candidate*);
 
 
    private:
@@ -75,6 +81,9 @@ class ZTauMuTauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResourc
       bool isMC;
       edm::EDGetTokenT<edm::View<PileupSummaryInfo>> PileupTag;
       edm::EDGetTokenT<GenEventInfoProduct> generator;
+      edm::EDGetTokenT<edm::View<reco::GenParticle>> GenMuTag;
+      edm::EDGetTokenT<edm::View<reco::GenParticle>> GenTauMuTag;
+      edm::EDGetTokenT<edm::View<reco::GenParticle>> GenTauHadTag;
 
       TTree *objectTree;
       // --- below is the vectors of object variables ---
@@ -134,6 +143,36 @@ class ZTauMuTauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResourc
       int trueNInteraction;
       int eventID;
 
+      // --- gen muons ----
+      vector<float> genMuonPt;
+      vector<float> genMuonEta;
+      vector<float> genMuonPhi;
+      vector<float> genMuonMass;
+      vector<int> genMuonPDGId;
+      vector<int> genMuonMotherPDGId;
+
+      // --- gen tau_mu ----
+      vector<float> genTauMuPt;
+      vector<float> genTauMuEta;
+      vector<float> genTauMuPhi;
+      vector<float> genTauMuMass;
+      vector<int> genTauMuPDGId;
+      vector<int> genTauMuMotherPDGId;
+      vector<float> genTauMuVisPt;
+      vector<float> genTauMuVisMass;
+
+      // --- gen tau_h ----
+      vector<float> genTauHadPt;
+      vector<float> genTauHadEta;
+      vector<float> genTauHadPhi;
+      vector<float> genTauHadMass;
+      vector<int> genTauHadPDGId;
+      vector<int> genTauHadMotherPDGId;
+      vector<float> genTauHadVisPt;
+      vector<float> genTauHadVisMass;
+      vector<int> genTauHadNPionZero;
+      vector<int> genTauHadNChargedHadrons;
+
       // --- event weight for MC ---
       float genEventWeight; 
 };
@@ -156,7 +195,10 @@ ZTauMuTauHadAnalyzer::ZTauMuTauHadAnalyzer(const edm::ParameterSet& iConfig):
     MetTag(consumes<edm::View<pat::MET>>(iConfig.getParameter<edm::InputTag>("MetTag"))),
     VertexTag(consumes<edm::View<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("VertexTag"))),
     PileupTag(consumes<edm::View<PileupSummaryInfo>>(iConfig.existsAs<edm::InputTag>("PileupTag") ? iConfig.getParameter<edm::InputTag>("PileupTag") : edm::InputTag())),
-    generator(consumes<GenEventInfoProduct>(iConfig.existsAs<edm::InputTag>("Generator") ? iConfig.getParameter<edm::InputTag>("Generator") : edm::InputTag()))
+    generator(consumes<GenEventInfoProduct>(iConfig.existsAs<edm::InputTag>("Generator") ? iConfig.getParameter<edm::InputTag>("Generator") : edm::InputTag())),
+    GenMuTag(consumes<edm::View<reco::GenParticle>>(iConfig.existsAs<edm::InputTag>("GenMuTag") ? iConfig.getParameter<edm::InputTag>("GenMuTag") : edm::InputTag())),
+    GenTauMuTag(consumes<edm::View<reco::GenParticle>>(iConfig.existsAs<edm::InputTag>("GenTauMuTag") ? iConfig.getParameter<edm::InputTag>("GenTauMuTag") : edm::InputTag())),
+    GenTauHadTag(consumes<edm::View<reco::GenParticle>>(iConfig.existsAs<edm::InputTag>("GenTauHadTag") ? iConfig.getParameter<edm::InputTag>("GenTauHadTag") : edm::InputTag()))
 {
    //now do what ever initialization is needed
    usesResource("TFileService");
@@ -199,11 +241,98 @@ ZTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
    if (isMC)
    {
+       edm::Handle<edm::View<reco::GenParticle>> pGenMu;
+       iEvent.getByToken(GenMuTag, pGenMu);
+
+       edm::Handle<edm::View<reco::GenParticle>> pGenTauMu;
+       iEvent.getByToken(GenTauMuTag, pGenTauMu);
+
+       edm::Handle<edm::View<reco::GenParticle>> pGenTauHad;
+       iEvent.getByToken(GenTauHadTag, pGenTauHad);
+
        edm::Handle<GenEventInfoProduct> gen_ev_info;
        iEvent.getByToken(generator, gen_ev_info);
 
        edm::Handle<edm::View<PileupSummaryInfo>> pileup_info;
        iEvent.getByToken(PileupTag, pileup_info);
+
+       for (edm::View<reco::GenParticle>::const_iterator iMuon=pGenMu->begin(); iMuon!=pGenMu->end(); iMuon++)
+       {
+           genMuonPt.push_back(iMuon->pt());
+           genMuonEta.push_back(iMuon->eta());
+           genMuonPhi.push_back(iMuon->phi());
+           genMuonMass.push_back(iMuon->mass());
+           genMuonPDGId.push_back(iMuon->pdgId());
+           genMuonMotherPDGId.push_back(iMuon->mother()->pdgId());
+       } // end for loop on gen muons
+
+       for (edm::View<reco::GenParticle>::const_iterator iTau=pGenTauMu->begin(); iTau!=pGenTauMu->end(); iTau++)
+       {
+           genTauMuPt.push_back(iTau->pt());
+           genTauMuEta.push_back(iTau->eta());
+           genTauMuPhi.push_back(iTau->phi());
+           genTauMuMass.push_back(iTau->mass());
+           genTauMuPDGId.push_back(iTau->pdgId());
+           genTauMuMotherPDGId.push_back(iTau->mother()->pdgId());
+
+           TLorentzVector sumTauMuVis;
+           std::vector <const reco::Candidate*> daughters;
+           daughters.clear();
+
+           for (unsigned int iDau = 0; iDau < iTau->numberOfDaughters(); iDau++)
+           {
+               const reco::Candidate* directDaughter = iTau->daughter(iDau);
+               daughters = findTauMuVisDaughters(directDaughter); // collect all the current daughter (if status == 1) or together its daughters (if status != 1) 
+
+               for (unsigned int jDau = 0; jDau < daughters.size(); jDau++)
+               {
+                   TLorentzVector p4Daughter;
+                   p4Daughter.SetPtEtaPhiM(daughters[jDau]->pt(), daughters[jDau]->eta(), daughters[jDau]->phi(), daughters[jDau]->mass());
+                   sumTauMuVis = sumTauMuVis + p4Daughter;
+               } // end for loop on all generations of visible daughter particles of tau_mu
+           } // end for loop on tau_mu direct daughter particles
+
+           genTauMuVisPt.push_back(sumTauMuVis.Pt());
+           genTauMuVisMass.push_back(sumTauMuVis.M());
+       } // end for loop on gen tau_mu
+
+       for (edm::View<reco::GenParticle>::const_iterator iTau=pGenTauHad->begin(); iTau!=pGenTauHad->end(); iTau++)
+       {
+           genTauHadPt.push_back(iTau->pt());
+           genTauHadEta.push_back(iTau->eta());
+           genTauHadPhi.push_back(iTau->phi());
+           genTauHadMass.push_back(iTau->mass());
+           genTauHadPDGId.push_back(iTau->pdgId());
+           genTauHadMotherPDGId.push_back(iTau->mother()->pdgId());
+
+           TLorentzVector sumTauHadVis;
+           std::vector <const reco::Candidate*> daughters;
+           daughters.clear();
+
+           int nPiZeros = 0;
+           int nChargedHadrons = 0;
+
+           for (unsigned int iDau = 0; iDau < iTau->numberOfDaughters(); iDau++)
+           {
+               const reco::Candidate* directDaughter = iTau->daughter(iDau);
+               daughters = findTauHadVisDaughters(directDaughter); // collect all the current daughter (if status == 1) or together its daughters (if status != 1) 
+
+               nPiZeros += findTauPiZeros(directDaughter);
+               nChargedHadrons += findTauChargedHadrons(directDaughter);
+
+               for (unsigned int jDau = 0; jDau < daughters.size(); jDau++)
+               {
+                   TLorentzVector p4Daughter;
+                   p4Daughter.SetPtEtaPhiM(daughters[jDau]->pt(), daughters[jDau]->eta(), daughters[jDau]->phi(), daughters[jDau]->mass());
+                   sumTauHadVis = sumTauHadVis + p4Daughter;
+               } // end for loop on all generations of visible daughter particles of tau_h
+           } // end for loop on tau_h direct daughter particles
+
+           genTauHadVisPt.push_back(sumTauHadVis.Pt());
+           genTauHadVisMass.push_back(sumTauHadVis.M());
+           genTauHadNPionZero.push_back(nPiZeros);
+           genTauHadNChargedHadrons.push_back(nChargedHadrons);
+       } // end for loop on gen tau_h
 
        if (gen_ev_info.isValid())
        {
@@ -358,8 +487,154 @@ ZTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    recoMETPhi.clear();
    recoMETPx.clear();
    recoMETPy.clear();
+
+   // ---- clear all the vectors for next event ----
+   genMuonPt.clear();
+   genMuonEta.clear();
+   genMuonPhi.clear();
+   genMuonMass.clear();
+   genMuonPDGId.clear();
+   genMuonMotherPDGId.clear();
+
+   genTauMuPt.clear();
+   genTauMuEta.clear();
+   genTauMuPhi.clear();
+   genTauMuMass.clear();
+   genTauMuPDGId.clear();
+   genTauMuMotherPDGId.clear();
+   genTauMuVisPt.clear();
+   genTauMuVisMass.clear();
+
+   genTauHadPt.clear();
+   genTauHadEta.clear();
+   genTauHadPhi.clear();
+   genTauHadMass.clear();
+   genTauHadPDGId.clear();
+   genTauHadMotherPDGId.clear();
+   genTauHadVisPt.clear();
+   genTauHadVisMass.clear();
+   genTauHadNPionZero.clear();
+   genTauHadNChargedHadrons.clear();
 }
 
+// ------------ function for adding up all the visible daughter particles of tau_mu ----------------
+std::vector<const reco::Candidate*>
+ZTauMuTauHadAnalyzer::findTauMuVisDaughters(const reco::Candidate* inputDaughter)
+{
+    std::vector<const reco::Candidate*> visParticles;
+    if (inputDaughter->status() == 1)
+    {
+        if (fabs(inputDaughter->pdgId()) == 11 || fabs(inputDaughter->pdgId()) == 13 || fabs(inputDaughter->pdgId()) == 22)
+        {
+            visParticles.push_back(inputDaughter);
+        } // end if final state particle is mu/ele/gamma
+    } // end if input daughter is final state particle
+
+    else{
+        int nGrandDaughters = inputDaughter->numberOfDaughters();
+        for (int iGrandDau = 0; iGrandDau < nGrandDaughters; iGrandDau++)
+        {
+            const reco::Candidate* grandDaughter = inputDaughter->daughter(iGrandDau);
+            if (grandDaughter->status() == 1)
+            {
+                if (fabs(grandDaughter->pdgId()) == 11 || fabs(grandDaughter->pdgId()) == 13 || fabs(grandDaughter->pdgId()) == 22)
+                {
+                    visParticles.push_back(grandDaughter);
+                } // end if final state particle is mu/ele/gamma
+            } // end if grand daughter is final state particle
+
+            else{
+                auto auxVisParticles = findTauMuVisDaughters(grandDaughter);
+                visParticles.insert(visParticles.end(), auxVisParticles.begin(), auxVisParticles.end());
+            } // end else grand daughter is(not) final state particle
+        } // end for loop on grand daughters
+    } // end else input daughter is(not) final state particle
+
+    return visParticles;
+}
+
+// ------------ function for adding up all the visible daughter particles of tau_h ----------------
+std::vector<const reco::Candidate*>
+ZTauMuTauHadAnalyzer::findTauHadVisDaughters(const reco::Candidate* inputDaughter)
+{
+    std::vector<const reco::Candidate*> visParticles;
+    if (inputDaughter->status() == 1)
+    {
+        if (fabs(inputDaughter->pdgId()) != 11 && fabs(inputDaughter->pdgId()) != 12 && fabs(inputDaughter->pdgId()) != 13 && fabs(inputDaughter->pdgId()) != 14 && fabs(inputDaughter->pdgId()) != 16)
+        {
+            visParticles.push_back(inputDaughter);
+        } // end if final state particle is not mu/ele/neutrinos
+    } // end if input daughter is final state particle
+
+    else{
+        int nGrandDaughters = inputDaughter->numberOfDaughters();
+        for (int iGrandDau = 0; iGrandDau < nGrandDaughters; iGrandDau++)
+        {
+            const reco::Candidate* grandDaughter = inputDaughter->daughter(iGrandDau);
+            if (grandDaughter->status() == 1)
+            {
+                if (fabs(grandDaughter->pdgId()) != 11 && fabs(grandDaughter->pdgId()) != 12 && fabs(grandDaughter->pdgId()) != 13 && fabs(grandDaughter->pdgId()) != 14 && fabs(grandDaughter->pdgId()) != 16)
+                {
+                    visParticles.push_back(grandDaughter);
+                } // end if final state particle is not mu/ele/neutrinos
+            } // end if grand daughter is final state particle
+
+            else{
+                auto auxVisParticles = findTauMuVisDaughters(grandDaughter);
+                visParticles.insert(visParticles.end(), auxVisParticles.begin(), auxVisParticles.end());
+            } // end else grand daughter is(not) final state particle
+        } // end for loop on grand daughters
+    } // end else input daughter is(not) final state particle
+
+    return visParticles;
+}
+
+// ------------ function for collecting all the pizeros from tau_h decay ----------------
+int ZTauMuTauHadAnalyzer::findTauPiZeros(const reco::Candidate* inputDaughter)
+{
+    int numPiZero = 0;
+    if (fabs(inputDaughter->pdgId()) == 111) numPiZero++;
+    else if (fabs(inputDaughter->pdgId()) == 15)
+    {
+        int nGrandDaughters = inputDaughter->numberOfDaughters();
+        for (int iGrandDau = 0; iGrandDau < nGrandDaughters; iGrandDau++)
+        {
+            const reco::Candidate* grandDaughter = inputDaughter->daughter(iGrandDau);
+            if (fabs(grandDaughter->pdgId()) == 111) numPiZero++;
+            else if (fabs(grandDaughter->pdgId()) == 15)
+            {
+                numPiZero += findTauPiZeros(grandDaughter);
+            } // end if the grand-daughter is still tau_h due to FSR
+        } // end for loop on the grand-daughters
+    } // end if the input daughter is still tau_h because of FSR
+
+    return numPiZero;
+}
+
+// ------------ function for collecting all the charged hadrons from tau_h decay ----------------
+int ZTauMuTauHadAnalyzer::findTauChargedHadrons(const reco::Candidate* inputDaughter)
+{
+    int numChargedHadrons = 0;
+    bool chargedHadronsFromTau = fabs(inputDaughter->charge()) != 0 && fabs(inputDaughter->pdgId()) != 11 && fabs(inputDaughter->pdgId()) != 13 && fabs(inputDaughter->pdgId()) != 15; 
+
+    if (chargedHadronsFromTau) numChargedHadrons++;
+    else if (fabs(inputDaughter->pdgId()) == 15)
+    {
+        int nGrandDaughters = inputDaughter->numberOfDaughters();
+        for (int iGrandDau = 0; iGrandDau < nGrandDaughters; iGrandDau++)
+        {
+            const reco::Candidate* grandDaughter = inputDaughter->daughter(iGrandDau);
+            chargedHadronsFromTau = fabs(grandDaughter->charge()) != 0 && fabs(grandDaughter->pdgId()) != 11 && fabs(grandDaughter->pdgId()) != 13 && fabs(grandDaughter->pdgId()) != 15;
+            if (chargedHadronsFromTau) numChargedHadrons++;
+            else if (fabs(grandDaughter->pdgId()) == 15)
+            {
+                numChargedHadrons += findTauPiZeros(grandDaughter);
+            } // end if the grand-daughter is still tau_h due to FSR
+        } // end for loop on the grand-daughters
+    } // end if the input daughter is still tau_h because of FSR
+
+    return numChargedHadrons;
+}
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
@@ -419,6 +694,33 @@ ZTauMuTauHadAnalyzer::beginJob()
 
     if (isMC)
     {
+        objectTree->Branch("genMuonPt", &genMuonPt);
+        objectTree->Branch("genMuonEta", &genMuonEta);
+        objectTree->Branch("genMuonPhi", &genMuonPhi);
+        objectTree->Branch("genMuonMass", &genMuonMass);
+        objectTree->Branch("genMuonPDGId", &genMuonPDGId);
+        objectTree->Branch("genMuonMotherPDGId", &genMuonMotherPDGId);
+
+        objectTree->Branch("genTauMuPt", &genTauMuPt);
+        objectTree->Branch("genTauMuEta", &genTauMuEta);
+        objectTree->Branch("genTauMuPhi", &genTauMuPhi);
+        objectTree->Branch("genTauMuMass", &genTauMuMass);
+        objectTree->Branch("genTauMuPDGId", &genTauMuPDGId);
+        objectTree->Branch("genTauMuMotherPDGId", &genTauMuMotherPDGId);
+        objectTree->Branch("genTauMuVisPt", &genTauMuVisPt);
+        objectTree->Branch("genTauMuVisMass", &genTauMuVisMass);
+
+        objectTree->Branch("genTauHadPt", &genTauHadPt);
+        objectTree->Branch("genTauHadEta", &genTauHadEta);
+        objectTree->Branch("genTauHadPhi", &genTauHadPhi);
+        objectTree->Branch("genTauHadMass", &genTauHadMass);
+        objectTree->Branch("genTauHadPDGId", &genTauHadPDGId);
+        objectTree->Branch("genTauHadMotherPDGId", &genTauHadMotherPDGId);
+        objectTree->Branch("genTauHadVisPt", &genTauHadVisPt);
+        objectTree->Branch("genTauHadVisMass", &genTauHadVisMass);
+        objectTree->Branch("genTauHadNPionZero", &genTauHadNPionZero);
+        objectTree->Branch("genTauHadNChargedHadrons", &genTauHadNChargedHadrons);
+
         objectTree->Branch("recoNPU", &recoNPU, "recoNPU/I");
         objectTree->Branch("trueNInteraction", &trueNInteraction, "trueNInteraction/I");
         objectTree->Branch("genEventWeight", &genEventWeight, "genEventWeight/F");

@@ -51,6 +51,24 @@ JetSelector = cms.EDFilter("JetSelector",
         ptCut = cms.double(20),
 )
 
+GenMuonCandSelector = cms.EDFilter("GenMuonCandSelector",
+        genParticlesTag = cms.InputTag('prunedGenParticles'),
+        etaCut = cms.double(2.6),
+        ptCut = cms.double(2.5),
+)
+
+GenTauMuCandSelector = cms.EDFilter("GenTauMuCandSelector",
+        genParticlesTag = cms.InputTag('prunedGenParticles'),
+        etaCut = cms.double(2.6),
+        ptCut = cms.double(2.5),
+)
+
+GenTauHadCandSelector = cms.EDFilter("GenTauHadCandSelector",
+        genParticlesTag = cms.InputTag('prunedGenParticles'),
+        etaCut = cms.double(2.6),
+        ptCut = cms.double(2.5),
+)
+
 ZTauMuTauHadAnalyzer = cms.EDAnalyzer('ZTauMuTauHadAnalyzer',
         MuTag = cms.InputTag("MuonID"),
         TauTag = cms.InputTag("TauHadSelector"),
@@ -58,6 +76,9 @@ ZTauMuTauHadAnalyzer = cms.EDAnalyzer('ZTauMuTauHadAnalyzer',
         MetTag = cms.InputTag("slimmedMETs"),
         VertexTag = cms.InputTag("offlineSlimmedPrimaryVertices"),
         isMC = cms.bool(True),
+        GenMuTag = cms.InputTag('GenMuonCandSelector'),
+        GenTauMuTag = cms.InputTag('GenTauMuCandSelector'),
+        GenTauHadTag = cms.InputTag('GenTauHadCandSelector'),
         PileupTag = cms.InputTag("slimmedAddPileupInfo"),
         Generator = cms.InputTag("generator"),
 )
