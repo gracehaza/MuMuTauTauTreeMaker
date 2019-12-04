@@ -560,10 +560,10 @@ ZTauMuTauHadAnalyzer::findTauHadVisDaughters(const reco::Candidate* inputDaughte
     std::vector<const reco::Candidate*> visParticles;
     if (inputDaughter->status() == 1)
     {
-        if (fabs(inputDaughter->pdgId()) != 11 && fabs(inputDaughter->pdgId()) != 12 && fabs(inputDaughter->pdgId()) != 13 && fabs(inputDaughter->pdgId()) != 14 && fabs(inputDaughter->pdgId()) != 16)
+        if (fabs(inputDaughter->pdgId()) != 12 && fabs(inputDaughter->pdgId()) != 14 && fabs(inputDaughter->pdgId()) != 16)
         {
             visParticles.push_back(inputDaughter);
-        } // end if final state particle is not mu/ele/neutrinos
+        } // end if final state particle is not neutrinos
     } // end if input daughter is final state particle
 
     else{
@@ -573,14 +573,14 @@ ZTauMuTauHadAnalyzer::findTauHadVisDaughters(const reco::Candidate* inputDaughte
             const reco::Candidate* grandDaughter = inputDaughter->daughter(iGrandDau);
             if (grandDaughter->status() == 1)
             {
-                if (fabs(grandDaughter->pdgId()) != 11 && fabs(grandDaughter->pdgId()) != 12 && fabs(grandDaughter->pdgId()) != 13 && fabs(grandDaughter->pdgId()) != 14 && fabs(grandDaughter->pdgId()) != 16)
+                if (fabs(grandDaughter->pdgId()) != 12 && fabs(grandDaughter->pdgId()) != 14 && fabs(grandDaughter->pdgId()) != 16)
                 {
                     visParticles.push_back(grandDaughter);
-                } // end if final state particle is not mu/ele/neutrinos
+                } // end if final state particle is not neutrinos
             } // end if grand daughter is final state particle
 
             else{
-                auto auxVisParticles = findTauMuVisDaughters(grandDaughter);
+                auto auxVisParticles = findTauHadVisDaughters(grandDaughter);
                 visParticles.insert(visParticles.end(), auxVisParticles.begin(), auxVisParticles.end());
             } // end else grand daughter is(not) final state particle
         } // end for loop on grand daughters

@@ -91,6 +91,36 @@ JetSelector = cms.EDFilter("JetSelector",
         ptCut = cms.double(20),
 )
 
+GenMuonCandSelector = cms.EDFilter("GenMuonCandSelector",
+        genParticlesTag = cms.InputTag('prunedGenParticles'),
+        etaCut = cms.double(2.6),
+        ptCut = cms.double(2.5),
+)
+
+GenElectronCandSelector = cms.EDFilter("GenElectronCandSelector",
+        genParticlesTag = cms.InputTag('prunedGenParticles'),
+        etaCut = cms.double(2.6),
+        ptCut = cms.double(2.5),
+)
+
+GenTauMuCandSelector = cms.EDFilter("GenTauMuCandSelector",
+        genParticlesTag = cms.InputTag('prunedGenParticles'),
+        etaCut = cms.double(2.6),
+        ptCut = cms.double(2.5),
+)
+
+GenTauEleCandSelector = cms.EDFilter("GenTauEleCandSelector",
+        genParticlesTag = cms.InputTag('prunedGenParticles'),
+        etaCut = cms.double(2.6),
+        ptCut = cms.double(2.5),
+)
+
+GenTauHadCandSelector = cms.EDFilter("GenTauHadCandSelector",
+        genParticlesTag = cms.InputTag('prunedGenParticles'),
+        etaCut = cms.double(2.6),
+        ptCut = cms.double(2.5),
+)
+
 DiMuonAnalyzer = cms.EDAnalyzer('DiMuonAnalyzer',
         Mu1Mu2Tag = cms.InputTag("DiMuonMassSelector"),
         Mu3Tag = cms.InputTag("ThirdMuonIso"),
@@ -102,6 +132,11 @@ DiMuonAnalyzer = cms.EDAnalyzer('DiMuonAnalyzer',
         rhoTag = cms.InputTag("fixedGridRhoAll"),
         effAreasConfigFile = cms.FileInPath("MuMuTauTauTreeMaker/MuTauTreelizer/data/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt"),
         isMC = cms.bool(True),
+        GenMuTag = cms.InputTag('GenMuonCandSelector'),
+        GenEleTag = cms.InputTag('GenElectronCandSelector'),
+        GenTauMuTag = cms.InputTag('GenTauMuCandSelector'),
+        GenTauEleTag = cms.InputTag('GenTauEleCandSelector'),
+        GenTauHadTag = cms.InputTag('GenTauHadCandSelector'),
         PileupTag = cms.InputTag("slimmedAddPileupInfo"),
         Generator = cms.InputTag("generator"),
 )

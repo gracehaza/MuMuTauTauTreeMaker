@@ -31,7 +31,6 @@
 #include "FWCore/Utilities/interface/StreamID.h"
 
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
-#include "TLorentzVector.h"
 #include <math.h>
 
 using namespace std;

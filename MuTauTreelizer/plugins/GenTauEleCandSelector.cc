@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    GenMuTauTreelizer/GenTauMuCandSelector
-// Class:      GenTauMuCandSelector
+// Package:    GenMuTauTreelizer/GenTauEleCandSelector
+// Class:      GenTauEleCandSelector
 // 
-/**\class GenTauMuCandSelector GenTauMuCandSelector.cc GenMuTauTreelizer/GenTauMuCandSelector/plugins/GenTauMuCandSelector.cc
+/**\class GenTauEleCandSelector GenTauEleCandSelector.cc GenMuTauTreelizer/GenTauEleCandSelector/plugins/GenTauEleCandSelector.cc
 
  Description: [one line class summary]
 
@@ -38,10 +38,10 @@ using namespace std;
 // class declaration
 //
 
-class GenTauMuCandSelector : public edm::stream::EDFilter<> {
+class GenTauEleCandSelector : public edm::stream::EDFilter<> {
    public:
-      explicit GenTauMuCandSelector(const edm::ParameterSet&);
-      ~GenTauMuCandSelector();
+      explicit GenTauEleCandSelector(const edm::ParameterSet&);
+      ~GenTauEleCandSelector();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
       void checkTauDecayMode(const reco::Candidate*, std::vector<const reco::Candidate*>&);
@@ -68,7 +68,7 @@ class GenTauMuCandSelector : public edm::stream::EDFilter<> {
 //
 // constructors and destructor
 //
-GenTauMuCandSelector::GenTauMuCandSelector(const edm::ParameterSet& iConfig):
+GenTauEleCandSelector::GenTauEleCandSelector(const edm::ParameterSet& iConfig):
     genParticleTag_(consumes<edm::View<reco::GenParticle>>(iConfig.getParameter<edm::InputTag>("genParticlesTag")))
 {
    //now do what ever initialization is needed
@@ -78,7 +78,7 @@ GenTauMuCandSelector::GenTauMuCandSelector(const edm::ParameterSet& iConfig):
 }
 
 
-GenTauMuCandSelector::~GenTauMuCandSelector()
+GenTauEleCandSelector::~GenTauEleCandSelector()
 {
  
    // do anything here that needs to be done at destruction time
@@ -92,21 +92,21 @@ GenTauMuCandSelector::~GenTauMuCandSelector()
 //
 
 // ------------ method called on each new Event  ------------
-bool GenTauMuCandSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
+bool GenTauEleCandSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
    edm::Handle<edm::View<reco::GenParticle>> pGenParticles;
-   std::unique_ptr<std::vector<reco::GenParticle>> tauMuColl = std::make_unique<std::vector<reco::GenParticle>>();
+   std::unique_ptr<std::vector<reco::GenParticle>> tauEleColl = std::make_unique<std::vector<reco::GenParticle>>();
 
    iEvent.getByToken(genParticleTag_, pGenParticles);
 
    if(pGenParticles->size() < 1)
    {
-       iEvent.put(std::move(tauMuColl));
+       iEvent.put(std::move(tauEleColl));
        return true;
    }
 
-   int CountTauMu = 0;
+   int CountTauEle = 0;
 
    for(edm::View<reco::GenParticle>::const_iterator iParticle=pGenParticles->begin(); iParticle!=pGenParticles->end(); ++iParticle)
    {
@@ -116,38 +116,38 @@ bool GenTauMuCandSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSe
            for (int iDaughter=0; iDaughter<nDaughters; iDaughter++)
            {
                int dauId = iParticle->daughter(iDaughter)->pdgId();
-               std::vector<const reco::Candidate*> tauMuCand;
-               tauMuCand.clear();
+               std::vector<const reco::Candidate*> tauEleCand;
+               tauEleCand.clear();
 
                if (fabs(dauId) == 15)
                {
-                   checkTauDecayMode(iParticle->daughter(iDaughter), tauMuCand);
+                   checkTauDecayMode(iParticle->daughter(iDaughter), tauEleCand);
 
-                   if (tauMuCand.size() > 0 && iParticle->pt() >= ptCut_ && fabs(iParticle->eta()) <= etaCut_)
+                   if (tauEleCand.size() > 0 && iParticle->pt() >= ptCut_ && fabs(iParticle->eta()) <= etaCut_)
                    {
-                       CountTauMu++;
-                       tauMuColl->push_back(*iParticle);
+                       CountTauEle++;
+                       tauEleColl->push_back(*iParticle);
                        break;
-                   } // end if tauMuCand vector is filled
+                   } // end if tauEleCand vector is filled
                } // end if daughter particle is tau (for exclusing tau->tau+gamma->tau+gamma+gamma ... -> hadrons + ngammas) -- FSR
 
-               else if ((fabs(dauId) == 13 || fabs(dauId) == 14) && iParticle->pt() >= ptCut_ && fabs(iParticle->eta()) <= etaCut_)
+               else if ((fabs(dauId) == 11 || fabs(dauId) == 12) && iParticle->pt() >= ptCut_ && fabs(iParticle->eta()) <= etaCut_)
                {
-                   CountTauMu++;
-                   tauMuColl->push_back(*iParticle);
+                   CountTauEle++;
+                   tauEleColl->push_back(*iParticle);
                    break;
-               } // else if the daughters are mu or neutrinos (leptonic decay of tau)
+               } // else if the daughters are ele or neutrinos (leptonic decay of tau)
            } // end for loop on the daughter particles
-       } // end if tau_mu candidates
+       } // end if tau_e candidates
    }// end for loop on genParticles
 
-   iEvent.put(std::move(tauMuColl));
+   iEvent.put(std::move(tauEleColl));
    return true;
 
 }
 
 // ------------ regressive function for excluding hadronic decay of taus that have several final state radiations before decay -----------------
-void GenTauMuCandSelector::checkTauDecayMode(const reco::Candidate* inputDaughter, std::vector<const reco::Candidate*>& daughterCand)
+void GenTauEleCandSelector::checkTauDecayMode(const reco::Candidate* inputDaughter, std::vector<const reco::Candidate*>& daughterCand)
 {
     bool tauHadDecayVeto = false;
     int nGrandDaughters = inputDaughter->numberOfDaughters();
@@ -160,15 +160,15 @@ void GenTauMuCandSelector::checkTauDecayMode(const reco::Candidate* inputDaughte
         } // end if granddaughter is still tau (FSR)
 
         else{
-            if (fabs(grandDauId) == 13 || fabs(grandDauId) == 14)
+            if (fabs(grandDauId) == 11 || fabs(grandDauId) == 12)
             {
                 daughterCand.push_back(inputDaughter->daughter(iGrandDaughter));
-            } // end if leptonic decay of input daughter tau (mu-nu)
+            } // end if leptonic decay of input daughter tau (e-nu)
 
-            else if (fabs(grandDauId) == 11 || fabs(grandDauId) == 12 || fabs(grandDauId) == 16 || fabs(grandDauId) == 22)
+            else if (fabs(grandDauId) == 13 || fabs(grandDauId) == 14 || fabs(grandDauId) == 16 || fabs(grandDauId) == 22)
             {
                 continue;
-            } // end if a tau neutrino is found, since the tau neutrino is produced in both leptonic and hadronic decays; or if e-nu from tau decay; or photon from FSR
+            } // end if a tau neutrino is found, since the tau neutrino is produced in both leptonic and hadronic decays; or if mu-nu from tau decay; or photon from FSR
 
             else{
                 tauHadDecayVeto = true;
@@ -185,19 +185,19 @@ void GenTauMuCandSelector::checkTauDecayMode(const reco::Candidate* inputDaughte
 
 // ------------ method called once each stream before processing any runs, lumis or events  ------------
 void
-GenTauMuCandSelector::beginStream(edm::StreamID)
+GenTauEleCandSelector::beginStream(edm::StreamID)
 {
 }
 
 // ------------ method called once each stream after processing all runs, lumis and events  ------------
 void
-GenTauMuCandSelector::endStream() {
+GenTauEleCandSelector::endStream() {
 }
 
 // ------------ method called when starting to processes a run  ------------
 /*
 void
-GenTauMuCandSelector::beginRun(edm::Run const&, edm::EventSetup const&)
+GenTauEleCandSelector::beginRun(edm::Run const&, edm::EventSetup const&)
 { 
 }
 */
@@ -205,7 +205,7 @@ GenTauMuCandSelector::beginRun(edm::Run const&, edm::EventSetup const&)
 // ------------ method called when ending the processing of a run  ------------
 /*
 void
-GenTauMuCandSelector::endRun(edm::Run const&, edm::EventSetup const&)
+GenTauEleCandSelector::endRun(edm::Run const&, edm::EventSetup const&)
 {
 }
 */
@@ -213,7 +213,7 @@ GenTauMuCandSelector::endRun(edm::Run const&, edm::EventSetup const&)
 // ------------ method called when starting to processes a luminosity block  ------------
 /*
 void
-GenTauMuCandSelector::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+GenTauEleCandSelector::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
 */
@@ -221,14 +221,14 @@ GenTauMuCandSelector::beginLuminosityBlock(edm::LuminosityBlock const&, edm::Eve
 // ------------ method called when ending the processing of a luminosity block  ------------
 /*
 void
-GenTauMuCandSelector::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+GenTauEleCandSelector::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
 */
  
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-GenTauMuCandSelector::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+GenTauEleCandSelector::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -236,4 +236,4 @@ GenTauMuCandSelector::fillDescriptions(edm::ConfigurationDescriptions& descripti
   descriptions.addDefault(desc);
 }
 //define this as a plug-in
-DEFINE_FWK_MODULE(GenTauMuCandSelector);
+DEFINE_FWK_MODULE(GenTauEleCandSelector);

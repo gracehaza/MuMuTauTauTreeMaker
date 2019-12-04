@@ -6,6 +6,7 @@ options = VarParsing.VarParsing('analysis')
 # -------- input files. Can be changed on the command line with the option inputFiles=... ---------
 options.inputFiles = ['/store/group/phys_higgs/HiggsExo/fengwang/SUSYGluGluToHToAA_AToMuMu_AToTauTau_M-125_M-19_TuneCUETP8M1_13TeV_madgraph_pythia8/MiniAOD_H125AA19_DiMuDiTau_Fall17DRPremix_v1/190515_140053/0000/mumutautau_1.root']
 options.register('isMC', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "Sample is MC")
+options.register('tauCluster', 3, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "different tau clusters")
 options.parseArguments()
 
 process = cms.Process("DiMuonTauETauHadTreelizer")
@@ -33,14 +34,41 @@ process.source = cms.Source("PoolSource",
 
 ######### embed 2017v2 tauID into the miniAOD ###############
 # reference: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePFTauID#Rerunning_of_the_tau_ID_on_M_AN1
+if options.tauCluster <= 0:
+    print " ====== use slimmedTaus cluster ======"
+    from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTaus import *
+    myTool = TauIDEmbedder(process, cms,
+            debug = True,
+            toKeep = ["2017v2"]
+    )
+    myTool.runTauID()
 
-from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVAForElectronCleaned import *
-myTool = TauIDEmbedder(process, cms,
-        debug = True,
-        toKeep = ["2017v2"]
-)
-myTool.runTauID()
+elif options.tauCluster == 1:
+    print " ====== use slimmedTausBoosted (lower Tau Pt) cluster ======"
+    from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTausBoosted import *
+    myTool = TauIDEmbedder(process, cms,
+            debug = True,
+            toKeep = ["2017v2"]
+    )
+    myTool.runTauID()
 
+elif options.tauCluster == 2:
+    print " ====== use slimmedTausMuonCleaned cluster ======"
+    from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTausMuonCleaned import *
+    myTool = TauIDEmbedder(process, cms,
+            debug = True,
+            toKeep = ["2017v2"]
+    )
+    myTool.runTauID()
+
+else:
+    print " ====== use slimmedTausElectronCleaned cluster ======"
+    from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTausElectronCleaned import *
+    myTool = TauIDEmbedder(process, cms,
+            debug = True,
+            toKeep = ["2017v2"]
+    )
+    myTool.runTauID()
 ############################################################
 
 ############################################################
