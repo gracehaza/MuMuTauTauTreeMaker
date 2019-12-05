@@ -628,7 +628,7 @@ int ZTauMuTauHadAnalyzer::findTauChargedHadrons(const reco::Candidate* inputDaug
             if (chargedHadronsFromTau) numChargedHadrons++;
             else if (fabs(grandDaughter->pdgId()) == 15)
             {
-                numChargedHadrons += findTauPiZeros(grandDaughter);
+                numChargedHadrons += findTauChargedHadrons(grandDaughter);
             } // end if the grand-daughter is still tau_h due to FSR
         } // end for loop on the grand-daughters
     } // end if the input daughter is still tau_h because of FSR

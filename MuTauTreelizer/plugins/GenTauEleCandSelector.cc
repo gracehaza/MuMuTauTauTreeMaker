@@ -44,7 +44,7 @@ class GenTauEleCandSelector : public edm::stream::EDFilter<> {
       ~GenTauEleCandSelector();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-      void checkTauDecayMode(const reco::Candidate*, std::vector<const reco::Candidate*>&);
+      void checkTauDecayMode(const reco::Candidate*, std::vector<const reco::Candidate*>&, bool&);
 
    private:
       virtual void beginStream(edm::StreamID) override;
@@ -121,7 +121,8 @@ bool GenTauEleCandSelector::filter(edm::Event& iEvent, const edm::EventSetup& iS
 
                if (fabs(dauId) == 15)
                {
-                   checkTauDecayMode(iParticle->daughter(iDaughter), tauEleCand);
+                   bool tauHadDecayVeto = false;
+                   checkTauDecayMode(iParticle->daughter(iDaughter), tauEleCand, tauHadDecayVeto);
 
                    if (tauEleCand.size() > 0 && iParticle->pt() >= ptCut_ && fabs(iParticle->eta()) <= etaCut_)
                    {
@@ -147,16 +148,15 @@ bool GenTauEleCandSelector::filter(edm::Event& iEvent, const edm::EventSetup& iS
 }
 
 // ------------ regressive function for excluding hadronic decay of taus that have several final state radiations before decay -----------------
-void GenTauEleCandSelector::checkTauDecayMode(const reco::Candidate* inputDaughter, std::vector<const reco::Candidate*>& daughterCand)
+void GenTauEleCandSelector::checkTauDecayMode(const reco::Candidate* inputDaughter, std::vector<const reco::Candidate*>& daughterCand, bool& tauHadDecayVeto)
 {
-    bool tauHadDecayVeto = false;
     int nGrandDaughters = inputDaughter->numberOfDaughters();
     for (int iGrandDaughter = 0; iGrandDaughter < nGrandDaughters; iGrandDaughter++)
     {
         int grandDauId = inputDaughter->daughter(iGrandDaughter)->pdgId(); 
         if (fabs(grandDauId) == 15)
         {
-            checkTauDecayMode(inputDaughter->daughter(iGrandDaughter), daughterCand);
+            checkTauDecayMode(inputDaughter->daughter(iGrandDaughter), daughterCand, tauHadDecayVeto);
         } // end if granddaughter is still tau (FSR)
 
         else{
