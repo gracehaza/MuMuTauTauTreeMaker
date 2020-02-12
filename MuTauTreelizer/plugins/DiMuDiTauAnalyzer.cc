@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    testED/ZTauMuTauHadAnalyzer
-// Class:      ZTauMuTauHadAnalyzer
+// Package:    MuMuChannel/DiMuDiTauAnalyzer
+// Class:      DiMuDiTauAnalyzer
 // 
-/**\class ZTauMuTauHadAnalyzer ZTauMuTauHadAnalyzer.cc testED/ZTauMuTauHadAnalyzer/plugins/ZTauMuTauHadAnalyzer.cc
+/**\class DiMuDiTauAnalyzer DiMuDiTauAnalyzer.cc MuMuChannel/DiMuDiTauAnalyzer/plugins/DiMuDiTauAnalyzer.cc
 
  Description: [one line class summary]
 
@@ -12,7 +12,7 @@
 */
 //
 // Original Author:  Fengwangdong Zhang
-//         Created:  Fri, 24 May 2019 17:15:41 GMT
+//         Created:  Tue, 09 Apr 2019 16:30:49 GMT
 //
 //
 
@@ -31,6 +31,7 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
@@ -38,6 +39,7 @@
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/PatCandidates/interface/Vertexing.h"
+#include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
 #include "TTree.h"
 #include "TLorentzVector.h"
 #include <math.h>
@@ -55,13 +57,13 @@ using namespace std;
 // constructor "usesResource("TFileService");"
 // This will improve performance in multithreaded jobs.
 
-class ZTauMuTauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
+class DiMuDiTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
    public:
-      explicit ZTauMuTauHadAnalyzer(const edm::ParameterSet&);
-      ~ZTauMuTauHadAnalyzer();
+      explicit DiMuDiTauAnalyzer(const edm::ParameterSet&);
+      ~DiMuDiTauAnalyzer();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-      std::vector<const reco::Candidate*> findTauMuVisDaughters(const reco::Candidate*);
+      std::vector<const reco::Candidate*> findTauMuEleVisDaughters(const reco::Candidate*);
       std::vector<const reco::Candidate*> findTauHadVisDaughters(const reco::Candidate*);
       int findTauPiZeros(const reco::Candidate*);
       int findTauChargedHadrons(const reco::Candidate*);
@@ -74,15 +76,20 @@ class ZTauMuTauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResourc
 
       // ----------member data ---------------------------
       edm::EDGetTokenT<edm::View<pat::Muon>> MuTag;
+      edm::EDGetTokenT<edm::View<pat::Electron>> EleTag;
       edm::EDGetTokenT<edm::View<pat::Tau>> TauTag;
       edm::EDGetTokenT<edm::View<pat::Jet>> JetTag;
       edm::EDGetTokenT<edm::View<pat::MET>> MetTag;
       edm::EDGetTokenT<edm::View<reco::Vertex>> VertexTag;
+      edm::EDGetTokenT<double> rhoTag;
+      EffectiveAreas effectiveAreas;
       bool isMC;
       edm::EDGetTokenT<edm::View<PileupSummaryInfo>> PileupTag;
       edm::EDGetTokenT<GenEventInfoProduct> generator;
       edm::EDGetTokenT<edm::View<reco::GenParticle>> GenMuTag;
+      edm::EDGetTokenT<edm::View<reco::GenParticle>> GenEleTag;
       edm::EDGetTokenT<edm::View<reco::GenParticle>> GenTauMuTag;
+      edm::EDGetTokenT<edm::View<reco::GenParticle>> GenTauEleTag;
       edm::EDGetTokenT<edm::View<reco::GenParticle>> GenTauHadTag;
 
       TTree *objectTree;
@@ -99,6 +106,16 @@ class ZTauMuTauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResourc
       vector<float> recoMuonDZ;
       vector<int> recoMuonNTrackerLayers;
       vector<int> recoMuonTriggerFlag;
+
+      // --- reconstructed electrons ---
+      vector<float> recoElectronPt;
+      vector<float> recoElectronEta;
+      vector<float> recoElectronPhi;
+      vector<float> recoElectronEnergy;
+      vector<int> recoElectronPDGId;
+      vector<float> recoElectronIsolation;
+      vector<float> recoElectronEcalTrkEnergyPostCorr;
+      vector<float> recoElectronEcalTrkEnergyErrPostCorr;
 
       // --- reconstructed taus ---
       vector<float> recoTauPt;
@@ -153,6 +170,14 @@ class ZTauMuTauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResourc
       vector<int> genMuonPDGId;
       vector<int> genMuonMotherPDGId;
 
+      // --- gen electrons ----
+      vector<float> genElectronPt;
+      vector<float> genElectronEta;
+      vector<float> genElectronPhi;
+      vector<float> genElectronMass;
+      vector<int> genElectronPDGId;
+      vector<int> genElectronMotherPDGId;
+
       // --- gen tau_mu ----
       vector<float> genTauMuPt;
       vector<float> genTauMuEta;
@@ -162,6 +187,16 @@ class ZTauMuTauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResourc
       vector<int> genTauMuMotherPDGId;
       vector<float> genTauMuVisPt;
       vector<float> genTauMuVisMass;
+
+      // --- gen tau_e ----
+      vector<float> genTauElePt;
+      vector<float> genTauEleEta;
+      vector<float> genTauElePhi;
+      vector<float> genTauEleMass;
+      vector<int> genTauElePDGId;
+      vector<int> genTauEleMotherPDGId;
+      vector<float> genTauEleVisPt;
+      vector<float> genTauEleVisMass;
 
       // --- gen tau_h ----
       vector<float> genTauHadPt;
@@ -190,16 +225,21 @@ class ZTauMuTauHadAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResourc
 //
 // constructors and destructor
 //
-ZTauMuTauHadAnalyzer::ZTauMuTauHadAnalyzer(const edm::ParameterSet& iConfig):
+DiMuDiTauAnalyzer::DiMuDiTauAnalyzer(const edm::ParameterSet& iConfig):
     MuTag(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("MuTag"))),
+    EleTag(consumes<edm::View<pat::Electron>>(iConfig.getParameter<edm::InputTag>("EleTag"))),
     TauTag(consumes<edm::View<pat::Tau>>(iConfig.getParameter<edm::InputTag>("TauTag"))),
     JetTag(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("JetTag"))),
     MetTag(consumes<edm::View<pat::MET>>(iConfig.getParameter<edm::InputTag>("MetTag"))),
     VertexTag(consumes<edm::View<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("VertexTag"))),
+    rhoTag(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoTag"))),
+    effectiveAreas((iConfig.getParameter<edm::FileInPath>("effAreasConfigFile")).fullPath()),
     PileupTag(consumes<edm::View<PileupSummaryInfo>>(iConfig.existsAs<edm::InputTag>("PileupTag") ? iConfig.getParameter<edm::InputTag>("PileupTag") : edm::InputTag())),
     generator(consumes<GenEventInfoProduct>(iConfig.existsAs<edm::InputTag>("Generator") ? iConfig.getParameter<edm::InputTag>("Generator") : edm::InputTag())),
     GenMuTag(consumes<edm::View<reco::GenParticle>>(iConfig.existsAs<edm::InputTag>("GenMuTag") ? iConfig.getParameter<edm::InputTag>("GenMuTag") : edm::InputTag())),
+    GenEleTag(consumes<edm::View<reco::GenParticle>>(iConfig.existsAs<edm::InputTag>("GenEleTag") ? iConfig.getParameter<edm::InputTag>("GenEleTag") : edm::InputTag())),
     GenTauMuTag(consumes<edm::View<reco::GenParticle>>(iConfig.existsAs<edm::InputTag>("GenTauMuTag") ? iConfig.getParameter<edm::InputTag>("GenTauMuTag") : edm::InputTag())),
+    GenTauEleTag(consumes<edm::View<reco::GenParticle>>(iConfig.existsAs<edm::InputTag>("GenTauEleTag") ? iConfig.getParameter<edm::InputTag>("GenTauEleTag") : edm::InputTag())),
     GenTauHadTag(consumes<edm::View<reco::GenParticle>>(iConfig.existsAs<edm::InputTag>("GenTauHadTag") ? iConfig.getParameter<edm::InputTag>("GenTauHadTag") : edm::InputTag()))
 {
    //now do what ever initialization is needed
@@ -208,7 +248,7 @@ ZTauMuTauHadAnalyzer::ZTauMuTauHadAnalyzer(const edm::ParameterSet& iConfig):
 }
 
 
-ZTauMuTauHadAnalyzer::~ZTauMuTauHadAnalyzer()
+DiMuDiTauAnalyzer::~DiMuDiTauAnalyzer()
 {
  
    // do anything here that needs to be done at desctruction time
@@ -223,11 +263,14 @@ ZTauMuTauHadAnalyzer::~ZTauMuTauHadAnalyzer()
 
 // ------------ method called for each event  ------------
 void
-ZTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
    edm::Handle<edm::View<pat::Muon>> pMu;
    iEvent.getByToken(MuTag, pMu);
+
+   edm::Handle<edm::View<pat::Electron>> pElectron;
+   iEvent.getByToken(EleTag, pElectron);
 
    edm::Handle<edm::View<pat::Tau>> pTau;
    iEvent.getByToken(TauTag, pTau);
@@ -241,13 +284,22 @@ ZTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    edm::Handle<edm::View<reco::Vertex>> pVertex;
    iEvent.getByToken(VertexTag, pVertex);
 
+   edm::Handle<double> pRho;
+   iEvent.getByToken(rhoTag, pRho);
+
    if (isMC)
    {
        edm::Handle<edm::View<reco::GenParticle>> pGenMu;
        iEvent.getByToken(GenMuTag, pGenMu);
 
+       edm::Handle<edm::View<reco::GenParticle>> pGenEle;
+       iEvent.getByToken(GenEleTag, pGenEle);
+
        edm::Handle<edm::View<reco::GenParticle>> pGenTauMu;
        iEvent.getByToken(GenTauMuTag, pGenTauMu);
+
+       edm::Handle<edm::View<reco::GenParticle>> pGenTauEle;
+       iEvent.getByToken(GenTauEleTag, pGenTauEle);
 
        edm::Handle<edm::View<reco::GenParticle>> pGenTauHad;
        iEvent.getByToken(GenTauHadTag, pGenTauHad);
@@ -271,6 +323,19 @@ ZTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
            } // end for loop on gen muons
        } // end if pGenMu->size() > 0
 
+       if (pGenEle->size() > 0)
+       {
+           for (edm::View<reco::GenParticle>::const_iterator iElectron=pGenEle->begin(); iElectron!=pGenEle->end(); iElectron++)
+           {
+               genElectronPt.push_back(iElectron->pt());
+               genElectronEta.push_back(iElectron->eta());
+               genElectronPhi.push_back(iElectron->phi());
+               genElectronMass.push_back(iElectron->mass());
+               genElectronPDGId.push_back(iElectron->pdgId());
+               genElectronMotherPDGId.push_back(iElectron->mother()->pdgId());
+           } // end for loop on gen electrons
+       } // end if pGenEle->size() > 0
+
        if (pGenTauMu->size() > 0)
        {
            for (edm::View<reco::GenParticle>::const_iterator iTau=pGenTauMu->begin(); iTau!=pGenTauMu->end(); iTau++)
@@ -289,7 +354,7 @@ ZTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
                for (unsigned int iDau = 0; iDau < iTau->numberOfDaughters(); iDau++)
                {
                    const reco::Candidate* directDaughter = iTau->daughter(iDau);
-                   daughters = findTauMuVisDaughters(directDaughter); // collect all the current daughter (if status == 1) or together its daughters (if status != 1) 
+                   daughters = findTauMuEleVisDaughters(directDaughter); // collect all the current daughter (if status == 1) or together its daughters (if status != 1) 
 
                    for (unsigned int jDau = 0; jDau < daughters.size(); jDau++)
                    {
@@ -303,6 +368,39 @@ ZTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
                genTauMuVisMass.push_back(sumTauMuVis.M());
            } // end for loop on gen tau_mu
        } // end if pGenTauMu->size() > 0
+
+       if (pGenTauEle->size() > 0)
+       {
+           for (edm::View<reco::GenParticle>::const_iterator iTau=pGenTauEle->begin(); iTau!=pGenTauEle->end(); iTau++)
+           {
+               genTauElePt.push_back(iTau->pt());
+               genTauEleEta.push_back(iTau->eta());
+               genTauElePhi.push_back(iTau->phi());
+               genTauEleMass.push_back(iTau->mass());
+               genTauElePDGId.push_back(iTau->pdgId());
+               genTauEleMotherPDGId.push_back(iTau->mother()->pdgId());
+
+               TLorentzVector sumTauEleVis;
+               std::vector <const reco::Candidate*> daughters;
+               daughters.clear();
+
+               for (unsigned int iDau = 0; iDau < iTau->numberOfDaughters(); iDau++)
+               {
+                   const reco::Candidate* directDaughter = iTau->daughter(iDau);
+                   daughters = findTauMuEleVisDaughters(directDaughter); // collect all the current daughter (if status == 1) or together its daughters (if status != 1) 
+
+                   for (unsigned int jDau = 0; jDau < daughters.size(); jDau++)
+                   {
+                       TLorentzVector p4Daughter;
+                       p4Daughter.SetPtEtaPhiM(daughters[jDau]->pt(), daughters[jDau]->eta(), daughters[jDau]->phi(), daughters[jDau]->mass());
+                       sumTauEleVis = sumTauEleVis + p4Daughter;
+                   } // end for loop on all generations of visible daughter particles of tau_e
+               } // end for loop on tau_e direct daughter particles
+
+               genTauEleVisPt.push_back(sumTauEleVis.Pt());
+               genTauEleVisMass.push_back(sumTauEleVis.M());
+           } // end for loop on gen tau_e
+       } // end if pGenTauEle->size() > 0
 
        if (pGenTauHad->size() > 0)
        {
@@ -376,61 +474,93 @@ ZTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    eventID = iEvent.eventAuxiliary().event();
 
    // --- prepare muon vector ---
-   int muonCounter = 0;
-   for(edm::View<pat::Muon>::const_iterator iMuon=pMu->begin(); iMuon!=pMu->end(); iMuon++)
+   if (pMu->size()>0)
    {
-       recoMuonPt.push_back(iMuon->pt());
-       recoMuonEta.push_back(iMuon->eta());
-       recoMuonPhi.push_back(iMuon->phi());
-       recoMuonEnergy.push_back(iMuon->energy());
-       recoMuonPDGId.push_back(iMuon->pdgId());
-       reco::MuonPFIsolation iso = iMuon->pfIsolationR04();
-       double reliso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / iMuon->pt();
-       recoMuonIsolation.push_back(reliso);
-       recoMuonDXY.push_back(iMuon->muonBestTrack()->dxy());
-       recoMuonDZ.push_back(iMuon->muonBestTrack()->dz());
-       recoMuonNTrackerLayers.push_back(iMuon->innerTrack()->hitPattern().trackerLayersWithMeasurement());
-
-       if (muonCounter == 0)
+       int muonCounter = 0;
+       for(edm::View<pat::Muon>::const_iterator iMuon=pMu->begin(); iMuon!=pMu->end(); iMuon++)
        {
-           recoMuonTriggerFlag.push_back(1);
-           muonCounter++;
-       } // end if muonCounter == 0
+           recoMuonPt.push_back(iMuon->pt());
+           recoMuonEta.push_back(iMuon->eta());
+           recoMuonPhi.push_back(iMuon->phi());
+           recoMuonEnergy.push_back(iMuon->energy());
+           recoMuonPDGId.push_back(iMuon->pdgId());
+           reco::MuonPFIsolation iso = iMuon->pfIsolationR04();
+           double reliso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / iMuon->pt();
+           recoMuonIsolation.push_back(reliso);
+           recoMuonDXY.push_back(iMuon->muonBestTrack()->dxy());
+           recoMuonDZ.push_back(iMuon->muonBestTrack()->dz());
+           recoMuonNTrackerLayers.push_back(iMuon->innerTrack()->hitPattern().trackerLayersWithMeasurement());
 
-       else{
-           recoMuonTriggerFlag.push_back(0);
-           muonCounter++;
-       } // end else if muonCounter != 0
-   } // end for loop on reco-muons
+           if (muonCounter == 0)
+           {
+               recoMuonTriggerFlag.push_back(1);
+               muonCounter++;
+           } // end if muonCounter == 0
 
-   // --- prepare tau vector ---
-   for(edm::View<pat::Tau>::const_iterator iTau=pTau->begin(); iTau!=pTau->end(); iTau++)
+           else{
+               recoMuonTriggerFlag.push_back(0);
+               muonCounter++;
+           } // end else if muonCounter != 0
+       } // end for loop on muons
+   } // end if pMu->size()>0
+
+   // --- prepare electron vector ---
+   if (pElectron->size()>0)
    {
-       recoTauPt.push_back(iTau->pt());
-       recoTauEta.push_back(iTau->eta());
-       recoTauPhi.push_back(iTau->phi());
-       recoTauEnergy.push_back(iTau->energy());
-       recoTauPDGId.push_back(iTau->pdgId());
-       recoTauDecayMode.push_back(iTau->decayMode());
-       recoTauIsoMVArawValue.push_back(iTau->tauID("byIsolationMVArun2017v2DBoldDMwLTraw2017"));
-       recoTauIsoMVAVVLoose.push_back(iTau->tauID("byVVLooseIsolationMVArun2017v2DBoldDMwLT2017"));
-       recoTauIsoMVAVLoose.push_back(iTau->tauID("byVLooseIsolationMVArun2017v2DBoldDMwLT2017"));
-       recoTauIsoMVALoose.push_back(iTau->tauID("byLooseIsolationMVArun2017v2DBoldDMwLT2017"));
-       recoTauIsoMVAMedium.push_back(iTau->tauID("byMediumIsolationMVArun2017v2DBoldDMwLT2017"));
-       recoTauIsoMVATight.push_back(iTau->tauID("byTightIsolationMVArun2017v2DBoldDMwLT2017"));
-       recoTauIsoMVAVTight.push_back(iTau->tauID("byVTightIsolationMVArun2017v2DBoldDMwLT2017"));
-       recoTauIsoMVAVVTight.push_back(iTau->tauID("byVVTightIsolationMVArun2017v2DBoldDMwLT2017"));
+       for(edm::View<pat::Electron>::const_iterator iElectron=pElectron->begin(); iElectron!=pElectron->end(); iElectron++)
+       {
+           // --- variables for relIsoWithEffectiveArea ---
+           float chad = iElectron->pfIsolationVariables().sumChargedHadronPt;
+           float nhad = iElectron->pfIsolationVariables().sumNeutralHadronEt;
+           float pho = iElectron->pfIsolationVariables().sumPhotonEt;
+           float elePt = iElectron->pt();
+           float eleEta = iElectron->superCluster()->eta();
+           float rho = pRho.isValid() ? (*pRho) : 0;
+           float eArea = effectiveAreas.getEffectiveArea(fabs(eleEta));
+           float relIsoWithEffectiveArea = (chad + std::max(0.0f, nhad + pho - rho*eArea)) / elePt;
+
+           recoElectronPt.push_back(iElectron->pt());
+           recoElectronEta.push_back(iElectron->superCluster()->eta());
+           recoElectronPhi.push_back(iElectron->superCluster()->phi());
+           recoElectronEnergy.push_back(iElectron->superCluster()->energy());
+           recoElectronPDGId.push_back(iElectron->pdgId());
+           recoElectronIsolation.push_back(relIsoWithEffectiveArea);
+           recoElectronEcalTrkEnergyPostCorr.push_back(iElectron->userFloat("ecalTrkEnergyPostCorr"));
+           recoElectronEcalTrkEnergyErrPostCorr.push_back(iElectron->userFloat("ecalTrkEnergyErrPostCorr"));
+       } // end for loop on electrons
+   } // end if pElectron->size()>0
+   
+   // --- prepare tau vector ---
+   if (pTau->size()>0)
+   {
+       for(edm::View<pat::Tau>::const_iterator iTau=pTau->begin(); iTau!=pTau->end(); iTau++)
+       {
+           recoTauPt.push_back(iTau->pt());
+           recoTauEta.push_back(iTau->eta());
+           recoTauPhi.push_back(iTau->phi());
+           recoTauEnergy.push_back(iTau->energy());
+           recoTauPDGId.push_back(iTau->pdgId());
+           recoTauDecayMode.push_back(iTau->decayMode());
+           recoTauIsoMVArawValue.push_back(iTau->tauID("byIsolationMVArun2017v2DBoldDMwLTraw2017"));
+           recoTauIsoMVAVVLoose.push_back(iTau->tauID("byVVLooseIsolationMVArun2017v2DBoldDMwLT2017"));
+           recoTauIsoMVAVLoose.push_back(iTau->tauID("byVLooseIsolationMVArun2017v2DBoldDMwLT2017"));
+           recoTauIsoMVALoose.push_back(iTau->tauID("byLooseIsolationMVArun2017v2DBoldDMwLT2017"));
+           recoTauIsoMVAMedium.push_back(iTau->tauID("byMediumIsolationMVArun2017v2DBoldDMwLT2017"));
+           recoTauIsoMVATight.push_back(iTau->tauID("byTightIsolationMVArun2017v2DBoldDMwLT2017"));
+           recoTauIsoMVAVTight.push_back(iTau->tauID("byVTightIsolationMVArun2017v2DBoldDMwLT2017"));
+           recoTauIsoMVAVVTight.push_back(iTau->tauID("byVVTightIsolationMVArun2017v2DBoldDMwLT2017"));
        
-       recoTauAntiMuMVALoose.push_back(iTau->tauID("againstMuonLoose3"));
-       recoTauAntiMuMVATight.push_back(iTau->tauID("againstMuonTight3"));
+           recoTauAntiMuMVALoose.push_back(iTau->tauID("againstMuonLoose3"));
+           recoTauAntiMuMVATight.push_back(iTau->tauID("againstMuonTight3"));
        
-       recoTauAntiEleMVArawValue.push_back(iTau->tauID("againstElectronMVA6Raw"));
-       recoTauAntiEleMVAVLoose.push_back(iTau->tauID("againstElectronVLooseMVA6"));
-       recoTauAntiEleMVALoose.push_back(iTau->tauID("againstElectronLooseMVA6"));
-       recoTauAntiEleMVAMedium.push_back(iTau->tauID("againstElectronMediumMVA6"));
-       recoTauAntiEleMVATight.push_back(iTau->tauID("againstElectronTightMVA6"));
-       recoTauAntiEleMVAVTight.push_back(iTau->tauID("againstElectronVTightMVA6"));
-   } // end for loop on reco-taus
+           recoTauAntiEleMVArawValue.push_back(iTau->tauID("againstElectronMVA6Raw"));
+           recoTauAntiEleMVAVLoose.push_back(iTau->tauID("againstElectronVLooseMVA6"));
+           recoTauAntiEleMVALoose.push_back(iTau->tauID("againstElectronLooseMVA6"));
+           recoTauAntiEleMVAMedium.push_back(iTau->tauID("againstElectronMediumMVA6"));
+           recoTauAntiEleMVATight.push_back(iTau->tauID("againstElectronTightMVA6"));
+           recoTauAntiEleMVAVTight.push_back(iTau->tauID("againstElectronVTightMVA6"));
+       } // end for loop on taus
+   } // end if pTau->size()>0
 
    // --- prepare jet vector ---
    if (pJet->size()>0)
@@ -444,7 +574,7 @@ ZTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
            // --- btag for jet ---
            // reference: https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2017#Jets
            recoJetCSV.push_back(iJet->bDiscriminator("pfCombinedSecondaryVertexV2BJetTags"));
-       } // end for loop on reco-jets
+       } // end for loop on jets
    } // end if pJet->size()>0
 
    // --- prepare MET vector ---
@@ -456,7 +586,7 @@ ZTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
            recoMETPhi.push_back(iMet->phi());
            recoMETPx.push_back(iMet->px());
            recoMETPy.push_back(iMet->py());
-       } // end for loop on reco-mets
+       } // end for loop on METs
    } // end if pMet->size()>0
 
    // --- fill the object tree ---
@@ -474,6 +604,16 @@ ZTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    recoMuonDZ.clear();
    recoMuonNTrackerLayers.clear();
    recoMuonTriggerFlag.clear();
+
+   // --- reconstructed electrons ---
+   recoElectronPt.clear();
+   recoElectronEta.clear();
+   recoElectronPhi.clear();
+   recoElectronEnergy.clear();
+   recoElectronPDGId.clear();
+   recoElectronIsolation.clear();
+   recoElectronEcalTrkEnergyPostCorr.clear();
+   recoElectronEcalTrkEnergyErrPostCorr.clear();
 
    // --- reconstructed taus ---
    recoTauPt.clear();
@@ -514,7 +654,7 @@ ZTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    recoMETPx.clear();
    recoMETPy.clear();
 
-   // ---- clear all the vectors for next event ----
+   // ---- gen muons ----
    genMuonPt.clear();
    genMuonEta.clear();
    genMuonPhi.clear();
@@ -522,6 +662,15 @@ ZTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    genMuonPDGId.clear();
    genMuonMotherPDGId.clear();
 
+   // ---- gen electrons ----
+   genElectronPt.clear();
+   genElectronEta.clear();
+   genElectronPhi.clear();
+   genElectronMass.clear();
+   genElectronPDGId.clear();
+   genElectronMotherPDGId.clear();
+
+   // ---- gen tau_mus ----
    genTauMuPt.clear();
    genTauMuEta.clear();
    genTauMuPhi.clear();
@@ -531,6 +680,17 @@ ZTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    genTauMuVisPt.clear();
    genTauMuVisMass.clear();
 
+   // ---- gen tau_es ----
+   genTauElePt.clear();
+   genTauEleEta.clear();
+   genTauElePhi.clear();
+   genTauEleMass.clear();
+   genTauElePDGId.clear();
+   genTauEleMotherPDGId.clear();
+   genTauEleVisPt.clear();
+   genTauEleVisMass.clear();
+
+   // ---- gen tau_hs ----
    genTauHadPt.clear();
    genTauHadEta.clear();
    genTauHadPhi.clear();
@@ -543,9 +703,9 @@ ZTauMuTauHadAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    genTauHadNChargedHadrons.clear();
 }
 
-// ------------ function for adding up all the visible daughter particles of tau_mu ----------------
+// ------------ function for adding up all the visible daughter particles of tau_mu/tau_e ----------------
 std::vector<const reco::Candidate*>
-ZTauMuTauHadAnalyzer::findTauMuVisDaughters(const reco::Candidate* inputDaughter)
+DiMuDiTauAnalyzer::findTauMuEleVisDaughters(const reco::Candidate* inputDaughter)
 {
     std::vector<const reco::Candidate*> visParticles;
     if (inputDaughter->status() == 1)
@@ -570,7 +730,7 @@ ZTauMuTauHadAnalyzer::findTauMuVisDaughters(const reco::Candidate* inputDaughter
             } // end if grand daughter is final state particle
 
             else{
-                auto auxVisParticles = findTauMuVisDaughters(grandDaughter);
+                auto auxVisParticles = findTauMuEleVisDaughters(grandDaughter);
                 visParticles.insert(visParticles.end(), auxVisParticles.begin(), auxVisParticles.end());
             } // end else grand daughter is(not) final state particle
         } // end for loop on grand daughters
@@ -581,7 +741,7 @@ ZTauMuTauHadAnalyzer::findTauMuVisDaughters(const reco::Candidate* inputDaughter
 
 // ------------ function for adding up all the visible daughter particles of tau_h ----------------
 std::vector<const reco::Candidate*>
-ZTauMuTauHadAnalyzer::findTauHadVisDaughters(const reco::Candidate* inputDaughter)
+DiMuDiTauAnalyzer::findTauHadVisDaughters(const reco::Candidate* inputDaughter)
 {
     std::vector<const reco::Candidate*> visParticles;
     if (inputDaughter->status() == 1)
@@ -616,7 +776,7 @@ ZTauMuTauHadAnalyzer::findTauHadVisDaughters(const reco::Candidate* inputDaughte
 }
 
 // ------------ function for collecting all the pizeros from tau_h decay ----------------
-int ZTauMuTauHadAnalyzer::findTauPiZeros(const reco::Candidate* inputDaughter)
+int DiMuDiTauAnalyzer::findTauPiZeros(const reco::Candidate* inputDaughter)
 {
     int numPiZero = 0;
     if (fabs(inputDaughter->pdgId()) == 111) numPiZero++;
@@ -638,7 +798,7 @@ int ZTauMuTauHadAnalyzer::findTauPiZeros(const reco::Candidate* inputDaughter)
 }
 
 // ------------ function for collecting all the charged hadrons from tau_h decay ----------------
-int ZTauMuTauHadAnalyzer::findTauChargedHadrons(const reco::Candidate* inputDaughter)
+int DiMuDiTauAnalyzer::findTauChargedHadrons(const reco::Candidate* inputDaughter)
 {
     int numChargedHadrons = 0;
     bool chargedHadronsFromTau = fabs(inputDaughter->charge()) != 0 && fabs(inputDaughter->pdgId()) != 11 && fabs(inputDaughter->pdgId()) != 13 && fabs(inputDaughter->pdgId()) != 15; 
@@ -664,7 +824,7 @@ int ZTauMuTauHadAnalyzer::findTauChargedHadrons(const reco::Candidate* inputDaug
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
-ZTauMuTauHadAnalyzer::beginJob()
+DiMuDiTauAnalyzer::beginJob()
 {
     // -- initialize the skimmed object vector tree --
     edm::Service<TFileService> fileService;
@@ -680,6 +840,15 @@ ZTauMuTauHadAnalyzer::beginJob()
     objectTree->Branch("recoMuonDZ", &recoMuonDZ);
     objectTree->Branch("recoMuonNTrackerLayers", &recoMuonNTrackerLayers);
     objectTree->Branch("recoMuonTriggerFlag", &recoMuonTriggerFlag);
+
+    objectTree->Branch("recoElectronPt", &recoElectronPt);
+    objectTree->Branch("recoElectronEta", &recoElectronEta);
+    objectTree->Branch("recoElectronPhi", &recoElectronPhi);
+    objectTree->Branch("recoElectronEnergy", &recoElectronEnergy);
+    objectTree->Branch("recoElectronPDGId", &recoElectronPDGId);
+    objectTree->Branch("recoElectronIsolation", &recoElectronIsolation);
+    objectTree->Branch("recoElectronEcalTrkEnergyPostCorr", &recoElectronEcalTrkEnergyPostCorr);
+    objectTree->Branch("recoElectronEcalTrkEnergyErrPostCorr", &recoElectronEcalTrkEnergyErrPostCorr);
 
     objectTree->Branch("recoTauPt", &recoTauPt);
     objectTree->Branch("recoTauEta", &recoTauEta);
@@ -729,6 +898,13 @@ ZTauMuTauHadAnalyzer::beginJob()
         objectTree->Branch("genMuonPDGId", &genMuonPDGId);
         objectTree->Branch("genMuonMotherPDGId", &genMuonMotherPDGId);
 
+        objectTree->Branch("genElectronPt", &genElectronPt);
+        objectTree->Branch("genElectronEta", &genElectronEta);
+        objectTree->Branch("genElectronPhi", &genElectronPhi);
+        objectTree->Branch("genElectronMass", &genElectronMass);
+        objectTree->Branch("genElectronPDGId", &genElectronPDGId);
+        objectTree->Branch("genElectronMotherPDGId", &genElectronMotherPDGId);
+
         objectTree->Branch("genTauMuPt", &genTauMuPt);
         objectTree->Branch("genTauMuEta", &genTauMuEta);
         objectTree->Branch("genTauMuPhi", &genTauMuPhi);
@@ -737,6 +913,15 @@ ZTauMuTauHadAnalyzer::beginJob()
         objectTree->Branch("genTauMuMotherPDGId", &genTauMuMotherPDGId);
         objectTree->Branch("genTauMuVisPt", &genTauMuVisPt);
         objectTree->Branch("genTauMuVisMass", &genTauMuVisMass);
+
+        objectTree->Branch("genTauElePt", &genTauElePt);
+        objectTree->Branch("genTauEleEta", &genTauEleEta);
+        objectTree->Branch("genTauElePhi", &genTauElePhi);
+        objectTree->Branch("genTauEleMass", &genTauEleMass);
+        objectTree->Branch("genTauElePDGId", &genTauElePDGId);
+        objectTree->Branch("genTauEleMotherPDGId", &genTauEleMotherPDGId);
+        objectTree->Branch("genTauEleVisPt", &genTauEleVisPt);
+        objectTree->Branch("genTauEleVisMass", &genTauEleVisMass);
 
         objectTree->Branch("genTauHadPt", &genTauHadPt);
         objectTree->Branch("genTauHadEta", &genTauHadEta);
@@ -755,15 +940,15 @@ ZTauMuTauHadAnalyzer::beginJob()
     } // end if isMC == true
 }
 
-// ------------ method called once each job just after ending all the event loop  ------------
+// ------------ method called once each job just after ending the event loop  ------------
 void 
-ZTauMuTauHadAnalyzer::endJob() 
+DiMuDiTauAnalyzer::endJob() 
 {
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-ZTauMuTauHadAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+DiMuDiTauAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -772,4 +957,4 @@ ZTauMuTauHadAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descripti
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(ZTauMuTauHadAnalyzer);
+DEFINE_FWK_MODULE(DiMuDiTauAnalyzer);

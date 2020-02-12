@@ -4,25 +4,25 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing('analysis')
 
 # -------- input files. Can be changed on the command line with the option inputFiles=... ---------
-options.inputFiles = ['/store/group/phys_higgs/HiggsExo/fengwang/SUSYGluGluToHToAA_AToMuMu_AToTauTau_M-125_M-19_TuneCUETP8M1_13TeV_madgraph_pythia8/MiniAOD_H125AA19_DiMuDiTau_Fall17DRPremix_v1/190515_140053/0000/mumutautau_1.root']
+options.inputFiles = ['/store/group/phys_higgs/HiggsExo/fengwang/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/MiniAOD_DYJetsToLL_M50_Fall17DRPremix_v1/190806_145316/0000/mumutautau_zskim_100.root']
 options.register('isMC', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "Sample is MC")
-options.register('tauCluster', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "different tau clusters")
+options.register('tauCluster', 2, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "different tau clusters")
 options.parseArguments()
 
-process = cms.Process("DiMuonTauHadTauHadTreelizer")
+process = cms.Process("ZMuMuInclusiveTreelizer")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
 ########## Please specify if you are running on data (0) or MC (1) in the command line: #########################
-########### eg: cmsRun runDiMuTauHadTauHad_cfg.py isMC=1 ###############
+########### eg: cmsRun runZMuMuInclusive_cfg.py isMC=1 ###############
 ##########################################################################
 
 if options.isMC == 1:
     print " ****** we will run on sample of: MC ******"
-    process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuTauHadTauHadSelectorMC_cfi")
+    process.load("MuMuTauTauTreeMaker.MuTauTreelizer.ZMuMuInclusiveSelectorMC_cfi")
 
 else:
     print " ****** we will run on sample of: data ******"
-    process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuTauHadTauHadSelector_cfi")
+    process.load("MuMuTauTauTreeMaker.MuTauTreelizer.ZMuMuInclusiveSelector_cfi")
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
@@ -71,29 +71,51 @@ else:
     myTool.runTauID()
 ############################################################
 
-############################################################
-process.treelizer = cms.Sequence(
-        process.lumiTree*
-        process.HLTEle*
-        process.TrigMuMatcher*
-        process.MuonPtEtaCut*
-        process.MuonID*
-        process.LeadingMuonIso*
-        process.SecondThirdMuonSelector*
-        process.DiMuonMassSelector*
-        process.rerunMvaIsolationSequence*
-        process.NewTauIDsEmbedded*
-        process.TauHadSelector*
-        process.JetSelector*
-        process.MuMuTauHadTauHadAnalyzer
-)
+if options.isMC == 1:
+    process.treelizer = cms.Sequence(
+            process.lumiTree*
+            process.HLTEle*
+            process.MuonID*
+            process.MuonSelector*
+            process.TrigMuMatcher*
+            process.ElectronCandSelector*
+            process.rerunMvaIsolationSequence*
+            process.NewTauIDsEmbedded*
+            process.TauCandSelector*
+            process.JetSelector*
+            process.GenMuonCandSelector*
+            process.GenElectronCandSelector*
+            process.GenTauMuCandSelector*
+            process.GenTauEleCandSelector*
+            process.GenTauHadCandSelector*
+            process.ZMuMuInclusiveAnalyzer
+    )
+
+    process.TFileService = cms.Service("TFileService",
+            fileName =  cms.string('ZMuMuTreelization_mc.root')
+    )
+
+else:
+    process.treelizer = cms.Sequence(
+            process.lumiTree*
+            process.HLTEle*
+            process.MuonID*
+            process.MuonSelector*
+            process.TrigMuMatcher*
+            process.ElectronCandSelector*
+            process.rerunMvaIsolationSequence*
+            process.NewTauIDsEmbedded*
+            process.TauCandSelector*
+            process.JetSelector*
+            process.ZMuMuInclusiveAnalyzer
+    )
+
+    process.TFileService = cms.Service("TFileService",
+            fileName =  cms.string('ZMuMuTreelization_data.root')
+    )
 
 process.options = cms.untracked.PSet(
         wantSummary = cms.untracked.bool(True),
-)
-
-process.TFileService = cms.Service("TFileService",
-        fileName =  cms.string('MuMuTauHadTauHadTreelization.root')
 )
 
 process.p = cms.Path(process.treelizer)

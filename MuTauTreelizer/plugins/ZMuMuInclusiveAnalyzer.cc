@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    MuMuChannel/DiMuonAnalyzer
-// Class:      DiMuonAnalyzer
+// Package:    MuMuChannel/ZMuMuInclusiveAnalyzer
+// Class:      ZMuMuInclusiveAnalyzer
 // 
-/**\class DiMuonAnalyzer DiMuonAnalyzer.cc MuMuChannel/DiMuonAnalyzer/plugins/DiMuonAnalyzer.cc
+/**\class ZMuMuInclusiveAnalyzer ZMuMuInclusiveAnalyzer.cc MuMuChannel/ZMuMuInclusiveAnalyzer/plugins/ZMuMuInclusiveAnalyzer.cc
 
  Description: [one line class summary]
 
@@ -57,10 +57,10 @@ using namespace std;
 // constructor "usesResource("TFileService");"
 // This will improve performance in multithreaded jobs.
 
-class DiMuonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
+class ZMuMuInclusiveAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
    public:
-      explicit DiMuonAnalyzer(const edm::ParameterSet&);
-      ~DiMuonAnalyzer();
+      explicit ZMuMuInclusiveAnalyzer(const edm::ParameterSet&);
+      ~ZMuMuInclusiveAnalyzer();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
       std::vector<const reco::Candidate*> findTauMuEleVisDaughters(const reco::Candidate*);
@@ -75,8 +75,7 @@ class DiMuonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       virtual void endJob() override;
 
       // ----------member data ---------------------------
-      edm::EDGetTokenT<edm::View<pat::Muon>> Mu1Mu2Tag;
-      edm::EDGetTokenT<edm::View<pat::Muon>> Mu3Tag;
+      edm::EDGetTokenT<edm::View<pat::Muon>> MuTag;
       edm::EDGetTokenT<edm::View<pat::Electron>> EleTag;
       edm::EDGetTokenT<edm::View<pat::Tau>> TauTag;
       edm::EDGetTokenT<edm::View<pat::Jet>> JetTag;
@@ -106,6 +105,7 @@ class DiMuonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       vector<float> recoMuonDXY;
       vector<float> recoMuonDZ;
       vector<int> recoMuonNTrackerLayers;
+      vector<int> recoMuonTriggerFlag;
 
       // --- reconstructed electrons ---
       vector<float> recoElectronPt;
@@ -225,9 +225,8 @@ class DiMuonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 //
 // constructors and destructor
 //
-DiMuonAnalyzer::DiMuonAnalyzer(const edm::ParameterSet& iConfig):
-    Mu1Mu2Tag(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("Mu1Mu2Tag"))),
-    Mu3Tag(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("Mu3Tag"))),
+ZMuMuInclusiveAnalyzer::ZMuMuInclusiveAnalyzer(const edm::ParameterSet& iConfig):
+    MuTag(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("MuTag"))),
     EleTag(consumes<edm::View<pat::Electron>>(iConfig.getParameter<edm::InputTag>("EleTag"))),
     TauTag(consumes<edm::View<pat::Tau>>(iConfig.getParameter<edm::InputTag>("TauTag"))),
     JetTag(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("JetTag"))),
@@ -249,7 +248,7 @@ DiMuonAnalyzer::DiMuonAnalyzer(const edm::ParameterSet& iConfig):
 }
 
 
-DiMuonAnalyzer::~DiMuonAnalyzer()
+ZMuMuInclusiveAnalyzer::~ZMuMuInclusiveAnalyzer()
 {
  
    // do anything here that needs to be done at desctruction time
@@ -264,14 +263,11 @@ DiMuonAnalyzer::~DiMuonAnalyzer()
 
 // ------------ method called for each event  ------------
 void
-DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+ZMuMuInclusiveAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
-   edm::Handle<edm::View<pat::Muon>> pMu1Mu2;
-   iEvent.getByToken(Mu1Mu2Tag, pMu1Mu2);
-
-   edm::Handle<edm::View<pat::Muon>> pMu3;
-   iEvent.getByToken(Mu3Tag, pMu3);
+   edm::Handle<edm::View<pat::Muon>> pMu;
+   iEvent.getByToken(MuTag, pMu);
 
    edm::Handle<edm::View<pat::Electron>> pElectron;
    iEvent.getByToken(EleTag, pElectron);
@@ -450,7 +446,7 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        if (gen_ev_info.isValid())
        {
            genEventWeight = gen_ev_info->weight();
-       }
+       } // end if gen_ev_info.isValid()
 
        if (pileup_info.isValid())
        {
@@ -460,10 +456,10 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                {
                    trueNInteraction = iPileup->getTrueNumInteractions();
                    recoNPU = iPileup->getPU_NumInteractions();
-               }
-           }
-       }
-   }
+               } // end if iPileup->getBunchCrossing() == 0
+           } // end for loop on pileup_info
+       } // end if pileup_info.isValid()
+   } // end if isMC == true
 
    // --- prepare for offline primary vertices ---
    recoNPrimaryVertex = 0; 
@@ -472,64 +468,41 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        for(edm::View<reco::Vertex>::const_iterator iPV=pVertex->begin(); iPV!=pVertex->end(); iPV++)
        {
            recoNPrimaryVertex++;
-       }
-   }
+       } // end for loop on pVertex
+   } // end if pVertex.isValid()
 
    eventID = iEvent.eventAuxiliary().event();
 
    // --- prepare muon vector ---
-   pat::Muon Mu1 = pMu1Mu2->at(0);
-   pat::Muon Mu2 = pMu1Mu2->at(1);
-
-   recoMuonPt.push_back(Mu1.pt());
-   recoMuonPt.push_back(Mu2.pt());
-
-   recoMuonEta.push_back(Mu1.eta());
-   recoMuonEta.push_back(Mu2.eta());
-
-   recoMuonPhi.push_back(Mu1.phi());
-   recoMuonPhi.push_back(Mu2.phi());
-
-   recoMuonEnergy.push_back(Mu1.energy());
-   recoMuonEnergy.push_back(Mu2.energy());
-
-   recoMuonPDGId.push_back(Mu1.pdgId());
-   recoMuonPDGId.push_back(Mu2.pdgId());
-   
-   reco::MuonPFIsolation iso = Mu1.pfIsolationR04();
-   double reliso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / Mu1.pt();
-   recoMuonIsolation.push_back(reliso);
-
-   iso = Mu2.pfIsolationR04();
-   reliso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / Mu2.pt();
-   recoMuonIsolation.push_back(reliso);
-
-   recoMuonDXY.push_back(Mu1.muonBestTrack()->dxy());
-   recoMuonDXY.push_back(Mu2.muonBestTrack()->dxy());
-
-   recoMuonDZ.push_back(Mu1.muonBestTrack()->dz());
-   recoMuonDZ.push_back(Mu2.muonBestTrack()->dz());
-
-   recoMuonNTrackerLayers.push_back(Mu1.innerTrack()->hitPattern().trackerLayersWithMeasurement());
-   recoMuonNTrackerLayers.push_back(Mu2.innerTrack()->hitPattern().trackerLayersWithMeasurement());
-
-   if(pMu3->size()>0)
+   if (pMu->size()>0)
    {
-       for(edm::View<pat::Muon>::const_iterator iMuon=pMu3->begin(); iMuon!=pMu3->end(); iMuon++)
+       int muonCounter = 0;
+       for(edm::View<pat::Muon>::const_iterator iMuon=pMu->begin(); iMuon!=pMu->end(); iMuon++)
        {
            recoMuonPt.push_back(iMuon->pt());
            recoMuonEta.push_back(iMuon->eta());
            recoMuonPhi.push_back(iMuon->phi());
            recoMuonEnergy.push_back(iMuon->energy());
            recoMuonPDGId.push_back(iMuon->pdgId());
-           iso = iMuon->pfIsolationR04();
-           reliso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / iMuon->pt();
+           reco::MuonPFIsolation iso = iMuon->pfIsolationR04();
+           double reliso = (iso.sumChargedHadronPt + std::max(0.,iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5*iso.sumPUPt)) / iMuon->pt();
            recoMuonIsolation.push_back(reliso);
            recoMuonDXY.push_back(iMuon->muonBestTrack()->dxy());
            recoMuonDZ.push_back(iMuon->muonBestTrack()->dz());
            recoMuonNTrackerLayers.push_back(iMuon->innerTrack()->hitPattern().trackerLayersWithMeasurement());
-       }
-   }
+
+           if (muonCounter == 0)
+           {
+               recoMuonTriggerFlag.push_back(1);
+               muonCounter++;
+           } // end if muonCounter == 0
+
+           else{
+               recoMuonTriggerFlag.push_back(0);
+               muonCounter++;
+           } // end else if muonCounter != 0
+       } // end for loop on muons
+   } // end if pMu->size()>0
 
    // --- prepare electron vector ---
    if (pElectron->size()>0)
@@ -554,8 +527,8 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
            recoElectronIsolation.push_back(relIsoWithEffectiveArea);
            recoElectronEcalTrkEnergyPostCorr.push_back(iElectron->userFloat("ecalTrkEnergyPostCorr"));
            recoElectronEcalTrkEnergyErrPostCorr.push_back(iElectron->userFloat("ecalTrkEnergyErrPostCorr"));
-       }
-   }
+       } // end for loop on electrons
+   } // end if pElectron->size()>0
    
    // --- prepare tau vector ---
    if (pTau->size()>0)
@@ -586,11 +559,11 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
            recoTauAntiEleMVAMedium.push_back(iTau->tauID("againstElectronMediumMVA6"));
            recoTauAntiEleMVATight.push_back(iTau->tauID("againstElectronTightMVA6"));
            recoTauAntiEleMVAVTight.push_back(iTau->tauID("againstElectronVTightMVA6"));
-       }
-   }
+       } // end for loop on taus
+   } // end if pTau->size()>0
 
    // --- prepare jet vector ---
-   if(pJet->size()>0)
+   if (pJet->size()>0)
    {
        for(edm::View<pat::Jet>::const_iterator iJet=pJet->begin(); iJet!=pJet->end(); iJet++)
        {
@@ -601,11 +574,11 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
            // --- btag for jet ---
            // reference: https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2017#Jets
            recoJetCSV.push_back(iJet->bDiscriminator("pfCombinedSecondaryVertexV2BJetTags"));
-       }
-   }
+       } // end for loop on jets
+   } // end if pJet->size()>0
 
    // --- prepare MET vector ---
-   if(pMet->size()>0)
+   if (pMet->size()>0)
    {
        for(edm::View<pat::MET>::const_iterator iMet=pMet->begin(); iMet!=pMet->end(); iMet++)
        {
@@ -613,8 +586,8 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
            recoMETPhi.push_back(iMet->phi());
            recoMETPx.push_back(iMet->px());
            recoMETPy.push_back(iMet->py());
-       }
-   }
+       } // end for loop on METs
+   } // end if pMet->size()>0
 
    // --- fill the object tree ---
    objectTree->Fill();
@@ -630,6 +603,7 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    recoMuonDXY.clear();
    recoMuonDZ.clear();
    recoMuonNTrackerLayers.clear();
+   recoMuonTriggerFlag.clear();
 
    // --- reconstructed electrons ---
    recoElectronPt.clear();
@@ -731,7 +705,7 @@ DiMuonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 // ------------ function for adding up all the visible daughter particles of tau_mu/tau_e ----------------
 std::vector<const reco::Candidate*>
-DiMuonAnalyzer::findTauMuEleVisDaughters(const reco::Candidate* inputDaughter)
+ZMuMuInclusiveAnalyzer::findTauMuEleVisDaughters(const reco::Candidate* inputDaughter)
 {
     std::vector<const reco::Candidate*> visParticles;
     if (inputDaughter->status() == 1)
@@ -767,7 +741,7 @@ DiMuonAnalyzer::findTauMuEleVisDaughters(const reco::Candidate* inputDaughter)
 
 // ------------ function for adding up all the visible daughter particles of tau_h ----------------
 std::vector<const reco::Candidate*>
-DiMuonAnalyzer::findTauHadVisDaughters(const reco::Candidate* inputDaughter)
+ZMuMuInclusiveAnalyzer::findTauHadVisDaughters(const reco::Candidate* inputDaughter)
 {
     std::vector<const reco::Candidate*> visParticles;
     if (inputDaughter->status() == 1)
@@ -802,7 +776,7 @@ DiMuonAnalyzer::findTauHadVisDaughters(const reco::Candidate* inputDaughter)
 }
 
 // ------------ function for collecting all the pizeros from tau_h decay ----------------
-int DiMuonAnalyzer::findTauPiZeros(const reco::Candidate* inputDaughter)
+int ZMuMuInclusiveAnalyzer::findTauPiZeros(const reco::Candidate* inputDaughter)
 {
     int numPiZero = 0;
     if (fabs(inputDaughter->pdgId()) == 111) numPiZero++;
@@ -824,7 +798,7 @@ int DiMuonAnalyzer::findTauPiZeros(const reco::Candidate* inputDaughter)
 }
 
 // ------------ function for collecting all the charged hadrons from tau_h decay ----------------
-int DiMuonAnalyzer::findTauChargedHadrons(const reco::Candidate* inputDaughter)
+int ZMuMuInclusiveAnalyzer::findTauChargedHadrons(const reco::Candidate* inputDaughter)
 {
     int numChargedHadrons = 0;
     bool chargedHadronsFromTau = fabs(inputDaughter->charge()) != 0 && fabs(inputDaughter->pdgId()) != 11 && fabs(inputDaughter->pdgId()) != 13 && fabs(inputDaughter->pdgId()) != 15; 
@@ -850,7 +824,7 @@ int DiMuonAnalyzer::findTauChargedHadrons(const reco::Candidate* inputDaughter)
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
-DiMuonAnalyzer::beginJob()
+ZMuMuInclusiveAnalyzer::beginJob()
 {
     // -- initialize the skimmed object vector tree --
     edm::Service<TFileService> fileService;
@@ -865,6 +839,7 @@ DiMuonAnalyzer::beginJob()
     objectTree->Branch("recoMuonDXY", &recoMuonDXY);
     objectTree->Branch("recoMuonDZ", &recoMuonDZ);
     objectTree->Branch("recoMuonNTrackerLayers", &recoMuonNTrackerLayers);
+    objectTree->Branch("recoMuonTriggerFlag", &recoMuonTriggerFlag);
 
     objectTree->Branch("recoElectronPt", &recoElectronPt);
     objectTree->Branch("recoElectronEta", &recoElectronEta);
@@ -962,18 +937,18 @@ DiMuonAnalyzer::beginJob()
         objectTree->Branch("recoNPU", &recoNPU, "recoNPU/I");
         objectTree->Branch("trueNInteraction", &trueNInteraction, "trueNInteraction/I");
         objectTree->Branch("genEventWeight", &genEventWeight, "genEventWeight/F");
-    }
+    } // end if isMC == true
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
-DiMuonAnalyzer::endJob() 
+ZMuMuInclusiveAnalyzer::endJob() 
 {
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-DiMuonAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+ZMuMuInclusiveAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -982,4 +957,4 @@ DiMuonAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(DiMuonAnalyzer);
+DEFINE_FWK_MODULE(ZMuMuInclusiveAnalyzer);
