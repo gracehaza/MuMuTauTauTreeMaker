@@ -13,7 +13,7 @@ process = cms.Process("ZMuonTauTreelizer")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
 ########## Please specify if you are running on data (0) or MC (1) in the command line: #########################
-########### eg: cmsRun runZMuTauMuTauHad_cfg.py isMC=1 ###############
+########### eg: cmsRun runZTauMuTauHad_cfg.py isMC=1 ###############
 ##########################################################################
 
 if options.isMC == 1:
@@ -75,9 +75,9 @@ if options.isMC == 1:
     process.treelizer = cms.Sequence(
             process.lumiTree*
             process.HLTEle*
-            process.TrigMuMatcher*
-            process.MuonPtEtaCut*
             process.MuonID*
+            process.MuonSelector*
+            process.TrigMuMatcher*
             process.rerunMvaIsolationSequence*
             process.NewTauIDsEmbedded*
             process.TauHadSelector*
@@ -88,13 +88,17 @@ if options.isMC == 1:
             process.ZTauMuTauHadAnalyzer
     )
 
+    process.TFileService = cms.Service("TFileService",
+            fileName =  cms.string('ZTauMuTauHadTreelization_mc.root')
+    )
+
 else:
     process.treelizer = cms.Sequence(
             process.lumiTree*
             process.HLTEle*
-            process.TrigMuMatcher*
-            process.MuonPtEtaCut*
             process.MuonID*
+            process.MuonSelector*
+            process.TrigMuMatcher*
             process.rerunMvaIsolationSequence*
             process.NewTauIDsEmbedded*
             process.TauHadSelector*
@@ -102,12 +106,12 @@ else:
             process.ZTauMuTauHadAnalyzer
     )
 
+    process.TFileService = cms.Service("TFileService",
+            fileName =  cms.string('ZTauMuTauHadTreelization_data.root')
+    )
+
 process.options = cms.untracked.PSet(
         wantSummary = cms.untracked.bool(True),
-)
-
-process.TFileService = cms.Service("TFileService",
-        fileName =  cms.string('ZTauMuTauHadTreelization.root')
 )
 
 process.p = cms.Path(process.treelizer)
