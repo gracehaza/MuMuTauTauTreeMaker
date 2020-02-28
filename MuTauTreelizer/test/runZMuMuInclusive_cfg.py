@@ -42,6 +42,7 @@ if options.tauCluster <= 0:
             toKeep = ["2017v2"]
     )
     myTool.runTauID()
+    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
 
 elif options.tauCluster == 1:
     print " ====== use slimmedTausBoosted (lower Tau Pt) cluster ======"
@@ -51,6 +52,7 @@ elif options.tauCluster == 1:
             toKeep = ["2017v2"]
     )
     myTool.runTauID()
+    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
 
 elif options.tauCluster == 2:
     print " ====== use slimmedTausMuonCleaned cluster ======"
@@ -60,8 +62,9 @@ elif options.tauCluster == 2:
             toKeep = ["2017v2"]
     )
     myTool.runTauID()
+    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
 
-else:
+elif options.tauCluster == 3:
     print " ====== use slimmedTausElectronCleaned cluster ======"
     from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTausElectronCleaned import *
     myTool = TauIDEmbedder(process, cms,
@@ -69,6 +72,19 @@ else:
             toKeep = ["2017v2"]
     )
     myTool.runTauID()
+    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
+
+else:
+    print " ====== use slimmedTausNewID cluster ======"
+    updatedTauName = "slimmedTausNewID"
+    import RecoTauTag.RecoTau.tools.runTauIdMVA as tauIdConfig
+    tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms,
+            debug = False,
+            updatedTauName = updatedTauName,
+            toKeep = ["deepTau2017v2p1"]
+            )
+    tauIdEmbedder.runTauID()
+    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
 ############################################################
 
 if options.isMC == 1:
@@ -79,8 +95,7 @@ if options.isMC == 1:
             process.MuonSelector*
             process.TrigMuMatcher*
             process.ElectronCandSelector*
-            process.rerunMvaIsolationSequence*
-            process.NewTauIDsEmbedded*
+            process.rerunTauIDSequence*
             process.TauCandSelector*
             process.JetSelector*
             process.GenMuonCandSelector*
@@ -103,8 +118,7 @@ else:
             process.MuonSelector*
             process.TrigMuMatcher*
             process.ElectronCandSelector*
-            process.rerunMvaIsolationSequence*
-            process.NewTauIDsEmbedded*
+            process.rerunTauIDSequence*
             process.TauCandSelector*
             process.JetSelector*
             process.ZMuMuInclusiveAnalyzer

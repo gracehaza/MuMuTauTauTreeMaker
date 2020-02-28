@@ -50,7 +50,7 @@ ElectronCandSelector = cms.EDFilter("ElectronCandSelector",
 )
 
 TauCandSelector = cms.EDFilter("TauCandSelector",
-        tauTag = cms.InputTag('NewTauIDsEmbedded'), # output of configuration: "TauIdMVA.py"
+        tauTag = cms.InputTag('slimmedTausNewID'),
         tauDiscriminatorTag = cms.vstring('decayModeFinding'),
         passDiscriminator = cms.bool(True),
         pTMin = cms.double(8.0),
