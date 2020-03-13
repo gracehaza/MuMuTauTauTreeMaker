@@ -1,5 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
+from PhysicsTools.PatAlgos.tools.helpers import cloneProcessingSnippet
+from PhysicsTools.PatAlgos.tools.helpers import massSearchReplaceAnyInputTag
+
 
 options = VarParsing.VarParsing('analysis')
 
@@ -74,6 +77,46 @@ elif options.tauCluster == 3:
     myTool.runTauID()
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
 
+elif options.tauCluster == 4:
+    print " ====== use slimmedTausMuonCleanedMedium cluster ======"
+    from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTausMuonCleanedMedium import *
+    myTool = TauIDEmbedder(process, cms,
+            debug = True,
+            toKeep = ["2017v2"]
+    )
+    myTool.runTauID()
+    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
+
+elif options.tauCluster == 5:
+    print " ====== use slimmedTausElectronCleanedMedium cluster ======"
+    from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTausElectronCleanedMedium import *
+    myTool = TauIDEmbedder(process, cms,
+            debug = True,
+            toKeep = ["2017v2"]
+    )
+    myTool.runTauID()
+    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
+
+elif options.tauCluster == 6:
+    print " ====== use slimmedTausMuonCleanedTight cluster ======"
+    from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTausMuonCleanedTight import *
+    myTool = TauIDEmbedder(process, cms,
+            debug = True,
+            toKeep = ["2017v2"]
+    )
+    myTool.runTauID()
+    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
+
+elif options.tauCluster == 7:
+    print " ====== use slimmedTausElectronCleanedTight cluster ======"
+    from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTausElectronCleanedTight import *
+    myTool = TauIDEmbedder(process, cms,
+            debug = True,
+            toKeep = ["2017v2"]
+    )
+    myTool.runTauID()
+    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
+
 else:
     print " ====== use slimmedTausNewID cluster ======"
     updatedTauName = "slimmedTausNewID"
@@ -85,6 +128,9 @@ else:
             )
     tauIdEmbedder.runTauID()
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
+
+
+
 ############################################################
 
 if options.isMC == 1:
