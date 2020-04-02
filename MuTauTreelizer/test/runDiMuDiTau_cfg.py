@@ -1,8 +1,5 @@
 import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
-from PhysicsTools.PatAlgos.tools.helpers import cloneProcessingSnippet
-from PhysicsTools.PatAlgos.tools.helpers import massSearchReplaceAnyInputTag
-
 
 options = VarParsing.VarParsing('analysis')
 
@@ -128,9 +125,6 @@ else:
             )
     tauIdEmbedder.runTauID()
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
-
-
-
 ############################################################
 
 if options.isMC == 1:

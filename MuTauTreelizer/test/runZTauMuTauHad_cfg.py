@@ -73,6 +73,7 @@ elif options.tauCluster == 3:
     )
     myTool.runTauID()
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
+
 elif options.tauCluster == 4:
     print " ====== use slimmedTausMuonCleanedMedium cluster ======"
     from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTausMuonCleanedMedium import *
@@ -112,6 +113,7 @@ elif options.tauCluster == 7:
     )
     myTool.runTauID()
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
+
 else:
     print " ====== use slimmedTausNewID cluster ======"
     updatedTauName = "slimmedTausNewID"
