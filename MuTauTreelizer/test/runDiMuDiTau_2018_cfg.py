@@ -11,18 +11,23 @@ options.parseArguments()
 
 process = cms.Process("DiMuonDiTauTreelizer")
 process.load("FWCore.MessageService.MessageLogger_cfi")
+process.load('Configuration.StandardSequences.GeometryRecoDB_cff') # need for RecoEgamma recipe
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff') # globaltag is also needed for RecoEgamma recipe inclusion
+from Configuration.AlCa.GlobalTag import GlobalTag
 
 ########## Please specify if you are running on data (0) or MC (1) in the command line: #########################
-########### eg: cmsRun runDiMuDiTau_cfg.py isMC=1 ###############
+########### eg: cmsRun runDiMuDiTau_2018_cfg.py isMC=1 ###############
 ##########################################################################
 
 if options.isMC == 1:
     print " ****** we will run on sample of: MC ******"
     process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuDiTauSelectorMC_cfi")
+    process.GlobalTag.globaltag = '102X_upgrade2018_realistic_v20'
 
 else:
     print " ****** we will run on sample of: data ******"
     process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuDiTauSelector_cfi")
+    process.GlobalTag.globaltag = '102X_dataRun2_v12'
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
@@ -127,6 +132,13 @@ else:
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
 ############################################################
 
+######## implant the 2017v2 egamma ID into the 2018 miniAOD ############
+# reference: https://twiki.cern.ch/twiki/bin/view/CMS/EgammaMiniAODV2#2017_MiniAOD_V2
+
+from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
+setupEgammaPostRecoSeq(process, era='2018-Prompt')
+###########################################################
+
 if options.isMC == 1:
     process.treelizer = cms.Sequence(
             process.lumiTree*
@@ -134,6 +146,7 @@ if options.isMC == 1:
             process.MuonID*
             process.MuonSelector*
             process.TrigMuMatcher*
+            process.egammaPostRecoSeq*
             process.ElectronCandSelector*
             process.rerunTauIDSequence*
             process.TauCandSelector*
@@ -157,6 +170,7 @@ else:
             process.MuonID*
             process.MuonSelector*
             process.TrigMuMatcher*
+            process.egammaPostRecoSeq*
             process.ElectronCandSelector*
             process.rerunTauIDSequence*
             process.TauCandSelector*

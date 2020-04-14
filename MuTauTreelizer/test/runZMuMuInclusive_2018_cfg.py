@@ -4,25 +4,30 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing('analysis')
 
 # -------- input files. Can be changed on the command line with the option inputFiles=... ---------
-options.inputFiles = ['/store/group/phys_higgs/HiggsExo/fengwang/SUSYGluGluToHToAA_AToMuMu_AToTauTau_M-125_M-19_TuneCUETP8M1_13TeV_madgraph_pythia8/MiniAOD_H125AA19_DiMuDiTau_Fall17DRPremix_v1/190515_140053/0000/mumutautau_1.root']
+options.inputFiles = ['/store/group/phys_higgs/HiggsExo/fengwang/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/MiniAOD_DYJetsToLL_M50_Fall17DRPremix_v1/190806_145316/0000/mumutautau_zskim_100.root']
 options.register('isMC', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "Sample is MC")
 options.register('tauCluster', 2, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "different tau clusters")
 options.parseArguments()
 
-process = cms.Process("DiMuonDiTauTreelizer")
+process = cms.Process("ZMuMuInclusiveTreelizer")
 process.load("FWCore.MessageService.MessageLogger_cfi")
+process.load('Configuration.StandardSequences.GeometryRecoDB_cff') # need for RecoEgamma recipe
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff') # globaltag is also needed for RecoEgamma recipe inclusion
+from Configuration.AlCa.GlobalTag import GlobalTag
 
 ########## Please specify if you are running on data (0) or MC (1) in the command line: #########################
-########### eg: cmsRun runDiMuDiTau_cfg.py isMC=1 ###############
+########### eg: cmsRun runZMuMuInclusive_2018_cfg.py isMC=1 ###############
 ##########################################################################
 
 if options.isMC == 1:
     print " ****** we will run on sample of: MC ******"
-    process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuDiTauSelectorMC_cfi")
+    process.load("MuMuTauTauTreeMaker.MuTauTreelizer.ZMuMuInclusiveSelectorMC_cfi")
+    process.GlobalTag.globaltag = '102X_upgrade2018_realistic_v20'
 
 else:
     print " ****** we will run on sample of: data ******"
-    process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuDiTauSelector_cfi")
+    process.load("MuMuTauTauTreeMaker.MuTauTreelizer.ZMuMuInclusiveSelector_cfi")
+    process.GlobalTag.globaltag = '102X_dataRun2_v12'
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
@@ -127,6 +132,13 @@ else:
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
 ############################################################
 
+######## implant the 2017v2 egamma ID into the 2018 miniAOD ############
+# reference: https://twiki.cern.ch/twiki/bin/view/CMS/EgammaMiniAODV2#2017_MiniAOD_V2
+
+from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
+setupEgammaPostRecoSeq(process, era='2018-Prompt')
+###########################################################
+
 if options.isMC == 1:
     process.treelizer = cms.Sequence(
             process.lumiTree*
@@ -134,6 +146,7 @@ if options.isMC == 1:
             process.MuonID*
             process.MuonSelector*
             process.TrigMuMatcher*
+            process.egammaPostRecoSeq*
             process.ElectronCandSelector*
             process.rerunTauIDSequence*
             process.TauCandSelector*
@@ -143,11 +156,11 @@ if options.isMC == 1:
             process.GenTauMuCandSelector*
             process.GenTauEleCandSelector*
             process.GenTauHadCandSelector*
-            process.DiMuDiTauAnalyzer
+            process.ZMuMuInclusiveAnalyzer
     )
 
     process.TFileService = cms.Service("TFileService",
-            fileName =  cms.string('MuMuTauTauTreelization_mc.root')
+            fileName =  cms.string('ZMuMuTreelization_mc.root')
     )
 
 else:
@@ -157,15 +170,16 @@ else:
             process.MuonID*
             process.MuonSelector*
             process.TrigMuMatcher*
+            process.egammaPostRecoSeq*
             process.ElectronCandSelector*
             process.rerunTauIDSequence*
             process.TauCandSelector*
             process.JetSelector*
-            process.DiMuDiTauAnalyzer
+            process.ZMuMuInclusiveAnalyzer
     )
 
     process.TFileService = cms.Service("TFileService",
-            fileName =  cms.string('MuMuTauTauTreelization_data.root')
+            fileName =  cms.string('ZMuMuTreelization_data.root')
     )
 
 process.options = cms.untracked.PSet(
