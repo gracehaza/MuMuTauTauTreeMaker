@@ -10,5 +10,4 @@
 <use name="RecoEgamma/EgammaTools"/>
 <use name="MuMuTauTauTreeMaker/MuTauTreelizer"/>
 <use   name="PhysicsTools/TensorFlow"/>
-<use   name="DevTools/Ntuplizer"/>
 <flags EDM_PLUGIN="1"/>
