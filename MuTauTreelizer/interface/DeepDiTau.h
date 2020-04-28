@@ -1,5 +1,7 @@
-#ifndef DevTools_Ntuplizer_DeepDiTau_h
-#define DevTools_Ntuplizer_DeepDiTau_h
+//#ifndef DevTools_Ntuplizer_DeepDiTau_h
+//#define DevTools_Ntuplizer_DeepDiTau_h
+#ifndef MuMuTauTauTreeMaker_MuTauTreelizer_DeepDiTau_h
+#define MuMuTauTauTreeMaker_MuTauTreelizer_DeepDiTau_h
 
 /*
  * \class DeepDiTau

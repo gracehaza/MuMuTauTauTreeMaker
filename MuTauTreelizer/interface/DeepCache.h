@@ -1,8 +1,8 @@
 /*#ifndef DevTools_Ntuplizer_DeepCache_h
 #define DevTools_Ntuplizer_DeepCache_h
 */
-#ifndef MuMuTauTauTreeMaker_MuTauTreelizer_interface_DeepCache_h
-#define MuMuTauTauTreeMaker_MuTauTreelizer_interface_DeepCache_h
+#ifndef MuMuTauTauTreeMaker_MuTauTreelizer_DeepCache_h
+#define MuMuTauTauTreeMaker_MuTauTreelizer_DeepCache_h
 /*
  * \class DeepCache
  *
