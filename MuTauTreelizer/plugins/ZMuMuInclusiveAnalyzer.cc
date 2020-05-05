@@ -553,9 +553,9 @@ ZMuMuInclusiveAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
            float relIsoWithEffectiveArea = (chad + std::max(0.0f, nhad + pho - rho*eArea)) / elePt;
 
            recoElectronPt.push_back(iElectron->pt());
-           recoElectronEta.push_back(iElectron->superCluster()->eta());
-           recoElectronPhi.push_back(iElectron->superCluster()->phi());
-           recoElectronEnergy.push_back(iElectron->superCluster()->energy());
+           recoElectronEta.push_back(iElectron->eta());
+           recoElectronPhi.push_back(iElectron->phi());
+           recoElectronEnergy.push_back(iElectron->energy());
            recoElectronPDGId.push_back(iElectron->pdgId());
            recoElectronIsolation.push_back(relIsoWithEffectiveArea);
            recoElectronEcalTrkEnergyPostCorr.push_back(iElectron->userFloat("ecalTrkEnergyPostCorr"));

@@ -208,7 +208,7 @@ ElectronCandSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                      (mHits <= 1) &&
                      (isPassConVeto == true);
 
-           if(((relIdName_ == "Veto" && isVeto) || (relIdName_ == "Loose" && isLoose) || (relIdName_ == "Medium" && isMedium) || (relIdName_ == "Tight" && isTight)) && (elePt > ptCut_) && (fabs(eleEta) < etaCut_))
+           if(((relIdName_ == "Veto" && isVeto) || (relIdName_ == "Loose" && isLoose) || (relIdName_ == "Medium" && isMedium) || (relIdName_ == "Tight" && isTight)) && (elePt > ptCut_) && (fabs(iElectron->eta()) < etaCut_))
            {
                CountElectron++;
                electronColl->push_back(*iElectron);
@@ -254,7 +254,7 @@ ElectronCandSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                      (mHits <= 1) &&
                      (isPassConVeto == true);
 
-           if(((relIdName_ == "Veto" && isVeto) || (relIdName_ == "Loose" && isLoose) || (relIdName_ == "Medium" && isMedium) || (relIdName_ == "Tight" && isTight)) && (elePt > ptCut_) && (fabs(eleEta) < etaCut_))
+           if(((relIdName_ == "Veto" && isVeto) || (relIdName_ == "Loose" && isLoose) || (relIdName_ == "Medium" && isMedium) || (relIdName_ == "Tight" && isTight)) && (elePt > ptCut_) && (fabs(iElectron->eta()) < etaCut_))
            {
                CountElectron++;
                electronColl->push_back(*iElectron);
