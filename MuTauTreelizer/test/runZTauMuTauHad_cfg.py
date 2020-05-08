@@ -114,10 +114,82 @@ elif options.tauCluster == 7:
     myTool.runTauID()
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
 
-else:
-    print " ====== use slimmedTausNewID cluster ======"
+elif options.tauCluster == 8:
+    print " ====== use slimmedTaus DeepID cluster ======"
     updatedTauName = "slimmedTausNewID"
-    import RecoTauTag.RecoTau.tools.runTauIdMVA as tauIdConfig
+    import MuMuTauTauTreeMaker.MuTauTreelizer.TauIdDeep_slimmedTaus as tauIdConfig
+    tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms,
+            debug = False,
+            updatedTauName = updatedTauName,
+            toKeep = ["deepTau2017v2p1"]
+            )
+    tauIdEmbedder.runTauID()
+    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
+
+elif options.tauCluster == 9:
+    print " ====== use slimmedTausMuonCleaned DeepID cluster ======"
+    updatedTauName = "slimmedTausNewID"
+    import MuMuTauTauTreeMaker.MuTauTreelizer.TauIdDeep_slimmedTausMuonCleaned as tauIdConfig
+    tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms,
+            debug = False,
+            updatedTauName = updatedTauName,
+            toKeep = ["deepTau2017v2p1"]
+            )
+    tauIdEmbedder.runTauID()
+    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
+
+elif options.tauCluster == 10:
+    print " ====== use slimmedTausElectronCleaned DeepID cluster ======"
+    updatedTauName = "slimmedTausNewID"
+    import MuMuTauTauTreeMaker.MuTauTreelizer.TauIdDeep_slimmedTausElectronCleaned as tauIdConfig
+    tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms,
+            debug = False,
+            updatedTauName = updatedTauName,
+            toKeep = ["deepTau2017v2p1"]
+            )
+    tauIdEmbedder.runTauID()
+    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
+
+elif options.tauCluster == 11:
+    print " ====== use slimmedTausMuonCleanedMedium DeepID cluster ======"
+    updatedTauName = "slimmedTausNewID"
+    import MuMuTauTauTreeMaker.MuTauTreelizer.TauIdDeep_slimmedTausMuonCleanedMedium as tauIdConfig
+    tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms,
+            debug = False,
+            updatedTauName = updatedTauName,
+            toKeep = ["deepTau2017v2p1"]
+            )
+    tauIdEmbedder.runTauID()
+    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
+
+elif options.tauCluster == 12:
+    print " ====== use slimmedTausElectronCleanedMedium DeepID cluster ======"
+    updatedTauName = "slimmedTausNewID"
+    import MuMuTauTauTreeMaker.MuTauTreelizer.TauIdDeep_slimmedTausElectronCleanedMedium as tauIdConfig
+    tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms,
+            debug = False,
+            updatedTauName = updatedTauName,
+            toKeep = ["deepTau2017v2p1"]
+            )
+    tauIdEmbedder.runTauID()
+    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
+
+elif options.tauCluster == 13:
+    print " ====== use slimmedTausMuonCleanedTight DeepID cluster ======"
+    updatedTauName = "slimmedTausNewID"
+    import MuMuTauTauTreeMaker.MuTauTreelizer.TauIdDeep_slimmedTausMuonCleanedTight as tauIdConfig
+    tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms,
+            debug = False,
+            updatedTauName = updatedTauName,
+            toKeep = ["deepTau2017v2p1"]
+            )
+    tauIdEmbedder.runTauID()
+    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
+
+else:
+    print " ====== use slimmedTausElectronCleanedTight DeepID cluster ======"
+    updatedTauName = "slimmedTausNewID"
+    import MuMuTauTauTreeMaker.MuTauTreelizer.TauIdDeep_slimmedTausElectronCleanedTight as tauIdConfig
     tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms,
             debug = False,
             updatedTauName = updatedTauName,
