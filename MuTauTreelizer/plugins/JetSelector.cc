@@ -80,6 +80,7 @@ JetSelector::JetSelector(const edm::ParameterSet& iConfig):
    jetIdName_ = iConfig.getParameter<std::string>("jetIdName");
    etaCut_ = iConfig.getParameter<double>("etaCut");
    ptCut_ = iConfig.getParameter<double>("ptCut");
+   transform(jetIdName_.begin(), jetIdName_.end(), jetIdName_.begin(), ::toupper);
 }
 
 
@@ -119,7 +120,7 @@ JetSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
            // -- reference: https://github.com/cms-sw/cmssw/blob/master/PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h ---
            double jetEnergyUncorrected = iJet->chargedHadronEnergy() + iJet->neutralHadronEnergy() + iJet->photonEnergy() + iJet->electronEnergy() + iJet->muonEnergy() + iJet->HFEMEnergy();
            double muonFraction = (jetEnergyUncorrected > 0. ? (iJet->muonEnergy()/jetEnergyUncorrected) : 1.0);
-           if ((jetIdName_ == "TightLepVeto") && 
+           if ((jetIdName_ == "TIGHTLEPVETO") && 
                (iJet->chargedHadronEnergyFraction()>0) && 
                (iJet->neutralHadronEnergyFraction()<0.9) &&
                (iJet->chargedEmEnergyFraction()<0.8) &&
@@ -132,7 +133,7 @@ JetSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                jetColl->push_back(*iJet);
            }
 
-           else if ((jetIdName_ == "Tight") &&
+           else if ((jetIdName_ == "TIGHT") &&
                     (iJet->chargedHadronEnergyFraction()>0) &&
                     (iJet->neutralHadronEnergyFraction()<0.9) &&
                     (iJet->neutralEmEnergyFraction()<0.9) &&

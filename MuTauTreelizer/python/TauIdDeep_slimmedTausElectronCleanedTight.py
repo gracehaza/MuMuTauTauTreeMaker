@@ -751,16 +751,30 @@ class TauIDEmbedder(object):
                 },
             }
 
+            self.process.ElectronClusterClean = self.cms.EDProducer("ElectronClusterClean",
+                    EleTag      = self.cms.InputTag("slimmedElectrons"),
+                    TauTag      = self.cms.InputTag("slimmedTausElectronCleanedTight"),
+                    ParticleFlowCandTag = self.cms.InputTag("packedPFCandidates"),
+                    rhoTag      = self.cms.InputTag("fixedGridRhoAll"),
+                    electronID  = self.cms.string('tight'),
+                    ptCut       = self.cms.double(7.0),
+                    passRelIso  = self.cms.bool(False),
+                    effAreasConfigFile = self.cms.FileInPath("MuMuTauTauTreeMaker/MuTauTreelizer/data/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt"),
+            )
+
+            self.process.rerunMvaIsolationTask.add(self.process.ElectronClusterClean)
+            self.process.rerunMvaIsolationSequence += self.process.ElectronClusterClean
+
             file_names = [
                 'core:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2017v2p6_e6_core.pb',
                 'inner:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2017v2p6_e6_inner.pb',
                 'outer:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2017v2p6_e6_outer.pb',
             ]
             self.process.deepTau2017v2p1 = self.cms.EDProducer("DeepTauId",
-                electrons                = self.cms.InputTag('slimmedElectrons'),
+                electrons                = self.cms.InputTag('ElectronClusterClean','slimmedElectronsCleaned'),
                 muons                    = self.cms.InputTag('slimmedMuons'),
                 taus                     = self.cms.InputTag('slimmedTausElectronCleanedTight'),
-                pfcands                  = self.cms.InputTag('packedPFCandidates'),
+                pfcands                  = self.cms.InputTag('ElectronClusterClean','packedPFCandidatesElectronCleaned'),
                 vertices                 = self.cms.InputTag('offlineSlimmedPrimaryVertices'),
                 rho                      = self.cms.InputTag('fixedGridRhoAll'),
                 graph_file               = self.cms.vstring(file_names),

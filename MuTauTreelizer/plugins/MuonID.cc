@@ -70,12 +70,13 @@ class MuonID : public edm::stream::EDFilter<> {
 // constructors and destructor
 //
 MuonID::MuonID(const edm::ParameterSet& iConfig):
-    muonTag_(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("muonTag"))),
-    muonID_(iConfig.getParameter<std::string>("muonID"))
+    muonTag_(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("muonTag")))
 {
    //now do what ever initialization is needed
    produces<std::vector<pat::Muon>>();
+   muonID_ = iConfig.getParameter<std::string>("muonID");
    minNumObjsToPassFilter_ = iConfig.getParameter<int>("minNumObjsToPassFilter");
+   transform(muonID_.begin(), muonID_.end(), muonID_.begin(), ::toupper);
 }
 
 
@@ -112,7 +113,7 @@ MuonID::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
        bool isMedium = muon::isLooseMuon(*iMuon) && iMuon->innerTrack()->validFraction() > 0.8 && muon::segmentCompatibility(*iMuon) > (goodGlob ? 0.303 : 0.451);
        bool isLoose = iMuon->isGlobalMuon();
        bool isTight = iMuon->isGlobalMuon() && iMuon->globalTrack()->normalizedChi2() < 10 && iMuon->globalTrack()->hitPattern().numberOfValidMuonHits() > 0 && iMuon->numberOfMatchedStations() > 1 && fabs(iMuon->muonBestTrack()->dxy()) < 0.2 && fabs(iMuon->muonBestTrack()->dz()) < 0.5 && iMuon->innerTrack()->hitPattern().numberOfValidPixelHits() > 0 && iMuon->innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5;
-       if ((isMedium && muonID_=="medium") || (isLoose && muonID_=="loose") || (isTight && muonID_=="tight"))
+       if ((isMedium && muonID_=="MEDIUM") || (isLoose && muonID_=="LOOSE") || (isTight && muonID_=="TIGHT"))
        {
            CountMuon+=1;
            muonColl->push_back(*iMuon);

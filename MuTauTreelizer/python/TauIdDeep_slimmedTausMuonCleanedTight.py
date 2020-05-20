@@ -751,6 +751,17 @@ class TauIDEmbedder(object):
                 },
             }
 
+            self.process.MuonClusterClean = self.cms.EDProducer("MuonClusterClean",
+                    MuTag   = self.cms.InputTag("slimmedMuons"),
+                    TauTag  = self.cms.InputTag("slimmedTausMuonCleanedTight"),
+                    ParticleFlowCandTag = self.cms.InputTag("packedPFCandidates"),
+                    muonID  = self.cms.string('tight'),
+                    ptCut   = self.cms.double(3.0),
+            )
+
+            self.process.rerunMvaIsolationTask.add(self.process.MuonClusterClean)
+            self.process.rerunMvaIsolationSequence += self.process.MuonClusterClean
+
             file_names = [
                 'core:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2017v2p6_e6_core.pb',
                 'inner:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2017v2p6_e6_inner.pb',
@@ -758,9 +769,9 @@ class TauIDEmbedder(object):
             ]
             self.process.deepTau2017v2p1 = self.cms.EDProducer("DeepTauId",
                 electrons                = self.cms.InputTag('slimmedElectrons'),
-                muons                    = self.cms.InputTag('slimmedMuons'),
+                muons                    = self.cms.InputTag('MuonClusterClean','slimmedMuonsCleaned'),
                 taus                     = self.cms.InputTag('slimmedTausMuonCleanedTight'),
-                pfcands                  = self.cms.InputTag('packedPFCandidates'),
+                pfcands                  = self.cms.InputTag('MuonClusterClean','packedPFCandidatesMuonCleaned'),
                 vertices                 = self.cms.InputTag('offlineSlimmedPrimaryVertices'),
                 rho                      = self.cms.InputTag('fixedGridRhoAll'),
                 graph_file               = self.cms.vstring(file_names),
