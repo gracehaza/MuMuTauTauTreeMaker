@@ -64,6 +64,30 @@ JetSelector = cms.EDFilter("JetSelector",
         ptCut = cms.double(20),
 )
 
+postfix=''
+
+module = cms.EDProducer('DeepDiTauProducer',
+        src = cms.InputTag('slimmedTaus'),
+        DeepDiTauConfiguration = cms.PSet(
+            memmapped = cms.bool(False),
+            graphDefinitions = cms.VPSet(
+                cms.PSet(
+                    name = cms.string('ditau2017v1'),
+                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/ditau_2017_v1.pb'),
+                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/ditau_2017_v1_means_sigmas.txt'),
+                ),
+                cms.PSet(
+                    name = cms.string('ditau2017MDv1'),
+                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/ditau_2017_md_v1.pb'),
+                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/ditau_2017_md_v1_means_sigmas.txt'),
+                ),
+            ),
+        ),
+    )
+modName = 'deepDiTau{0}'.format(postfix)
+setattr(process,modName,module)
+path *= getattr(process,modName)
+
 GenMuonCandSelector = cms.EDFilter("GenMuonCandSelector",
         genParticlesTag = cms.InputTag('prunedGenParticles'),
         etaCut = cms.double(2.6),

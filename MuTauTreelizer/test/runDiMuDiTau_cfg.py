@@ -138,6 +138,7 @@ if options.isMC == 1:
             process.rerunTauIDSequence*
             process.TauCandSelector*
             process.JetSelector*
+            process.DeepDiTauProducer*
             process.GenMuonCandSelector*
             process.GenElectronCandSelector*
             process.GenTauMuCandSelector*
