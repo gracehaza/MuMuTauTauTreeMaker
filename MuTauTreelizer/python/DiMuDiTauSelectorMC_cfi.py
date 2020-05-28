@@ -64,10 +64,9 @@ JetSelector = cms.EDFilter("JetSelector",
         ptCut = cms.double(20),
 )
 
-postfix=''
 
-module = cms.EDProducer('DeepDiTauProducer',
-        src = cms.InputTag('slimmedTaus'),
+DeepDiTauProducer = cms.EDProducer("DeepDiTauProducer",
+        src = cms.InputTag('slimmedJets'),
         DeepDiTauConfiguration = cms.PSet(
             memmapped = cms.bool(False),
             graphDefinitions = cms.VPSet(
@@ -84,9 +83,6 @@ module = cms.EDProducer('DeepDiTauProducer',
             ),
         ),
     )
-modName = 'deepDiTau{0}'.format(postfix)
-setattr(process,modName,module)
-path *= getattr(process,modName)
 
 GenMuonCandSelector = cms.EDFilter("GenMuonCandSelector",
         genParticlesTag = cms.InputTag('prunedGenParticles'),

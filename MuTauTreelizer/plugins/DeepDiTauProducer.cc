@@ -78,6 +78,7 @@ void DeepDiTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
   // Get jet collection
   edm::Handle<std::vector<pat::Jet> > jets;
   iEvent.getByToken(jetCollectionToken_, jets);
+  if(jets->size() > 0){ // added 27 may
 
   // create output map to store deep id discriminants
   std::map<std::string, std::vector<float> > deepDiTauScores;
@@ -100,8 +101,8 @@ void DeepDiTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
     output_filler.fill();
     iEvent.put(std::move(output),name);
   }
+  }// jets size
 }
-
 std::unique_ptr<DeepCache> DeepDiTauProducer::initializeGlobalCache(const edm::ParameterSet& cfg) {
   std::map<std::string, std::string> graphNames;
   if (!cfg.exists("DeepDiTauConfiguration")) {

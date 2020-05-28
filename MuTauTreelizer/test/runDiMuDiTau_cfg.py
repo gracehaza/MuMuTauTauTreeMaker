@@ -43,6 +43,7 @@ if options.tauCluster <= 0:
     )
     myTool.runTauID()
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
+    del process.rerunDiscriminationByIsolationOldDMMVArun2017v2raw.requireDecayMode
 
 elif options.tauCluster == 1:
     print " ====== use slimmedTausBoosted (lower Tau Pt) cluster ======"
@@ -148,7 +149,7 @@ if options.isMC == 1:
     )
 
     process.TFileService = cms.Service("TFileService",
-            fileName =  cms.string('MuMuTauTauTreelization_mc.root')
+            fileName =  cms.string('MuMuTauTauTreelization_test_mc.root')
     )
 
 else:
