@@ -39,7 +39,7 @@ TrigMuMatcher = cms.EDFilter("TrigMuMatcher",
 
 TauHadSelector = cms.EDFilter("TauHadSelector",
         tauTag = cms.InputTag('slimmedTausNewID'),
-        tauDiscriminatorTag = cms.vstring('decayModeFinding'),
+        tauDiscriminatorTag = cms.vstring('decayModeFindingNewDMs'),
         passDiscriminator = cms.bool(True),
         pTMin = cms.double(8.0),
         etaMax = cms.double(2.4),

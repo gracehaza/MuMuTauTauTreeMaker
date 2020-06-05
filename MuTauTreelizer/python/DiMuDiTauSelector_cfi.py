@@ -46,12 +46,12 @@ ElectronCandSelector = cms.EDFilter("ElectronCandSelector",
         relIdName = cms.string("Loose"), # customize electron ID options: Veto, Loose, Medium, Tight
         passRelIso = cms.bool(False),
         etaCut = cms.double(2.5),
-        ptCut = cms.double(3),
+        ptCut = cms.double(7.0),
 )
 
 TauCandSelector = cms.EDFilter("TauCandSelector",
         tauTag = cms.InputTag('slimmedTausNewID'),
-        tauDiscriminatorTag = cms.vstring('decayModeFinding'),
+        tauDiscriminatorTag = cms.vstring('decayModeFindingNewDMs'),
         passDiscriminator = cms.bool(True),
         pTMin = cms.double(8.0),
         etaMax = cms.double(2.4),
