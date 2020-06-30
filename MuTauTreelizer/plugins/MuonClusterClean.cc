@@ -150,7 +150,12 @@ MuonClusterClean::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
    for(edm::View<pat::PackedCandidate>::const_iterator iCand = pPFCand->begin(); iCand != pPFCand->end(); ++iCand)
    {
        bool findMatchedPFMuon = false;
-       if (fabs(iCand->pdgId()) != 13) continue;
+       if (fabs(iCand->pdgId()) != 13) 
+       {
+           pfCandColl->push_back(*iCand);
+           continue;
+       } // end if non-muon candidates
+
        for (unsigned int iMuon = 0; iMuon < cleanedMuons.size(); iMuon++)
        {
            if (deltaR(*iCand, cleanedMuons.at(iMuon)) < 0.01)

@@ -254,7 +254,12 @@ ElectronClusterClean::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
    for(edm::View<pat::PackedCandidate>::const_iterator iCand = pPFCand->begin(); iCand != pPFCand->end(); ++iCand)
    {
        bool findMatchedPFElectron = false;
-       if (fabs(iCand->pdgId()) != 11) continue;
+       if (fabs(iCand->pdgId()) != 11) 
+       {
+           pfCandColl->push_back(*iCand);
+           continue;
+       } // end if non-electron candidates
+
        for (unsigned int iElectron = 0; iElectron < cleanedElectrons.size(); iElectron++)
        {
            if (deltaR(*iCand, cleanedElectrons.at(iElectron)) < 0.01)
