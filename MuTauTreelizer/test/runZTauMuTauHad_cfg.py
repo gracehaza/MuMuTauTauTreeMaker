@@ -7,6 +7,7 @@ options = VarParsing.VarParsing('analysis')
 options.inputFiles = ['/store/group/phys_higgs/HiggsExo/fengwang/SUSYGluGluToHToAA_AToMuMu_AToTauTau_M-125_M-19_TuneCUETP8M1_13TeV_madgraph_pythia8/MiniAOD_H125AA19_DiMuDiTau_Fall17DRPremix_v1/190515_140053/0000/mumutautau_1.root']
 options.register('isMC', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "Sample is MC")
 options.register('tauCluster', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "different tau clusters")
+options.register('numThreads', 8, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "Set number of CPU cores")
 options.parseArguments()
 
 process = cms.Process("ZMuonTauTreelizer")
@@ -240,4 +241,5 @@ process.options = cms.untracked.PSet(
         wantSummary = cms.untracked.bool(True),
 )
 
+process.options.numberOfThreads = cms.untracked.uint32(options.numThreads)
 process.p = cms.Path(process.treelizer)
