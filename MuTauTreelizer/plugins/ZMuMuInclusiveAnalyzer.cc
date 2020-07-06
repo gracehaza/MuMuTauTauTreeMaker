@@ -106,6 +106,8 @@ class ZMuMuInclusiveAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResou
       vector<float> recoMuonDZ;
       vector<int> recoMuonNTrackerLayers;
       vector<int> recoMuonTriggerFlag;
+      vector<int> recoMuonRefToElectron;
+      vector<int> recoMuonRefToTau;
 
       // --- reconstructed electrons ---
       vector<float> recoElectronPt;
@@ -116,6 +118,8 @@ class ZMuMuInclusiveAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResou
       vector<float> recoElectronIsolation;
       vector<float> recoElectronEcalTrkEnergyPostCorr;
       vector<float> recoElectronEcalTrkEnergyErrPostCorr;
+      vector<int> recoElectronRefToMuon;
+      vector<int> recoElectronRefToTau;
 
       // --- reconstructed taus ---
       vector<float> recoTauPt;
@@ -175,6 +179,9 @@ class ZMuMuInclusiveAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResou
 
       vector<float> recoTauDeepVSeVVVLoose;
       vector<float> recoTauDeepVSjetVVVLoose;
+
+      vector<int> recoTauRefToMuon;
+      vector<int> recoTauRefToElectron;
 
       // --- reconstructed jets ---
       vector<float> recoJetPt;
@@ -523,6 +530,8 @@ ZMuMuInclusiveAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
            recoMuonDXY.push_back(iMuon->muonBestTrack()->dxy());
            recoMuonDZ.push_back(iMuon->muonBestTrack()->dz());
            recoMuonNTrackerLayers.push_back(iMuon->innerTrack()->hitPattern().trackerLayersWithMeasurement());
+           recoMuonRefToElectron.push_back(0);
+           recoMuonRefToTau.push_back(0);
 
            if (muonCounter == 0)
            {
@@ -560,6 +569,9 @@ ZMuMuInclusiveAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
            recoElectronIsolation.push_back(relIsoWithEffectiveArea);
            recoElectronEcalTrkEnergyPostCorr.push_back(iElectron->userFloat("ecalTrkEnergyPostCorr"));
            recoElectronEcalTrkEnergyErrPostCorr.push_back(iElectron->userFloat("ecalTrkEnergyErrPostCorr"));
+
+           recoElectronRefToMuon.push_back(0);
+           recoElectronRefToTau.push_back(0);
        } // end for loop on electrons
    } // end if pElectron->size()>0
    
@@ -574,6 +586,8 @@ ZMuMuInclusiveAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
            recoTauEnergy.push_back(iTau->energy());
            recoTauPDGId.push_back(iTau->pdgId());
            recoTauDecayMode.push_back(iTau->decayMode());
+           recoTauRefToMuon.push_back(0);
+           recoTauRefToElectron.push_back(0);
 
            if (iTau->isTauIDAvailable("byIsolationMVArun2017v2DBoldDMwLTraw2017"))
            {
@@ -634,6 +648,144 @@ ZMuMuInclusiveAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
        } // end for loop on taus
    } // end if pTau->size()>0
 
+   // --- prepare for the common source particle reference records for muon/electron candidates
+   if (pElectron->size()>0 && pMu->size()>0)
+   {
+       int refMuonValue = 1;
+       int countMuon = 0;
+       for (edm::View<pat::Muon>::const_iterator iMuon=pMu->begin(); iMuon!=pMu->end(); iMuon++)
+       {
+           bool findMatchedMu = false;
+
+           int refElectronValue = refMuonValue;
+           int countElectron = 0;
+           for(edm::View<pat::Electron>::const_iterator iElectron=pElectron->begin(); iElectron!=pElectron->end(); iElectron++)
+           {
+               bool findMatchedEle = false;
+               for (unsigned int indexMuon = 0; indexMuon < iMuon->numberOfSourceCandidatePtrs(); indexMuon++)
+               {
+                   for (unsigned int indexEle = 0; indexEle < iElectron->numberOfSourceCandidatePtrs(); indexEle++)
+                   {
+                       if (iElectron->sourceCandidatePtr(indexEle).key() == iMuon->sourceCandidatePtr(indexMuon).key())
+                       {
+                           findMatchedMu = true;
+                           findMatchedEle = true;
+                           break;
+                       } // end if find the same source of electron and muon
+                   } // end for loop on electron source particles
+                   if (findMatchedEle) break;
+               } // end for loop on muon source particles
+               
+               if (findMatchedEle)
+               {
+                   recoElectronRefToMuon.at(countElectron) = refElectronValue;
+               } // end if findMatchedEle
+
+               countElectron += 1;
+           } // end for loop on electron candidates
+
+           if (findMatchedMu)
+           {
+               recoMuonRefToElectron.at(countMuon) = refMuonValue;
+               refMuonValue += 1;
+           } // end if findMatchedMu
+
+           countMuon += 1;
+       } // end for loop on muon candidates
+   } // end if pElectron->size()>0 && pMu->size()>0
+
+   // --- prepare muon VS tau reference for overlapped mu/tau candidates
+   if (pMu->size()>0 && pTau->size()>0)
+   {
+       int refTauValue = 1;
+       int countTau = 0;
+       for (edm::View<pat::Tau>::const_iterator iTau=pTau->begin(); iTau!=pTau->end(); iTau++)
+       {
+           bool findMatchedTau = false;
+
+           int refMuonValue = refTauValue;
+           int countMuon = 0;
+           for (edm::View<pat::Muon>::const_iterator iMuon=pMu->begin(); iMuon!=pMu->end(); iMuon++)
+           {
+               bool findMatchedMu = false;
+               for (unsigned int indexMu = 0; indexMu < iMuon->numberOfSourceCandidatePtrs(); indexMu++)
+               {
+                   for (unsigned int indexTau = 0; indexTau < iTau->numberOfSourceCandidatePtrs(); indexTau++)
+                   {
+                       if (iMuon->sourceCandidatePtr(indexMu).key() == iTau->sourceCandidatePtr(indexTau).key())
+                       {
+                           findMatchedMu = true;
+                           findMatchedTau = true;
+                           break;
+                       } // end if the muon source and tau source have the same key
+                   } // end for loop on tau source particles
+                   if (findMatchedMu) break;
+               } // end for loop on mu source particles
+
+               if (findMatchedMu)
+               {
+                   recoMuonRefToTau.at(countMuon) = refMuonValue;
+               } // end if findMatchedMu
+
+               countMuon += 1;
+           } // end for loop on muon candidates
+
+           if (findMatchedTau)
+           {
+               recoTauRefToMuon.at(countTau) = refTauValue;
+               refTauValue += 1;
+           } // end if findMatchedTau
+
+           countTau += 1;
+       } // end for loop on tau candidates
+   } // end if pMu->size()>0 && pTau->size()>0
+
+   // --- prepare electron VS tau reference for overlapped ele/tau candidates
+   if (pElectron->size()>0 && pTau->size()>0)
+   {
+       int refTauValue = 1;
+       int countTau = 0;
+       for (edm::View<pat::Tau>::const_iterator iTau=pTau->begin(); iTau!=pTau->end(); iTau++)
+       {
+           bool findMatchedTau = false;
+
+           int refElectronValue = refTauValue;
+           int countElectron = 0;
+           for(edm::View<pat::Electron>::const_iterator iElectron=pElectron->begin(); iElectron!=pElectron->end(); iElectron++)
+           {
+               bool findMatchedEle = false;
+               for (unsigned int indexTau = 0; indexTau < iTau->numberOfSourceCandidatePtrs(); indexTau++)
+               {
+                   for (unsigned int indexEle = 0; indexEle < iElectron->numberOfSourceCandidatePtrs(); indexEle++)
+                   {
+                       if (iElectron->sourceCandidatePtr(indexEle).key() == iTau->sourceCandidatePtr(indexTau).key())
+                       {
+                           findMatchedEle = true;
+                           findMatchedTau = true;
+                           break;
+                       } // end if find the same source of electron and tau
+                   } // end for loop on electron source particles
+                   if (findMatchedEle) break;
+               } // end for loop on tau source particles
+
+               if (findMatchedEle)
+               {
+                   recoElectronRefToTau.at(countElectron) = refElectronValue;
+               } // end if findMatchedEle
+
+               countElectron += 1;
+           } // end for loop on electron candidates
+
+           if (findMatchedTau)
+           {
+               recoTauRefToElectron.at(countTau) = refTauValue;
+               refTauValue += 1;
+           } // end if findMatchedTau
+
+           countTau += 1;
+       } // end for loop on tau candidates
+   } // end if pElectron->size()>0 && pTau->size()>0
+
    // --- prepare jet vector ---
    if (pJet->size()>0)
    {
@@ -676,6 +828,8 @@ ZMuMuInclusiveAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
    recoMuonDZ.clear();
    recoMuonNTrackerLayers.clear();
    recoMuonTriggerFlag.clear();
+   recoMuonRefToElectron.clear();
+   recoMuonRefToTau.clear();
 
    // --- reconstructed electrons ---
    recoElectronPt.clear();
@@ -686,6 +840,8 @@ ZMuMuInclusiveAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
    recoElectronIsolation.clear();
    recoElectronEcalTrkEnergyPostCorr.clear();
    recoElectronEcalTrkEnergyErrPostCorr.clear();
+   recoElectronRefToMuon.clear();
+   recoElectronRefToTau.clear();
 
    // --- reconstructed taus ---
    recoTauPt.clear();
@@ -694,6 +850,9 @@ ZMuMuInclusiveAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
    recoTauEnergy.clear();
    recoTauPDGId.clear();
    recoTauDecayMode.clear();
+   recoTauRefToMuon.clear();
+   recoTauRefToElectron.clear();
+
    recoTauIsoMVArawValue.clear();
    recoTauIsoMVAVVLoose.clear();
    recoTauIsoMVAVLoose.clear();
@@ -944,6 +1103,8 @@ ZMuMuInclusiveAnalyzer::beginJob()
     objectTree->Branch("recoMuonDZ", &recoMuonDZ);
     objectTree->Branch("recoMuonNTrackerLayers", &recoMuonNTrackerLayers);
     objectTree->Branch("recoMuonTriggerFlag", &recoMuonTriggerFlag);
+    objectTree->Branch("recoMuonRefToElectron", &recoMuonRefToElectron);
+    objectTree->Branch("recoMuonRefToTau", &recoMuonRefToTau);
 
     objectTree->Branch("recoElectronPt", &recoElectronPt);
     objectTree->Branch("recoElectronEta", &recoElectronEta);
@@ -953,6 +1114,8 @@ ZMuMuInclusiveAnalyzer::beginJob()
     objectTree->Branch("recoElectronIsolation", &recoElectronIsolation);
     objectTree->Branch("recoElectronEcalTrkEnergyPostCorr", &recoElectronEcalTrkEnergyPostCorr);
     objectTree->Branch("recoElectronEcalTrkEnergyErrPostCorr", &recoElectronEcalTrkEnergyErrPostCorr);
+    objectTree->Branch("recoElectronRefToMuon", &recoElectronRefToMuon);
+    objectTree->Branch("recoElectronRefToTau", &recoElectronRefToTau);
 
     objectTree->Branch("recoTauPt", &recoTauPt);
     objectTree->Branch("recoTauEta", &recoTauEta);
@@ -960,6 +1123,8 @@ ZMuMuInclusiveAnalyzer::beginJob()
     objectTree->Branch("recoTauEnergy", &recoTauEnergy);
     objectTree->Branch("recoTauPDGId", &recoTauPDGId);
     objectTree->Branch("recoTauDecayMode", &recoTauDecayMode);
+    objectTree->Branch("recoTauRefToMuon", &recoTauRefToMuon);
+    objectTree->Branch("recoTauRefToElectron", &recoTauRefToElectron);
 
     objectTree->Branch("recoTauDeepVSeraw", &recoTauDeepVSeraw);
     objectTree->Branch("recoTauDeepVSjetraw", &recoTauDeepVSjetraw);
