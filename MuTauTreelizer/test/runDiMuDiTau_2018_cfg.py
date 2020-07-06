@@ -48,6 +48,7 @@ if options.tauCluster <= 0:
     )
     myTool.runTauID()
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
+    del process.rerunDiscriminationByIsolationOldDMMVArun2017v2raw.requireDecayMode
 
 elif options.tauCluster == 1:
     print " ====== use slimmedTausBoosted (lower Tau Pt) cluster ======"
@@ -151,6 +152,7 @@ if options.isMC == 1:
             process.rerunTauIDSequence*
             process.TauCandSelector*
             process.JetSelector*
+            process.DeepDiTauProducer*
             process.GenMuonCandSelector*
             process.GenElectronCandSelector*
             process.GenTauMuCandSelector*

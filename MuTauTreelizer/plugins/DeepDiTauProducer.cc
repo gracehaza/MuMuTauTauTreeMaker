@@ -51,7 +51,7 @@ private:
 
 DeepDiTauProducer::DeepDiTauProducer(const edm::ParameterSet& iConfig, const DeepCache* cache)
     : cache_(cache) {
-  auto inputLabel = iConfig.getParameter<edm::InputTag>("src");
+  auto inputLabel = iConfig.getParameter<edm::InputTag>("slimmedJetTag");
 
   // Load DeepDiTau
   auto deepCfg = iConfig.getParameter<edm::ParameterSet>("DeepDiTauConfiguration");
