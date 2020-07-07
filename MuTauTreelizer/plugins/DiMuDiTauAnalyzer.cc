@@ -116,6 +116,9 @@ class DiMuDiTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       vector<float> recoElectronEnergy;
       vector<int> recoElectronPDGId;
       vector<float> recoElectronIsolation;
+      vector<int> recoElectronIdLoose;
+      vector<int> recoElectronIdMedium;
+      vector<int> recoElectronIdTight;
       vector<float> recoElectronEcalTrkEnergyPostCorr;
       vector<float> recoElectronEcalTrkEnergyErrPostCorr;
       vector<int> recoElectronRefToMuon;
@@ -551,15 +554,101 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    {
        for(edm::View<pat::Electron>::const_iterator iElectron=pElectron->begin(); iElectron!=pElectron->end(); iElectron++)
        {
+           int isLoose = 0;
+           int isMedium = 0;
+           int isTight = 0;
+
+           // ---  full5x5_sigmaIetaIeta ---
+           float sigmaIetaIeta = iElectron->full5x5_sigmaIetaIeta();
+
+           // --- fabs(dEtaSeed) ---
+           float dEtaSeed = fabs(iElectron->superCluster().isNonnull() && iElectron->superCluster()->seed().isNonnull() ? iElectron->deltaEtaSuperClusterTrackAtVtx() - iElectron->superCluster()->eta() + iElectron->superCluster()->seed()->eta() : std::numeric_limits<float>::max()); 
+           
+           // --- fabs(dPhiIn) ---
+           float dPhiIn = fabs(iElectron->deltaPhiSuperClusterTrackAtVtx());
+           
+           // --- variables for H/E cuts ---
+           float HoE = iElectron->hadronicOverEm();
+           float rho = pRho.isValid() ? (*pRho) : 0; 
+           float energy = iElectron->superCluster()->energy();
+
            // --- variables for relIsoWithEffectiveArea ---
            float chad = iElectron->pfIsolationVariables().sumChargedHadronPt;
            float nhad = iElectron->pfIsolationVariables().sumNeutralHadronEt;
            float pho = iElectron->pfIsolationVariables().sumPhotonEt;
            float elePt = iElectron->pt();
            float eleEta = iElectron->superCluster()->eta();
-           float rho = pRho.isValid() ? (*pRho) : 0;
            float eArea = effectiveAreas.getEffectiveArea(fabs(eleEta));
            float relIsoWithEffectiveArea = (chad + std::max(0.0f, nhad + pho - rho*eArea)) / elePt;
+
+           // --- variables for fabs(1/E-1/p) ---
+           float eInverseMinusPInverse = fabs(1.0 - iElectron->eSuperClusterOverP())*(1.0/iElectron->ecalEnergy());
+
+           // --- expected missing inner hits ---
+           int mHits = iElectron->gsfTrack()->hitPattern().numberOfAllHits(reco::HitPattern::MISSING_INNER_HITS);
+
+           // --- pass conversion veto ---
+           bool isPassConVeto = iElectron->passConversionVeto();
+
+           // ========= select electrons in different cut-based ID accordingly ==========
+           if (fabs(eleEta) <= 1.479)
+           {
+               isLoose = (sigmaIetaIeta < 0.0112) &&
+                         (dEtaSeed < 0.00377) &&
+                         (dPhiIn < 0.0884) &&
+                         (HoE < 0.05 + 1.16/energy + 0.0324*rho/energy) &&
+                         (relIsoWithEffectiveArea < 0.112 + 0.506/elePt) &&
+                         (eInverseMinusPInverse < 0.193) &&
+                         (mHits <= 1) &&
+                         (isPassConVeto == true);
+
+               isMedium = (sigmaIetaIeta < 0.0106) &&
+                          (dEtaSeed < 0.0032) &&
+                          (dPhiIn < 0.0547) &&
+                          (HoE < 0.046 + 1.16/energy + 0.0324*rho/energy) &&
+                          (relIsoWithEffectiveArea < 0.0478 + 0.506/elePt) &&
+                          (eInverseMinusPInverse < 0.184) &&
+                          (mHits <= 1) &&
+                          (isPassConVeto == true);
+
+               isTight = (sigmaIetaIeta < 0.0104) &&
+                         (dEtaSeed < 0.00255) &&
+                         (dPhiIn < 0.022) &&
+                         (HoE < 0.026 + 1.15/energy + 0.0324*rho/energy) &&
+                         (relIsoWithEffectiveArea < 0.0287 + 0.506/elePt) &&
+                         (eInverseMinusPInverse < 0.159) &&
+                         (mHits <= 1) &&
+                         (isPassConVeto == true);
+           }// endif (fabs(eleEta) <= 1.479)
+
+           else{
+               isLoose = (sigmaIetaIeta < 0.0425) &&
+                         (dEtaSeed < 0.00674) &&
+                         (dPhiIn < 0.169) &&
+                         (HoE < 0.0441 + 2.54/energy + 0.183*rho/energy) &&
+                         (relIsoWithEffectiveArea < 0.108 + 0.963/elePt) &&
+                         (eInverseMinusPInverse < 0.111) &&
+                         (mHits <= 1) &&
+                         (isPassConVeto == true);
+
+               isMedium = (sigmaIetaIeta < 0.0387) &&
+                          (dEtaSeed < 0.00632) &&
+                          (dPhiIn < 0.0394) &&
+                          (HoE < 0.0275 + 2.52/energy + 0.183*rho/energy) &&
+                          (relIsoWithEffectiveArea < 0.0658 + 0.963/elePt) &&
+                          (eInverseMinusPInverse < 0.0721) &&
+                          (mHits <= 1) &&
+                          (isPassConVeto == true);
+
+               isTight = (sigmaIetaIeta < 0.0353) &&
+                         (dEtaSeed < 0.00501) &&
+                         (dPhiIn < 0.0236) &&
+                         (HoE < 0.0188 + 2.06/energy + 0.183*rho/energy) &&
+                         (relIsoWithEffectiveArea < 0.0445 + 0.963/elePt) &&
+                         (eInverseMinusPInverse < 0.0197) &&
+                         (mHits <= 1) &&
+                         (isPassConVeto == true);
+           } // end else (fabs(eleEta) > 1.479)
 
            recoElectronPt.push_back(iElectron->pt());
            recoElectronEta.push_back(iElectron->eta());
@@ -567,6 +656,9 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
            recoElectronEnergy.push_back(iElectron->energy());
            recoElectronPDGId.push_back(iElectron->pdgId());
            recoElectronIsolation.push_back(relIsoWithEffectiveArea);
+           recoElectronIdLoose.push_back(isLoose);
+           recoElectronIdMedium.push_back(isMedium);
+           recoElectronIdTight.push_back(isTight);
            recoElectronEcalTrkEnergyPostCorr.push_back(iElectron->userFloat("ecalTrkEnergyPostCorr"));
            recoElectronEcalTrkEnergyErrPostCorr.push_back(iElectron->userFloat("ecalTrkEnergyErrPostCorr"));
 
@@ -838,6 +930,9 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    recoElectronEnergy.clear();
    recoElectronPDGId.clear();
    recoElectronIsolation.clear();
+   recoElectronIdLoose.clear();
+   recoElectronIdMedium.clear();
+   recoElectronIdTight.clear();
    recoElectronEcalTrkEnergyPostCorr.clear();
    recoElectronEcalTrkEnergyErrPostCorr.clear();
    recoElectronRefToMuon.clear();
@@ -1112,6 +1207,9 @@ DiMuDiTauAnalyzer::beginJob()
     objectTree->Branch("recoElectronEnergy", &recoElectronEnergy);
     objectTree->Branch("recoElectronPDGId", &recoElectronPDGId);
     objectTree->Branch("recoElectronIsolation", &recoElectronIsolation);
+    objectTree->Branch("recoElectronIdLoose", &recoElectronIdLoose);
+    objectTree->Branch("recoElectronIdMedium", &recoElectronIdMedium);
+    objectTree->Branch("recoElectronIdTight", &recoElectronIdTight);
     objectTree->Branch("recoElectronEcalTrkEnergyPostCorr", &recoElectronEcalTrkEnergyPostCorr);
     objectTree->Branch("recoElectronEcalTrkEnergyErrPostCorr", &recoElectronEcalTrkEnergyErrPostCorr);
     objectTree->Branch("recoElectronRefToMuon", &recoElectronRefToMuon);
