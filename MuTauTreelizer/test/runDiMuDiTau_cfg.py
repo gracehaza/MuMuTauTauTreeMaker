@@ -149,7 +149,7 @@ if options.isMC == 1:
     )
 
     process.TFileService = cms.Service("TFileService",
-            fileName =  cms.string('MuMuTauTauTreelization_mc_0607.root')
+            fileName =  cms.string('MuMuTauTauTreelization_mc_2707.root')
     )
 
 else:
