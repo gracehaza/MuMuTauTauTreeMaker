@@ -81,7 +81,7 @@ class DiMuDiTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       edm::EDGetTokenT<edm::View<pat::Jet>> JetTag;
       edm::EDGetTokenT<edm::View<pat::MET>> MetTag;
       edm::EDGetTokenT<edm::View<reco::Vertex>> VertexTag;
-      edm::EDGetTokenT<edm::View<pat::Jet>> slimmedJetTag;
+  //      edm::EDGetTokenT<edm::View<pat::Jet>> slimmedJetTag;
       edm::EDGetTokenT<double> rhoTag;
       EffectiveAreas effectiveAreas;
       bool isMC;
@@ -195,13 +195,13 @@ class DiMuDiTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       int recoNPU;
       int trueNInteraction;
   int eventID;
-
+  /*
   // ---- jets for ML ----
   vector<float> slimJetPt;
   vector<float> slimJetEta;
   vector<float> slimJetPhi;
   vector<float> slimJetMass;
-
+  */
 
       // --- gen muons ----
       vector<float> genMuonPt;
@@ -273,7 +273,7 @@ DiMuDiTauAnalyzer::DiMuDiTauAnalyzer(const edm::ParameterSet& iConfig):
     JetTag(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("JetTag"))),
     MetTag(consumes<edm::View<pat::MET>>(iConfig.getParameter<edm::InputTag>("MetTag"))),
     VertexTag(consumes<edm::View<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("VertexTag"))),
-  slimmedJetTag(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("slimmedJetTag"))),
+// slimmedJetTag(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("slimmedJetTag"))),
     rhoTag(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoTag"))),
     effectiveAreas((iConfig.getParameter<edm::FileInPath>("effAreasConfigFile")).fullPath()),
     PileupTag(consumes<edm::View<PileupSummaryInfo>>(iConfig.existsAs<edm::InputTag>("PileupTag") ? iConfig.getParameter<edm::InputTag>("PileupTag") : edm::InputTag())),
@@ -326,8 +326,8 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    edm::Handle<edm::View<reco::Vertex>> pVertex;
    iEvent.getByToken(VertexTag, pVertex);
 
-   edm::Handle<edm::View<pat::Jet>> pslimJet;
-   iEvent.getByToken(slimmedJetTag, pslimJet);
+   // edm::Handle<edm::View<pat::Jet>> pslimJet;
+   //iEvent.getByToken(slimmedJetTag, pslimJet);
 
    edm::Handle<double> pRho;
    iEvent.getByToken(rhoTag, pRho);
@@ -661,6 +661,7 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
        } // end for loop on jets
    } // end if pJet->size()>0
 
+   /*
    if (pslimJet->size()>0)
      {
        for (edm::View<pat::Jet>::const_iterator islimJet=pslimJet->begin(); islimJet!=pslimJet->end(); islimJet++)
@@ -672,6 +673,7 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
      }
 } // end if pslimJet->size() > 0
 
+   */
 
    // --- prepare MET vector ---
    if (pMet->size()>0)
@@ -775,7 +777,7 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    recoJetPhi.clear();
    recoJetEnergy.clear();
    recoJetCSV.clear();
-
+   /*
 
 // --- slim jets  for ML ----
 
@@ -783,7 +785,8 @@ slimJetPt.clear();
 slimJetEta.clear();
 slimJetPhi.clear();
 slimJetMass.clear();
-   
+   */
+
    // --- reconstructed MET ---
    recoMET.clear();
    recoMETPhi.clear();
@@ -1049,12 +1052,12 @@ DiMuDiTauAnalyzer::beginJob()
     objectTree->Branch("recoJetPhi", &recoJetPhi);
     objectTree->Branch("recoJetEnergy", &recoJetEnergy);
     objectTree->Branch("recoJetCSV", &recoJetCSV);
-    
+    /*    
     objectTree->Branch("slimJetPt", &slimJetPt);
     objectTree->Branch("slimJetEta", &slimJetEta);
     objectTree->Branch("slimJetPhi", &slimJetPhi);
     objectTree->Branch("slimJetMass", &slimJetMass);
-
+    */
     objectTree->Branch("recoMET", &recoMET);
     objectTree->Branch("recoMETPhi", &recoMETPhi);
     objectTree->Branch("recoMETPx", &recoMETPx);

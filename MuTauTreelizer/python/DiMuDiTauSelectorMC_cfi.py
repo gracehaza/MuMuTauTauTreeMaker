@@ -66,8 +66,8 @@ JetSelector = cms.EDFilter("JetSelector",
 
 
 DeepDiTauProducer = cms.EDProducer("DeepDiTauProducer",
-#        src = cms.InputTag('slimmedJets'),
-        slimmedJetTag = cms.InputTag('slimmedJets'),
+       src = cms.InputTag('slimmedJets'),
+#        slimmedJetTag = cms.InputTag('slimmedJets'),
         DeepDiTauConfiguration = cms.PSet(
             memmapped = cms.bool(False),
             graphDefinitions = cms.VPSet(
@@ -125,7 +125,6 @@ DiMuDiTauAnalyzer = cms.EDAnalyzer('DiMuDiTauAnalyzer',
         rhoTag = cms.InputTag("fixedGridRhoAll"),
         effAreasConfigFile = cms.FileInPath("MuMuTauTauTreeMaker/MuTauTreelizer/data/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt"),
         isMC = cms.bool(True),
-        slimmedJetTag = cms.InputTag('DeepDiTauProducer'),
         GenMuTag = cms.InputTag('GenMuonCandSelector'),
         GenEleTag = cms.InputTag('GenElectronCandSelector'),
         GenTauMuTag = cms.InputTag('GenTauMuCandSelector'),
