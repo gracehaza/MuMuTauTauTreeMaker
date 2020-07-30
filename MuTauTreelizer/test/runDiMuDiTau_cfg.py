@@ -140,6 +140,7 @@ if options.isMC == 1:
             process.TauCandSelector*
             process.JetSelector*
             process.DeepDiTauProducer*
+            process.JetIdEmbedder*
             process.GenMuonCandSelector*
             process.GenElectronCandSelector*
             process.GenTauMuCandSelector*
