@@ -197,6 +197,8 @@ class DiMuDiTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
   int eventID;
 
   vector<float> ditauValues;
+  vector<float> deepditaupt;
+
   // float ditau2017v1Value;
 
 
@@ -663,11 +665,14 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
      {
        for (edm::View<pat::Jet>::const_iterator islimJet=pslimJet->begin(); islimJet!=pslimJet->end(); islimJet++)
 	 {
-	   // ditau2017v1Value = islimJet->userFloat("ditau2017v1");
+	   //	   std::cout<< "di tau value: " << islimJet->userFloat("ditau2017v1") << std::endl;
 	   //ditauValues.push_back(ditau2017v1Value);
 	   ditauValues.push_back(islimJet->userFloat("ditau2017v1"));
-     }
-
+	   deepditaupt.push_back(islimJet->pt());
+	   std::cout << "score from analyzer(branch filled): " << islimJet->userFloat("ditau2017MDv1") << std::endl;
+	   //std::cout << "testing puID: " << islimJet->userInt("puID") << std::endl;
+	 }
+       std::cout << "* * * * * * * * * * * * *" << std::endl;
 } // end if pslimJet->size() 
    // --- prepare MET vector ---
    if (pMet->size()>0)
@@ -772,7 +777,11 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    recoJetEnergy.clear();
    recoJetCSV.clear();
    
+
 ditauValues.clear();
+ deepditaupt.clear();
+
+
 
    // --- reconstructed MET ---
    recoMET.clear();
@@ -1040,6 +1049,7 @@ DiMuDiTauAnalyzer::beginJob()
     objectTree->Branch("recoJetEnergy", &recoJetEnergy);
     objectTree->Branch("recoJetCSV", &recoJetCSV);
 
+    objectTree->Branch("deepditaupt", &deepditaupt);
     objectTree->Branch("ditauValues", &ditauValues);
    
     objectTree->Branch("recoMET", &recoMET);

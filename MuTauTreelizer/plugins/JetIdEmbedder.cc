@@ -42,6 +42,7 @@ void JetIdEmbedder::produce(edm::Event& evt, const edm::EventSetup& es) {
   output->reserve(input->size());
   for (size_t i = 0; i < input->size(); ++i) {
     pat::Jet jet = input->at(i);
+
     // https://twiki.cern.ch/twiki/bin/view/CMS/JetID
     bool loose = true;
     bool tight = true;
@@ -162,6 +163,8 @@ void JetIdEmbedder::produce(edm::Event& evt, const edm::EventSetup& es) {
     if (ditau2017MDv1Valid) ditau2017MDv1Value = (*ditau2017MDv1)[jRef];
     jet.addUserFloat("ditau2017v1",ditau2017v1Value);
     jet.addUserFloat("ditau2017MDv1",ditau2017MDv1Value);
+    std::cout << "score from JetIdEmbedder: " << ditau2017v1Value << std::endl;
+
     output->push_back(jet);
   }
 

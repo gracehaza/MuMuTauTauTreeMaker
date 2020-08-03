@@ -64,7 +64,7 @@ JetSelector = cms.EDFilter("JetSelector",
         ptCut = cms.double(20),
 )
 
-
+#postfix=''
 DeepDiTauProducer = cms.EDProducer("DeepDiTauProducer",
 #       src = cms.InputTag('slimmedJets'),
         slimmedJetTag = cms.InputTag('slimmedJets'),
@@ -85,12 +85,16 @@ DeepDiTauProducer = cms.EDProducer("DeepDiTauProducer",
         ),
     )
 
+postfix=''
+modName = 'deepDiTau{0}'.format(postfix)
+#setattr(process,modName,module)
+#path *= getattr(process,modName)
+
 JetIdEmbedder = cms.EDProducer("JetIdEmbedder",
-#        src = cms.InputTag('slimmedJets'),
         slimmedJetTag = cms.InputTag('slimmedJets'),
         discriminator = cms.string('pileupJetId:fullDiscriminant'),
-        ditau2017v1 = cms.InputTag("deepDiTau","ditau2017v1"),
-        ditau2017MDv1 = cms.InputTag("deepDiTau","ditau2017MDv1"),
+        ditau2017v1 = cms.InputTag("DeepDiTauProducer","ditau2017v1"),
+        ditau2017MDv1 = cms.InputTag("DeepDiTauProducer","ditau2017MDv1"),
     )
 
 GenMuonCandSelector = cms.EDFilter("GenMuonCandSelector",
