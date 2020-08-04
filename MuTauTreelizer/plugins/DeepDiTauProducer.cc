@@ -93,7 +93,6 @@ void DeepDiTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
   for (const auto& jet : *jets) {
     for (auto pair : deepDiTaus_) {
       deepDiTauScores.at(pair.first).push_back(pair.second->evaluate(jet));
-      std::cout << "score from DeepDitauProducer: " << pair.second->evaluate(jet) << std::endl;
     }
   }
 

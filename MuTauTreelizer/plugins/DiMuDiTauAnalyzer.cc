@@ -665,15 +665,12 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
      {
        for (edm::View<pat::Jet>::const_iterator islimJet=pslimJet->begin(); islimJet!=pslimJet->end(); islimJet++)
 	 {
-	   //	   std::cout<< "di tau value: " << islimJet->userFloat("ditau2017v1") << std::endl;
-	   //ditauValues.push_back(ditau2017v1Value);
 	   ditauValues.push_back(islimJet->userFloat("ditau2017v1"));
 	   deepditaupt.push_back(islimJet->pt());
-	   std::cout << "score from analyzer(branch filled): " << islimJet->userFloat("ditau2017MDv1") << std::endl;
-	   //std::cout << "testing puID: " << islimJet->userInt("puID") << std::endl;
 	 }
-       std::cout << "* * * * * * * * * * * * *" << std::endl;
+
 } // end if pslimJet->size() 
+
    // --- prepare MET vector ---
    if (pMet->size()>0)
    {
