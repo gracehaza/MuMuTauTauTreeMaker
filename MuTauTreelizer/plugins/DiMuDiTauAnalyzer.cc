@@ -206,11 +206,12 @@ class DiMuDiTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       int trueNInteraction;
   int eventID;
 
-  vector<float> ditauValues;
-  vector<float> deepditaupt;
-
-  // float ditau2017v1Value;
-
+  vector<float> DeepDiTauValue;
+  vector<float> DeepDiTauValueMD;
+  vector<float> DeepDiTaujetPt;
+  vector<float> DeepDiTaujetEta;
+  vector<float> DeepDiTaujetPhi;
+  vector<float> DeepDiTaujetEnergy;
 
       // --- gen muons ----
       vector<float> genMuonPt;
@@ -909,8 +910,11 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
      {
        for (edm::View<pat::Jet>::const_iterator islimJet=pslimJet->begin(); islimJet!=pslimJet->end(); islimJet++)
 	 {
-	   ditauValues.push_back(islimJet->userFloat("ditau2017v1"));
-	   deepditaupt.push_back(islimJet->pt());
+	   DeepDiTauValue.push_back(islimJet->userFloat("ditau2017v1"));
+	   DeepDiTauValueMD.push_back(islimJet->userFloat("ditau2017MDv1"));
+	   DeepDiTaujetPt.push_back(islimJet->pt());
+	   DeepDiTaujetEta.push_back(islimJet->eta());
+	   DeepDiTaujetPhi.push_back(islimJet->phi());
 	 }
 
 } // end if pslimJet->size() 
@@ -1028,11 +1032,12 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    recoJetEnergy.clear();
    recoJetCSV.clear();
    
-
-ditauValues.clear();
- deepditaupt.clear();
-
-
+   /// ---- DeepDiTau jets ---
+   DeepDiTauValue.clear();
+   DeepDiTauValueMD.clear();
+   DeepDiTaujetPt.clear();
+   DeepDiTaujetEta.clear();
+   DeepDiTaujetPhi.clear();
 
    // --- reconstructed MET ---
    recoMET.clear();
@@ -1309,8 +1314,12 @@ DiMuDiTauAnalyzer::beginJob()
     objectTree->Branch("recoJetEnergy", &recoJetEnergy);
     objectTree->Branch("recoJetCSV", &recoJetCSV);
 
-    objectTree->Branch("deepditaupt", &deepditaupt);
-    objectTree->Branch("ditauValues", &ditauValues);
+    objectTree->Branch("DeepDiTauValue", &DeepDiTauValue);
+    objectTree->Branch("DeepDiTauValueMD", &DeepDiTauValueMD);
+    objectTree->Branch("DeepDiTaujetPt", &DeepDiTaujetPt);
+    objectTree->Branch("DeepDiTaujetEta", &DeepDiTaujetEta);
+    objectTree->Branch("DeepDiTaujetPhi", &DeepDiTaujetPhi);
+    objectTree->Branch("DeepDiTaujetEnergy", &DeepDiTaujetEnergy);
    
     objectTree->Branch("recoMET", &recoMET);
     objectTree->Branch("recoMETPhi", &recoMETPhi);

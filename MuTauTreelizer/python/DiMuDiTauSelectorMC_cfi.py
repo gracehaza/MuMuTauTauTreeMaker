@@ -85,11 +85,6 @@ DeepDiTauProducer = cms.EDProducer("DeepDiTauProducer",
         ),
     )
 
-postfix=''
-modName = 'deepDiTau{0}'.format(postfix)
-#setattr(process,modName,module)
-#path *= getattr(process,modName)
-
 JetIdEmbedder = cms.EDProducer("JetIdEmbedder",
         slimmedJetTag = cms.InputTag('slimmedJets'),
         discriminator = cms.string('pileupJetId:fullDiscriminant'),

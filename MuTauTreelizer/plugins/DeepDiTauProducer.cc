@@ -46,10 +46,6 @@ private:
 
   std::vector<std::string> deepDiTauLabels_;
   const DeepCache* cache_;
-  // adding lines from JetIdEmbedder
-  // edm::EDGetTokenT<edm::ValueMap<float>> ditau2017v1Token_;
-  // edm::EDGetTokenT<edm::ValueMap<float>> ditau2017MDv1Token_;
-  //
 
 };
 
