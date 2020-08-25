@@ -915,6 +915,7 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	   DeepDiTaujetPt.push_back(islimJet->pt());
 	   DeepDiTaujetEta.push_back(islimJet->eta());
 	   DeepDiTaujetPhi.push_back(islimJet->phi());
+	   DeepDiTaujetEnergy.push_back(islimJet->energy());
 	 }
 
 } // end if pslimJet->size() 
