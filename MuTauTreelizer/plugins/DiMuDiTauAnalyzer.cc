@@ -459,6 +459,8 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
        if (pGenTauHad->size() > 0)
        {
+	 std::cout << "*******************" << std::endl;
+	 TLorentzVector multipleTauHadVis;
            for (edm::View<reco::GenParticle>::const_iterator iTau=pGenTauHad->begin(); iTau!=pGenTauHad->end(); iTau++)
            {
                genTauHadPt.push_back(iTau->pt());
@@ -467,9 +469,10 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
                genTauHadMass.push_back(iTau->mass());
                genTauHadPDGId.push_back(iTau->pdgId());
                genTauHadMotherPDGId.push_back(iTau->mother()->pdgId());
+	       std::cout << "parent ID: " << iTau->mother()->pdgId() << std::endl;
 
                TLorentzVector sumTauHadVis;
-               std::vector <const reco::Candidate*> daughters;
+	       std::vector <const reco::Candidate*> daughters;
                daughters.clear();
 
                int nPiZeros = 0;
@@ -488,9 +491,11 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
                        TLorentzVector p4Daughter;
                        p4Daughter.SetPtEtaPhiM(daughters[jDau]->pt(), daughters[jDau]->eta(), daughters[jDau]->phi(), daughters[jDau]->mass());
                        sumTauHadVis = sumTauHadVis + p4Daughter;
-                   } // end for loop on all generations of visible daughter particles of tau_h
+		       multipleTauHadVis = multipleTauHadVis +sumTauHadVis;
+		   } // end for loop on all generations of visible daughter particles of tau_h
                } // end for loop on tau_h direct daughter particles
-
+	       // multipleTauHadVis = multipleTauHadVis + sumTauHadVis;
+	       std::cout << "multiple tau had vis: " << multipleTauHadVis.Pt() << std::endl;
                genTauHadVisPt.push_back(sumTauHadVis.Pt());
                genTauHadVisMass.push_back(sumTauHadVis.M());
                genTauHadNPionZero.push_back(nPiZeros);
@@ -910,13 +915,15 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
      {
        for (edm::View<pat::Jet>::const_iterator islimJet=pslimJet->begin(); islimJet!=pslimJet->end(); islimJet++)
 	 {
-	   DeepDiTauValue.push_back(islimJet->userFloat("ditau2017v1"));
-	   DeepDiTauValueMD.push_back(islimJet->userFloat("ditau2017MDv1"));
-	   DeepDiTaujetPt.push_back(islimJet->pt());
-	   DeepDiTaujetEta.push_back(islimJet->eta());
-	   DeepDiTaujetPhi.push_back(islimJet->phi());
-	   DeepDiTaujetEnergy.push_back(islimJet->energy());
-	 }
+	   if(fabs(islimJet->eta()) <= 2.5){
+	     DeepDiTauValue.push_back(islimJet->userFloat("ditau2017v1"));
+	     DeepDiTauValueMD.push_back(islimJet->userFloat("ditau2017MDv1"));
+	     DeepDiTaujetPt.push_back(islimJet->pt());
+	     DeepDiTaujetEta.push_back(islimJet->eta());
+	     DeepDiTaujetPhi.push_back(islimJet->phi());
+	     DeepDiTaujetEnergy.push_back(islimJet->energy());
+	   } //eta cut
+	 } //  loop over slimjets
 
 } // end if pslimJet->size() 
 
