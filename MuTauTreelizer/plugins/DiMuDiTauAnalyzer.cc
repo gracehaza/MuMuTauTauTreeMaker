@@ -459,8 +459,6 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
        if (pGenTauHad->size() > 0)
        {
-	 std::cout << "*******************" << std::endl;
-	 TLorentzVector multipleTauHadVis;
            for (edm::View<reco::GenParticle>::const_iterator iTau=pGenTauHad->begin(); iTau!=pGenTauHad->end(); iTau++)
            {
                genTauHadPt.push_back(iTau->pt());
@@ -469,7 +467,6 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
                genTauHadMass.push_back(iTau->mass());
                genTauHadPDGId.push_back(iTau->pdgId());
                genTauHadMotherPDGId.push_back(iTau->mother()->pdgId());
-	       std::cout << "parent ID: " << iTau->mother()->pdgId() << std::endl;
 
                TLorentzVector sumTauHadVis;
 	       std::vector <const reco::Candidate*> daughters;
@@ -491,11 +488,10 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
                        TLorentzVector p4Daughter;
                        p4Daughter.SetPtEtaPhiM(daughters[jDau]->pt(), daughters[jDau]->eta(), daughters[jDau]->phi(), daughters[jDau]->mass());
                        sumTauHadVis = sumTauHadVis + p4Daughter;
-		       multipleTauHadVis = multipleTauHadVis +sumTauHadVis;
+		       //		       multipleTauHadVis = multipleTauHadVis +sumTauHadVis;
 		   } // end for loop on all generations of visible daughter particles of tau_h
                } // end for loop on tau_h direct daughter particles
 	       // multipleTauHadVis = multipleTauHadVis + sumTauHadVis;
-	       std::cout << "multiple tau had vis: " << multipleTauHadVis.Pt() << std::endl;
                genTauHadVisPt.push_back(sumTauHadVis.Pt());
                genTauHadVisMass.push_back(sumTauHadVis.M());
                genTauHadNPionZero.push_back(nPiZeros);
