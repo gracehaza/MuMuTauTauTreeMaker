@@ -186,7 +186,7 @@ class DiMuDiTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
 
       vector<int> recoTauRefToMuon;
       vector<int> recoTauRefToElectron;
-
+  /*
       // --- reconstructed jets ---
       vector<float> recoJetPt;
       vector<float> recoJetEta;
@@ -199,7 +199,7 @@ class DiMuDiTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       vector<float> recoMETPhi;
       vector<float> recoMETPx;
       vector<float> recoMETPy;
-
+  */
       // --- pileup and reconstructed vertices ---
       int recoNPrimaryVertex;
       int recoNPU;
@@ -212,6 +212,7 @@ class DiMuDiTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
   vector<float> DeepDiTaujetEta;
   vector<float> DeepDiTaujetPhi;
   vector<float> DeepDiTaujetEnergy;
+  vector<float> recoJetCSV;
 
       // --- gen muons ----
       vector<float> genMuonPt;
@@ -326,13 +327,13 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
    edm::Handle<edm::View<pat::Tau>> pTau;
    iEvent.getByToken(TauTag, pTau);
-
+   /*
    edm::Handle<edm::View<pat::Jet>> pJet;
    iEvent.getByToken(JetTag, pJet);
 
    edm::Handle<edm::View<pat::MET>> pMet;
    iEvent.getByToken(MetTag, pMet);
-
+   */
    edm::Handle<edm::View<reco::Vertex>> pVertex;
    iEvent.getByToken(VertexTag, pVertex);
 
@@ -892,6 +893,7 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    } // end if pElectron->size()>0 && pTau->size()>0
 
    // --- prepare jet vector ---
+   /*
    if (pJet->size()>0)
    {
        for(edm::View<pat::Jet>::const_iterator iJet=pJet->begin(); iJet!=pJet->end(); iJet++)
@@ -905,24 +907,28 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
            recoJetCSV.push_back(iJet->bDiscriminator("pfCombinedSecondaryVertexV2BJetTags"));
        } // end for loop on jets
    } // end if pJet->size()>0
-
+   */
   
    if (pslimJet->size()>0)
      {
        for (edm::View<pat::Jet>::const_iterator islimJet=pslimJet->begin(); islimJet!=pslimJet->end(); islimJet++)
 	 {
 	   if(fabs(islimJet->eta()) <= 2.5){
-	     DeepDiTauValue.push_back(islimJet->userFloat("ditau2017v1"));
-	     DeepDiTauValueMD.push_back(islimJet->userFloat("ditau2017MDv1"));
-	     DeepDiTaujetPt.push_back(islimJet->pt());
-	     DeepDiTaujetEta.push_back(islimJet->eta());
-	     DeepDiTaujetPhi.push_back(islimJet->phi());
-	     DeepDiTaujetEnergy.push_back(islimJet->energy());
-	   } //eta cut
-	 } //  loop over slimjets
+	     if (islimJet->pt() > 20){
+	       //	       std::cout << "pt: " << islimJet->pt() << std::endl;
+	       DeepDiTauValue.push_back(islimJet->userFloat("ditau2017v1"));
+	       DeepDiTauValueMD.push_back(islimJet->userFloat("ditau2017MDv1"));
+	       DeepDiTaujetPt.push_back(islimJet->pt());
+	       DeepDiTaujetEta.push_back(islimJet->eta());
+	       DeepDiTaujetPhi.push_back(islimJet->phi());
+	       DeepDiTaujetEnergy.push_back(islimJet->energy());
+	       recoJetCSV.push_back(islimJet->bDiscriminator("pfCombinedSecondaryVertexV2BJetTags"));
+	     } // pt cut
+	   } // eta cut
+	 } // loop over slimjets
+     } // end if pslimJet->size() 
 
-} // end if pslimJet->size() 
-
+   /*
    // --- prepare MET vector ---
    if (pMet->size()>0)
    {
@@ -934,7 +940,7 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
            recoMETPy.push_back(iMet->py());
        } // end for loop on METs
    } // end if pMet->size()>0
-
+   */
    // --- fill the object tree ---
    objectTree->Fill();
 
@@ -1028,27 +1034,28 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
    recoTauDeepVSeVVVLoose.clear();
    recoTauDeepVSjetVVVLoose.clear();
-
+   /*
    // --- reconstructed jets ---
    recoJetPt.clear();
    recoJetEta.clear();
    recoJetPhi.clear();
    recoJetEnergy.clear();
    recoJetCSV.clear();
-   
+   */
    /// ---- DeepDiTau jets ---
    DeepDiTauValue.clear();
    DeepDiTauValueMD.clear();
    DeepDiTaujetPt.clear();
    DeepDiTaujetEta.clear();
    DeepDiTaujetPhi.clear();
-
+   recoJetCSV.clear(); 
+   /*
    // --- reconstructed MET ---
    recoMET.clear();
    recoMETPhi.clear();
    recoMETPx.clear();
    recoMETPy.clear();
-
+   */
    // ---- gen muons ----
    genMuonPt.clear();
    genMuonEta.clear();
@@ -1311,25 +1318,26 @@ DiMuDiTauAnalyzer::beginJob()
     objectTree->Branch("recoTauAntiEleMVAMedium", &recoTauAntiEleMVAMedium);
     objectTree->Branch("recoTauAntiEleMVATight", &recoTauAntiEleMVATight);
     objectTree->Branch("recoTauAntiEleMVAVTight", &recoTauAntiEleMVAVTight);
-
+    /*
     objectTree->Branch("recoJetPt", &recoJetPt);
     objectTree->Branch("recoJetEta", &recoJetEta);
     objectTree->Branch("recoJetPhi", &recoJetPhi);
     objectTree->Branch("recoJetEnergy", &recoJetEnergy);
     objectTree->Branch("recoJetCSV", &recoJetCSV);
-
+    */
     objectTree->Branch("DeepDiTauValue", &DeepDiTauValue);
     objectTree->Branch("DeepDiTauValueMD", &DeepDiTauValueMD);
     objectTree->Branch("DeepDiTaujetPt", &DeepDiTaujetPt);
     objectTree->Branch("DeepDiTaujetEta", &DeepDiTaujetEta);
     objectTree->Branch("DeepDiTaujetPhi", &DeepDiTaujetPhi);
     objectTree->Branch("DeepDiTaujetEnergy", &DeepDiTaujetEnergy);
-   
+    objectTree->Branch("recoJetCSV", &recoJetCSV); 
+    /*
     objectTree->Branch("recoMET", &recoMET);
     objectTree->Branch("recoMETPhi", &recoMETPhi);
     objectTree->Branch("recoMETPx", &recoMETPx);
     objectTree->Branch("recoMETPy", &recoMETPy);
-
+    */
     objectTree->Branch("recoNPrimaryVertex", &recoNPrimaryVertex, "recoNPrimaryVertex/I");
     objectTree->Branch("eventID", &eventID, "eventID/I");
 
