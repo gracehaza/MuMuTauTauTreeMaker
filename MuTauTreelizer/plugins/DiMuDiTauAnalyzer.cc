@@ -153,36 +153,36 @@ class DiMuDiTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
 
       // *** deep tau ID variables ***
       vector<float> recoTauDeepVSeraw;
-      vector<float> recoTauDeepVSjetraw;
+  //  vector<float> recoTauDeepVSjetraw;
       vector<float> recoTauDeepVSmuraw;
  
       vector<float> recoTauDeepVSeLoose;
-      vector<float> recoTauDeepVSjetLoose;
+  //  vector<float> recoTauDeepVSjetLoose;
       vector<float> recoTauDeepVSmuLoose;
 
       vector<float> recoTauDeepVSeMedium;
-      vector<float> recoTauDeepVSjetMedium;
+  //  vector<float> recoTauDeepVSjetMedium;
       vector<float> recoTauDeepVSmuMedium;
 
       vector<float> recoTauDeepVSeTight;
-      vector<float> recoTauDeepVSjetTight;
+  //  vector<float> recoTauDeepVSjetTight;
       vector<float> recoTauDeepVSmuTight;
 
       vector<float> recoTauDeepVSeVLoose;
-      vector<float> recoTauDeepVSjetVLoose;
+  //  vector<float> recoTauDeepVSjetVLoose;
       vector<float> recoTauDeepVSmuVLoose;
 
       vector<float> recoTauDeepVSeVTight;
-      vector<float> recoTauDeepVSjetVTight;
+  //  vector<float> recoTauDeepVSjetVTight;
 
       vector<float> recoTauDeepVSeVVLoose;
-      vector<float> recoTauDeepVSjetVVLoose;
+  //  vector<float> recoTauDeepVSjetVVLoose;
 
       vector<float> recoTauDeepVSeVVTight;
-      vector<float> recoTauDeepVSjetVVTight;
+  //  vector<float> recoTauDeepVSjetVVTight;
 
       vector<float> recoTauDeepVSeVVVLoose;
-      vector<float> recoTauDeepVSjetVVVLoose;
+  // vector<float> recoTauDeepVSjetVVVLoose;
 
       vector<int> recoTauRefToMuon;
       vector<int> recoTauRefToElectron;
@@ -193,13 +193,13 @@ class DiMuDiTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       vector<float> recoJetPhi;
       vector<float> recoJetEnergy;
       vector<float> recoJetCSV;
-      
+  */      
       // --- reconstructed MET ---
       vector<float> recoMET;
       vector<float> recoMETPhi;
       vector<float> recoMETPx;
       vector<float> recoMETPy;
-  */
+
       // --- pileup and reconstructed vertices ---
       int recoNPrimaryVertex;
       int recoNPU;
@@ -330,10 +330,10 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    /*
    edm::Handle<edm::View<pat::Jet>> pJet;
    iEvent.getByToken(JetTag, pJet);
-
+   */
    edm::Handle<edm::View<pat::MET>> pMet;
    iEvent.getByToken(MetTag, pMet);
-   */
+  
    edm::Handle<edm::View<reco::Vertex>> pVertex;
    iEvent.getByToken(VertexTag, pVertex);
 
@@ -710,36 +710,36 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
            if (iTau->isTauIDAvailable("byDeepTau2017v2p1VSjetraw"))
            {
                recoTauDeepVSeraw.push_back(iTau->tauID("byDeepTau2017v2p1VSeraw"));
-               recoTauDeepVSjetraw.push_back(iTau->tauID("byDeepTau2017v2p1VSjetraw"));
+	       //         recoTauDeepVSjetraw.push_back(iTau->tauID("byDeepTau2017v2p1VSjetraw"));
                recoTauDeepVSmuraw.push_back(iTau->tauID("byDeepTau2017v2p1VSmuraw"));
 
                recoTauDeepVSeLoose.push_back(iTau->tauID("byLooseDeepTau2017v2p1VSe"));
-               recoTauDeepVSjetLoose.push_back(iTau->tauID("byLooseDeepTau2017v2p1VSjet"));
+               //recoTauDeepVSjetLoose.push_back(iTau->tauID("byLooseDeepTau2017v2p1VSjet"));
                recoTauDeepVSmuLoose.push_back(iTau->tauID("byLooseDeepTau2017v2p1VSmu"));
 
                recoTauDeepVSeMedium.push_back(iTau->tauID("byMediumDeepTau2017v2p1VSe"));
-               recoTauDeepVSjetMedium.push_back(iTau->tauID("byMediumDeepTau2017v2p1VSjet"));
+	       // recoTauDeepVSjetMedium.push_back(iTau->tauID("byMediumDeepTau2017v2p1VSjet"));
                recoTauDeepVSmuMedium.push_back(iTau->tauID("byMediumDeepTau2017v2p1VSmu"));
 
                recoTauDeepVSeTight.push_back(iTau->tauID("byTightDeepTau2017v2p1VSe"));
-               recoTauDeepVSjetTight.push_back(iTau->tauID("byTightDeepTau2017v2p1VSjet"));
+	       // recoTauDeepVSjetTight.push_back(iTau->tauID("byTightDeepTau2017v2p1VSjet"));
                recoTauDeepVSmuTight.push_back(iTau->tauID("byTightDeepTau2017v2p1VSmu"));
 
                recoTauDeepVSeVLoose.push_back(iTau->tauID("byVLooseDeepTau2017v2p1VSe"));
-               recoTauDeepVSjetVLoose.push_back(iTau->tauID("byVLooseDeepTau2017v2p1VSjet"));
+	       // recoTauDeepVSjetVLoose.push_back(iTau->tauID("byVLooseDeepTau2017v2p1VSjet"));
                recoTauDeepVSmuVLoose.push_back(iTau->tauID("byVLooseDeepTau2017v2p1VSmu"));
 
                recoTauDeepVSeVTight.push_back(iTau->tauID("byVTightDeepTau2017v2p1VSe"));
-               recoTauDeepVSjetVTight.push_back(iTau->tauID("byVTightDeepTau2017v2p1VSjet"));
+               //recoTauDeepVSjetVTight.push_back(iTau->tauID("byVTightDeepTau2017v2p1VSjet"));
 
                recoTauDeepVSeVVLoose.push_back(iTau->tauID("byVVLooseDeepTau2017v2p1VSe"));
-               recoTauDeepVSjetVVLoose.push_back(iTau->tauID("byVVLooseDeepTau2017v2p1VSjet"));
+	       // recoTauDeepVSjetVVLoose.push_back(iTau->tauID("byVVLooseDeepTau2017v2p1VSjet"));
 
                recoTauDeepVSeVVTight.push_back(iTau->tauID("byVVTightDeepTau2017v2p1VSe"));
-               recoTauDeepVSjetVVTight.push_back(iTau->tauID("byVVTightDeepTau2017v2p1VSjet"));
+	       // recoTauDeepVSjetVVTight.push_back(iTau->tauID("byVVTightDeepTau2017v2p1VSjet"));
 
                recoTauDeepVSeVVVLoose.push_back(iTau->tauID("byVVVLooseDeepTau2017v2p1VSe"));
-               recoTauDeepVSjetVVVLoose.push_back(iTau->tauID("byVVVLooseDeepTau2017v2p1VSjet"));
+               //recoTauDeepVSjetVVVLoose.push_back(iTau->tauID("byVVVLooseDeepTau2017v2p1VSjet"));
            } // end if DeepTau ID available
 
            recoTauAntiMuMVALoose.push_back(iTau->tauID("againstMuonLoose3"));
@@ -915,20 +915,19 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	 {
 	   if(fabs(islimJet->eta()) <= 2.5){
 	     if (islimJet->pt() > 20){
-	       //	       std::cout << "pt: " << islimJet->pt() << std::endl;
 	       DeepDiTauValue.push_back(islimJet->userFloat("ditau2017v1"));
 	       DeepDiTauValueMD.push_back(islimJet->userFloat("ditau2017MDv1"));
 	       DeepDiTaujetPt.push_back(islimJet->pt());
 	       DeepDiTaujetEta.push_back(islimJet->eta());
 	       DeepDiTaujetPhi.push_back(islimJet->phi());
 	       DeepDiTaujetEnergy.push_back(islimJet->energy());
-	       recoJetCSV.push_back(islimJet->bDiscriminator("pfCombinedSecondaryVertexV2BJetTags"));
+	       recoJetCSV.push_back(islimJet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
 	     } // pt cut
 	   } // eta cut
 	 } // loop over slimjets
      } // end if pslimJet->size() 
 
-   /*
+  
    // --- prepare MET vector ---
    if (pMet->size()>0)
    {
@@ -940,7 +939,7 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
            recoMETPy.push_back(iMet->py());
        } // end for loop on METs
    } // end if pMet->size()>0
-   */
+  
    // --- fill the object tree ---
    objectTree->Fill();
 
@@ -1004,36 +1003,36 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    recoTauAntiEleMVAVTight.clear();
 
    recoTauDeepVSeraw.clear();
-   recoTauDeepVSjetraw.clear();
+   // recoTauDeepVSjetraw.clear();
    recoTauDeepVSmuraw.clear();
  
    recoTauDeepVSeLoose.clear();
-   recoTauDeepVSjetLoose.clear();
+   // recoTauDeepVSjetLoose.clear();
    recoTauDeepVSmuLoose.clear();
 
    recoTauDeepVSeMedium.clear();
-   recoTauDeepVSjetMedium.clear();
+   //recoTauDeepVSjetMedium.clear();
    recoTauDeepVSmuMedium.clear();
 
    recoTauDeepVSeTight.clear();
-   recoTauDeepVSjetTight.clear();
+   //recoTauDeepVSjetTight.clear();
    recoTauDeepVSmuTight.clear();
 
    recoTauDeepVSeVLoose.clear();
-   recoTauDeepVSjetVLoose.clear();
+   // recoTauDeepVSjetVLoose.clear();
    recoTauDeepVSmuVLoose.clear();
 
    recoTauDeepVSeVTight.clear();
-   recoTauDeepVSjetVTight.clear();
+   // recoTauDeepVSjetVTight.clear();
 
    recoTauDeepVSeVVLoose.clear();
-   recoTauDeepVSjetVVLoose.clear();
+   //recoTauDeepVSjetVVLoose.clear();
 
    recoTauDeepVSeVVTight.clear();
-   recoTauDeepVSjetVVTight.clear();
+   /*   recoTauDeepVSjetVVTight.clear();
 
    recoTauDeepVSeVVVLoose.clear();
-   recoTauDeepVSjetVVVLoose.clear();
+   recoTauDeepVSjetVVVLoose.clear();*/
    /*
    // --- reconstructed jets ---
    recoJetPt.clear();
@@ -1049,13 +1048,13 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    DeepDiTaujetEta.clear();
    DeepDiTaujetPhi.clear();
    recoJetCSV.clear(); 
-   /*
+  
    // --- reconstructed MET ---
    recoMET.clear();
    recoMETPhi.clear();
    recoMETPx.clear();
    recoMETPy.clear();
-   */
+  
    // ---- gen muons ----
    genMuonPt.clear();
    genMuonEta.clear();
@@ -1269,36 +1268,36 @@ DiMuDiTauAnalyzer::beginJob()
     objectTree->Branch("recoTauRefToElectron", &recoTauRefToElectron);
 
     objectTree->Branch("recoTauDeepVSeraw", &recoTauDeepVSeraw);
-    objectTree->Branch("recoTauDeepVSjetraw", &recoTauDeepVSjetraw);
+    // objectTree->Branch("recoTauDeepVSjetraw", &recoTauDeepVSjetraw);
     objectTree->Branch("recoTauDeepVSmuraw", &recoTauDeepVSmuraw);
 
     objectTree->Branch("recoTauDeepVSeLoose", &recoTauDeepVSeLoose);
-    objectTree->Branch("recoTauDeepVSjetLoose", &recoTauDeepVSjetLoose);
+    //objectTree->Branch("recoTauDeepVSjetLoose", &recoTauDeepVSjetLoose);
     objectTree->Branch("recoTauDeepVSmuLoose", &recoTauDeepVSmuLoose);
 
     objectTree->Branch("recoTauDeepVSeMedium", &recoTauDeepVSeMedium);
-    objectTree->Branch("recoTauDeepVSjetMedium", &recoTauDeepVSjetMedium);
+    //objectTree->Branch("recoTauDeepVSjetMedium", &recoTauDeepVSjetMedium);
     objectTree->Branch("recoTauDeepVSmuMedium", &recoTauDeepVSmuMedium);
 
     objectTree->Branch("recoTauDeepVSeTight", &recoTauDeepVSeTight);
-    objectTree->Branch("recoTauDeepVSjetTight", &recoTauDeepVSjetTight);
+    //objectTree->Branch("recoTauDeepVSjetTight", &recoTauDeepVSjetTight);
     objectTree->Branch("recoTauDeepVSmuTight", &recoTauDeepVSmuTight);
 
     objectTree->Branch("recoTauDeepVSeVLoose", &recoTauDeepVSeVLoose);
-    objectTree->Branch("recoTauDeepVSjetVLoose", &recoTauDeepVSjetVLoose);
+    //objectTree->Branch("recoTauDeepVSjetVLoose", &recoTauDeepVSjetVLoose);
     objectTree->Branch("recoTauDeepVSmuVLoose", &recoTauDeepVSmuVLoose);
 
     objectTree->Branch("recoTauDeepVSeVTight", &recoTauDeepVSeVTight);
-    objectTree->Branch("recoTauDeepVSjetVTight", &recoTauDeepVSjetVTight);
+    // objectTree->Branch("recoTauDeepVSjetVTight", &recoTauDeepVSjetVTight);
 
     objectTree->Branch("recoTauDeepVSeVVLoose", &recoTauDeepVSeVVLoose);
-    objectTree->Branch("recoTauDeepVSjetVVLoose", &recoTauDeepVSjetVVLoose);
+    //objectTree->Branch("recoTauDeepVSjetVVLoose", &recoTauDeepVSjetVVLoose);
 
     objectTree->Branch("recoTauDeepVSeVVTight", &recoTauDeepVSeVVTight);
-    objectTree->Branch("recoTauDeepVSjetVVTight", &recoTauDeepVSjetVVTight);
+    // objectTree->Branch("recoTauDeepVSjetVVTight", &recoTauDeepVSjetVVTight);
 
     objectTree->Branch("recoTauDeepVSeVVVLoose", &recoTauDeepVSeVVVLoose);
-    objectTree->Branch("recoTauDeepVSjetVVVLoose", &recoTauDeepVSjetVVVLoose);
+    // objectTree->Branch("recoTauDeepVSjetVVVLoose", &recoTauDeepVSjetVVVLoose);
 
     objectTree->Branch("recoTauIsoMVArawValue", &recoTauIsoMVArawValue);
     objectTree->Branch("recoTauIsoMVAVVLoose", &recoTauIsoMVAVVLoose);
@@ -1332,12 +1331,10 @@ DiMuDiTauAnalyzer::beginJob()
     objectTree->Branch("DeepDiTaujetPhi", &DeepDiTaujetPhi);
     objectTree->Branch("DeepDiTaujetEnergy", &DeepDiTaujetEnergy);
     objectTree->Branch("recoJetCSV", &recoJetCSV); 
-    /*
     objectTree->Branch("recoMET", &recoMET);
     objectTree->Branch("recoMETPhi", &recoMETPhi);
     objectTree->Branch("recoMETPx", &recoMETPx);
     objectTree->Branch("recoMETPy", &recoMETPy);
-    */
     objectTree->Branch("recoNPrimaryVertex", &recoNPrimaryVertex, "recoNPrimaryVertex/I");
     objectTree->Branch("eventID", &eventID, "eventID/I");
 
