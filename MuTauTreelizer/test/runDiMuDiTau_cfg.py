@@ -44,7 +44,7 @@ if options.tauCluster <= 0:
     )
     myTool.runTauID()
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
-#    del process.rerunDiscriminationByIsolationOldDMMVArun2017v2raw.requireDecayMode
+    del process.rerunDiscriminationByIsolationOldDMMVArun2017v2raw.requireDecayMode
 
 elif options.tauCluster == 1:
     print " ====== use slimmedTausBoosted (lower Tau Pt) cluster ======"
@@ -127,6 +127,7 @@ elif options.tauCluster == 8:
             )
     tauIdEmbedder.runTauID()
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
+    del process.rerunDiscriminationByIsolationOldDMMVArun2017v2raw.requireDecayMode
 
 elif options.tauCluster == 9:
     print " ====== use slimmedTausMuonCleaned DeepID cluster ======"
@@ -241,7 +242,7 @@ else:
     )
 
     process.TFileService = cms.Service("TFileService",
-            fileName =  cms.string('MuMuTauTauTreelization_data.root')
+            fileName =  cms.string('MuMuTauTauTreelization_data_09Dec2020.root')
     )
 
 process.options = cms.untracked.PSet(

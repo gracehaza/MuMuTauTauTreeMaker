@@ -68,7 +68,6 @@ class DiMuDiTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       int findTauPiZeros(const reco::Candidate*);
       int findTauChargedHadrons(const reco::Candidate*);
 
-
    private:
       virtual void beginJob() override;
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
@@ -91,8 +90,13 @@ class DiMuDiTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       edm::EDGetTokenT<edm::View<reco::GenParticle>> GenEleTag;
       edm::EDGetTokenT<edm::View<reco::GenParticle>> GenTauMuTag;
       edm::EDGetTokenT<edm::View<reco::GenParticle>> GenTauEleTag;
-      edm::EDGetTokenT<edm::View<reco::GenParticle>> GenTauHadTag;
-
+  edm::EDGetTokenT<edm::View<reco::GenParticle>> GenTauHadTag;
+  edm::EDGetTokenT<edm::View<reco::GenParticle>> GenParticleTag;
+   
+/*
+  edm::Handle<reco::GenParticleCollection> genParticles;
+  iEvent.getByToken(genParticlesToken_, genParticles);
+  */
       TTree *objectTree;
       // --- below is the vectors of object variables ---
       
@@ -208,11 +212,124 @@ class DiMuDiTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
 
   vector<float> DeepDiTauValue;
   vector<float> DeepDiTauValueMD;
-  vector<float> DeepDiTaujetPt;
+
+  vector<float> DeepDiTauValue_genmatched;
+  vector<float> DeepDiTauValueMD_genmatched;
+
+  vector<float> jet_pt;
+  vector<float> jet_eta;
+  vector<float> jet_phi;
+  vector<float> jet_energy;
+  vector<float> jet_mass;
+  vector<float> jet_jetCharge;
+
+  vector<float> jet_chargedMultiplicity;
+  vector<float> jet_neutralMultiplicity;
+
+  vector<float> jet_chargedHadronMultiplicity;
+  vector<float> jet_neutralHadronMultiplicity;
+  vector<float> jet_electronMultiplicity;
+  vector<float> jet_muonMultiplicity;
+  vector<float> jet_photonMultiplicity;
+
+  vector<float> jet_chargedEmEnergy;
+  vector<float> jet_neutralEmEnergy;
+  vector<float> jet_chargedHadronEnergy;
+  vector<float> jet_neutralHadronEnergy;
+  vector<float> jet_muonEnergy;
+  vector<float> jet_electronEnergy;
+  vector<float> jet_photonEnergy;
+
+  vector<float> jet_chargedEmEnergyFraction;
+  vector<float> jet_neutralEmEnergyFraction;
+  vector<float> jet_chargedHadronEnergyFraction;
+  vector<float> jet_neutralHadronEnergyFraction;
+  vector<float> jet_muonEnergyFraction;
+  vector<float> jet_electronEnergyFraction;
+  vector<float> jet_photonEnergyFraction;
+
+  vector<float> jet_n60;
+  vector<float> jet_n90;
+
+  vector<float> jet_hadronFlavour;
+  vector<float> jet_partonFlavour;
+
+  vector<float> jet_pfJetBProbabilityBJetTags;
+  vector<float> jet_pfJetProbabilityBJetTags;
+  vector<float> jet_pfTrackCountingHighEffBJetTags;
+  vector<float> jet_pfSimpleSecondaryVertexHighEffBJetTags;
+  vector<float> jet_pfSimpleInclusiveSecondaryVertexHighEffBJetTags;
+  vector<float> jet_pfCombinedSecondaryVertexV2BJetTags;
+  vector<float> jet_pfCombinedInclusiveSecondaryVertexV2BJetTags;
+  vector<float> jet_softPFMuonBJetTags;
+  vector<float> jet_softPFElectronBJetTags;
+  vector<float> jet_pfCombinedMVAV2BJetTags;
+  vector<float> jet_pfCombinedCvsLJetTags;
+  vector<float> jet_pfCombinedCvsBJetTags;
+  vector<float> jet_pfDeepCSVJetTags_probb;
+  vector<float> jet_pfDeepCSVJetTags_probc;
+  vector<float> jet_pfDeepCSVJetTags_probudsg;
+  vector<float> jet_pfDeepCSVJetTags_probbb;
+
+  vector<float> jet_numberOfDaughters;
+
+  vector<float> jet_daughter_pt;
+  vector<float> jet_daughter_eta;
+  vector<float> jet_daughter_phi;
+  vector<float> jet_daughter_energy;
+  vector<float> jet_daughter_mass;
+  vector<float> jet_daughter_charge;
+
+  vector<float> jet_daughter_etaAtVtx;
+  vector<float> jet_daughter_phiAtVtx;
+  vector<float> jet_daughter_vx;
+  vector<float> jet_daughter_vy;
+  vector<float> jet_daughter_vz;
+  vector<float> jet_daughter_dxy;
+  vector<float> jet_daughter_dxyError;
+  vector<float> jet_daughter_dz;
+  vector<float> jet_daughter_dzError;
+
+  vector<float> jet_daughter_pdgId;
+
+  vector<float> jet_daughter_pixelLayersWithMeasurement;
+  vector<float> jet_daughter_stripLayersWithMeasurement;
+  vector<float> jet_daughter_trackerLayersWithMeasurement;
+  vector<float> jet_daughter_trackHighPurity;
+
+  vector<float> jet_daughter_puppiWeight;
+  vector<float> jet_daughter_puppiWeightNoLep;
+
+  vector<float> jet_daughter_isIsolatedChargedHadron;
+  vector<float> jet_daughter_isStandAloneMuon;
+  vector<float> jet_daughter_isTrackerMuon;
+  vector<float> jet_daughter_isGlobalMuon;
+  vector<float> jet_daughter_isGoodEgamma;
+
+
+  // gen part truth
+  vector<bool> jet_isTauHTauH;
+  vector<bool> jet_isTauHTauM;
+  vector<bool> jet_isTauHTauE;
+  vector<bool> jet_isTauMTauM;
+  vector<bool> jet_isTauMTauE;
+  vector<bool> jet_isTauETauE;
+  vector<bool> jet_isTauH;
+  vector<bool> jet_isTauM;
+  vector<bool> jet_isTauE;
+  vector<bool> jet_isB;
+  vector<bool> jet_isC;
+  vector<bool> jet_isS;
+  vector<bool> jet_isUD;
+  vector<bool> jet_isG;
+
+  /*  vector<float> DeepDiTaujetPt;
   vector<float> DeepDiTaujetEta;
   vector<float> DeepDiTaujetPhi;
   vector<float> DeepDiTaujetEnergy;
-  vector<float> recoJetCSV;
+  */ 
+
+ vector<float> recoJetCSV;
 
       // --- gen muons ----
       vector<float> genMuonPt;
@@ -293,7 +410,9 @@ DiMuDiTauAnalyzer::DiMuDiTauAnalyzer(const edm::ParameterSet& iConfig):
     GenEleTag(consumes<edm::View<reco::GenParticle>>(iConfig.existsAs<edm::InputTag>("GenEleTag") ? iConfig.getParameter<edm::InputTag>("GenEleTag") : edm::InputTag())),
   GenTauMuTag(consumes<edm::View<reco::GenParticle>>(iConfig.existsAs<edm::InputTag>("GenTauMuTag") ? iConfig.getParameter<edm::InputTag>("GenTauMuTag") : edm::InputTag())),
   GenTauEleTag(consumes<edm::View<reco::GenParticle>>(iConfig.existsAs<edm::InputTag>("GenTauEleTag") ? iConfig.getParameter<edm::InputTag>("GenTauEleTag") : edm::InputTag())),
-  GenTauHadTag(consumes<edm::View<reco::GenParticle>>(iConfig.existsAs<edm::InputTag>("GenTauHadTag") ? iConfig.getParameter<edm::InputTag>("GenTauHadTag") : edm::InputTag()))
+  GenTauHadTag(consumes<edm::View<reco::GenParticle>>(iConfig.existsAs<edm::InputTag>("GenTauHadTag") ? iConfig.getParameter<edm::InputTag>("GenTauHadTag") : edm::InputTag())),
+  GenParticleTag(consumes<edm::View<reco::GenParticle>>(iConfig.existsAs<edm::InputTag>("GenParticleTag") ? iConfig.getParameter<edm::InputTag>("GenParticleTag") : edm::InputTag()))
+//GenParticleTag(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("GenParticleTag")))  
 {
    //now do what ever initialization is needed
    usesResource("TFileService");
@@ -343,6 +462,10 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    edm::Handle<double> pRho;
    iEvent.getByToken(rhoTag, pRho);
 
+
+   edm::Handle<edm::View<reco::GenParticle>> pGenParticles;
+   iEvent.getByToken(GenParticleTag, pGenParticles);
+
    if (isMC)
    {
        edm::Handle<edm::View<reco::GenParticle>> pGenMu;
@@ -366,7 +489,16 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
        edm::Handle<edm::View<PileupSummaryInfo>> pileup_info;
        iEvent.getByToken(PileupTag, pileup_info);
 
-       if (pGenMu->size() > 0)
+       //       edm::Handle<edm::View<reco::GenParticle>> pGenParticles;
+       //iEvent.getByToken(GenParticleTag, pGenParticles);
+
+       if(pGenParticles->size() > 0){
+	 for(edm::View<reco::GenParticle>::const_iterator iParticle=pGenParticles->begin(); iParticle!=pGenParticles->end(); ++iParticle){
+	 }
+
+       }
+
+      if (pGenMu->size() > 0)
        {
            for (edm::View<reco::GenParticle>::const_iterator iMuon=pGenMu->begin(); iMuon!=pGenMu->end(); iMuon++)
            {
@@ -917,10 +1049,103 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	     if (islimJet->pt() > 20){
 	       DeepDiTauValue.push_back(islimJet->userFloat("ditau2017v1"));
 	       DeepDiTauValueMD.push_back(islimJet->userFloat("ditau2017MDv1"));
-	       DeepDiTaujetPt.push_back(islimJet->pt());
-	       DeepDiTaujetEta.push_back(islimJet->eta());
-	       DeepDiTaujetPhi.push_back(islimJet->phi());
-	       DeepDiTaujetEnergy.push_back(islimJet->energy());
+	       jet_pt.push_back(islimJet->pt());
+	       jet_eta.push_back(islimJet->eta());
+	       jet_phi.push_back(islimJet->phi());
+	       jet_energy.push_back(islimJet->energy());
+	       jet_mass.push_back(islimJet->mass());
+	       
+	       if (isMC){
+		 int nHadronic = 0;
+		 int nMuon = 0;
+		 int nElectron = 0;
+		 bool isTau = false;
+		 bool isMuon = false;
+		 bool isElectron = false;
+		 bool isHadronic = false;
+
+
+		 if(pGenParticles->size() > 0){
+		   for(edm::View<reco::GenParticle>::const_iterator iParticle=pGenParticles->begin(); iParticle!=pGenParticles->end(); ++iParticle){		 
+		     isTau = false;
+		     isMuon = false;
+		     isElectron = false;
+		     isHadronic = false;
+		     if (abs(iParticle->pdgId())==15) {
+		       if (reco::deltaR(*islimJet,*iParticle)>0.4) continue;
+		     // get decay mode
+		       for (size_t d=0; d<iParticle->numberOfDaughters(); d++) {
+			 if (abs(iParticle->daughter(d)->pdgId())==15) {
+			   isTau = true;
+			   break;
+			 } else if (abs(iParticle->daughter(d)->pdgId())==13) {
+			   isMuon = true;
+			   break;
+			 } else if (abs(iParticle->daughter(d)->pdgId())==11) {
+			   isElectron = true;
+			   break;
+			 } else if (abs(iParticle->daughter(d)->pdgId())!=16 && abs(iParticle->daughter(d)->pdgId())!=14 && abs(iParticle->daughter(d)->pdgId())!=12) {
+			 // TODO: can instead start counting neutral and charged to get DM
+			   if (iParticle->daughter(d)->pdgId()!=22) {
+			     isHadronic = true;
+			     break;
+			   } // if pdg not 22
+			 } // if not neutrino
+		       } // over daughter particles
+
+		       if (isTau) {
+			 continue; // not last tau before decay
+		       } else if (isMuon) {
+			 nMuon++;
+		       } else if (isElectron) {
+			 nElectron++;
+		       } else if (isHadronic) {
+			 nHadronic++;
+		       }
+		     } // if pdg is 15
+		   } // loop over gen particles
+		 } // if gen particles > 0
+
+		 int nTau = nHadronic+nMuon+nElectron;
+		 if (nTau==2 || nTau==1) {
+		   if(nHadronic==2 && nMuon==0 && nElectron==0){
+		     jet_isTauHTauH.push_back(true);
+		     DeepDiTauValue_genmatched.push_back(islimJet->userFloat("ditau2017v1"));
+		     DeepDiTauValueMD_genmatched.push_back(islimJet->userFloat("ditau2017MDv1"));
+		   } else if(nHadronic==1 && nMuon==1 && nElectron==0){
+		     jet_isTauHTauM.push_back(true);
+		   } else if (nHadronic==1 && nMuon==0 && nElectron==1){
+		     jet_isTauHTauE.push_back(true);
+		   }else if (nHadronic==0 && nMuon==2 && nElectron==0){
+		     jet_isTauMTauM.push_back(true);
+		   } else if (nHadronic==0 && nMuon==1 && nElectron==1){
+		     jet_isTauMTauE.push_back(true);
+		   } else if (nHadronic==0 && nMuon==0 && nElectron==2){
+		     jet_isTauETauE.push_back(true);
+		   } else if (nHadronic==1 && nMuon==0 && nElectron==0){
+		     jet_isTauH.push_back(true);
+		   } else if (nHadronic==0 && nMuon==1 && nElectron==0){
+		     jet_isTauM.push_back(true);
+		   } else if (nHadronic==0 && nMuon==0 && nElectron==1){
+		     jet_isTauE.push_back(true);
+		   }
+		 } // if nTau is 1 or 2
+		 else if (islimJet->hadronFlavour()==5) {
+		   jet_isB.push_back(true);
+		 } else if (islimJet->hadronFlavour()==4) {
+		   jet_isC.push_back(true);
+		 } else if (std::abs(islimJet->partonFlavour())==3) {
+		   jet_isS.push_back(true);
+		 } else if (std::abs(islimJet->partonFlavour())==2 || std::abs(islimJet->partonFlavour())==1) {
+		   jet_isUD.push_back(true);
+		 } else if (islimJet->partonFlavour()==21) {
+		   jet_isG.push_back(true);
+		 }
+	       
+		  
+	       } // close if MC	     
+	      
+
 	       recoJetCSV.push_back(islimJet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
 	     } // pt cut
 	   } // eta cut
@@ -1044,11 +1269,90 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    /// ---- DeepDiTau jets ---
    DeepDiTauValue.clear();
    DeepDiTauValueMD.clear();
+
+   DeepDiTauValue_genmatched.clear();
+   DeepDiTauValueMD_genmatched.clear();
+
+   jet_pt.clear();
+   jet_eta.clear();
+   jet_phi.clear();
+   jet_energy.clear();
+   jet_mass.clear();
+   jet_jetCharge.clear();
+
+   jet_numberOfDaughters.clear();
+   jet_chargedMultiplicity.clear();
+   jet_neutralMultiplicity.clear();
+
+   jet_chargedHadronMultiplicity.clear();
+   jet_neutralHadronMultiplicity.clear();
+   jet_muonMultiplicity.clear();
+   jet_electronMultiplicity.clear();
+   jet_photonMultiplicity.clear();
+
+   jet_chargedEmEnergy.clear();
+   jet_neutralEmEnergy.clear();
+   jet_chargedHadronEnergy.clear();
+   jet_neutralHadronEnergy.clear();
+   jet_muonEnergy.clear();
+   jet_electronEnergy.clear();
+   jet_photonEnergy.clear();
+
+   jet_chargedEmEnergyFraction.clear();
+   jet_neutralEmEnergyFraction.clear();
+   jet_chargedHadronEnergyFraction.clear();
+   jet_neutralHadronEnergyFraction.clear();
+   jet_muonEnergyFraction.clear();
+   jet_electronEnergyFraction.clear();
+   jet_photonEnergyFraction.clear();
+
+   jet_n60.clear();
+   jet_n90.clear();
+
+   jet_hadronFlavour.clear();
+   jet_partonFlavour.clear();
+
+   jet_pfJetBProbabilityBJetTags.clear();
+   jet_pfJetProbabilityBJetTags.clear();
+   jet_pfTrackCountingHighEffBJetTags.clear();
+   jet_pfSimpleSecondaryVertexHighEffBJetTags.clear();
+   jet_pfSimpleInclusiveSecondaryVertexHighEffBJetTags.clear();
+   jet_pfCombinedSecondaryVertexV2BJetTags.clear();
+   jet_pfCombinedInclusiveSecondaryVertexV2BJetTags.clear();
+   jet_softPFMuonBJetTags.clear();
+   jet_softPFElectronBJetTags.clear();
+   jet_pfCombinedMVAV2BJetTags.clear();
+   jet_pfCombinedCvsLJetTags.clear();
+   jet_pfCombinedCvsBJetTags.clear();
+   jet_pfDeepCSVJetTags_probb.clear();
+   jet_pfDeepCSVJetTags_probc.clear();
+   jet_pfDeepCSVJetTags_probudsg.clear();
+   jet_pfDeepCSVJetTags_probbb.clear();
+
+   jet_isTauHTauH.clear();
+   jet_isTauHTauM.clear();
+   jet_isTauHTauE.clear();
+   jet_isTauMTauM.clear();
+   jet_isTauMTauE.clear();
+   jet_isTauETauE.clear();
+   jet_isTauH.clear();
+   jet_isTauM.clear();
+   jet_isTauE.clear();
+   jet_isB.clear();
+   jet_isC.clear();
+   jet_isS.clear();
+   jet_isUD.clear();
+   jet_isG.clear();
+
+
+   /*
    DeepDiTaujetPt.clear();
    DeepDiTaujetEta.clear();
    DeepDiTaujetPhi.clear();
    recoJetCSV.clear(); 
-  
+   */
+
+
    // --- reconstructed MET ---
    recoMET.clear();
    recoMETPhi.clear();
@@ -1326,11 +1630,98 @@ DiMuDiTauAnalyzer::beginJob()
     */
     objectTree->Branch("DeepDiTauValue", &DeepDiTauValue);
     objectTree->Branch("DeepDiTauValueMD", &DeepDiTauValueMD);
+
+    objectTree->Branch("DeepDiTauValue_genmatched", &DeepDiTauValue_genmatched);
+    objectTree->Branch("DeepDiTauValueMD_genmatched", &DeepDiTauValueMD_genmatched);
+
+    objectTree->Branch("jet_pt", &jet_pt);
+    objectTree->Branch("jet_eta", &jet_eta);
+    objectTree->Branch("jet_phi", &jet_phi);
+    objectTree->Branch("jet_energy", &jet_energy);
+    objectTree->Branch("jet_jetCharge", &jet_jetCharge);
+
+    objectTree->Branch("jet_chargedMultiplicity", &jet_chargedMultiplicity);
+    objectTree->Branch("jet_neutralMultiplicity", &jet_neutralMultiplicity);
+
+    objectTree->Branch("jet_chargedHadronMultiplicity", &jet_chargedHadronMultiplicity);
+    objectTree->Branch("jet_neutralHadronMultiplicity", &jet_neutralHadronMultiplicity);
+    objectTree->Branch("jet_muonMultiplicity", &jet_muonMultiplicity);
+    objectTree->Branch("jet_electronMultiplicity", &jet_electronMultiplicity);
+    objectTree->Branch("jet_photonMultiplicity", &jet_photonMultiplicity);
+
+    objectTree->Branch("jet_chargedEmEnergy", &jet_chargedEmEnergy);
+    objectTree->Branch("jet_neutralEmEnergy", &jet_neutralEmEnergy);
+    objectTree->Branch("jet_chargedHadronEnergy", &jet_chargedHadronEnergy);
+    objectTree->Branch("jet_neutralHadronEnergy", &jet_neutralHadronEnergy);
+    objectTree->Branch("jet_muonEnergy", &jet_muonEnergy);
+    objectTree->Branch("jet_electronEnergy", &jet_electronEnergy);
+    objectTree->Branch("jet_photonEnergy", &jet_photonEnergy);
+
+    objectTree->Branch("jet_chargedEmEnergyFraction", &jet_chargedEmEnergyFraction);
+    objectTree->Branch("jet_neutralEmEnergyFraction", &jet_neutralEmEnergyFraction);
+    objectTree->Branch("jet_chargedHadronEnergyFraction", &jet_chargedHadronEnergyFraction);
+    objectTree->Branch("jet_neutralHadronEnergyFraction", &jet_neutralHadronEnergyFraction);
+    objectTree->Branch("jet_muonEnergyFraction", &jet_muonEnergyFraction);
+    objectTree->Branch("jet_electronEnergyFraction", &jet_electronEnergyFraction);
+    objectTree->Branch("jet_photonEnergyFraction", &jet_photonEnergyFraction);
+
+    objectTree->Branch("jet_n60", &jet_n60);
+    objectTree->Branch("jet_n90", &jet_n90);
+
+    objectTree->Branch("jet_pfJetBProbabilityBJetTags", &jet_pfJetBProbabilityBJetTags);
+    objectTree->Branch("jet_pfJetProbabilityBJetTags", &jet_pfJetProbabilityBJetTags);
+    objectTree->Branch("jet_pfTrackCountingHighEffBJetTags", &jet_pfTrackCountingHighEffBJetTags);
+    objectTree->Branch("jet_pfSimpleSecondaryVertexHighEffBJetTags", &jet_pfSimpleSecondaryVertexHighEffBJetTags);
+    objectTree->Branch("jet_pfSimpleInclusiveSecondaryVertexHighEffBJetTags", &jet_pfSimpleInclusiveSecondaryVertexHighEffBJetTags);
+    objectTree->Branch("jet_pfCombinedSecondaryVertexV2BJetTags", &jet_pfCombinedSecondaryVertexV2BJetTags);
+    objectTree->Branch("jet_pfCombinedInclusiveSecondaryVertexV2BJetTags", &jet_pfCombinedInclusiveSecondaryVertexV2BJetTags);
+    objectTree->Branch("jet_softPFMuonBJetTags", &jet_softPFMuonBJetTags);
+    objectTree->Branch("jet_softPFElectronBJetTags", &jet_softPFElectronBJetTags);
+    objectTree->Branch("jet_pfCombinedMVAV2BJetTags", &jet_pfCombinedMVAV2BJetTags);
+    objectTree->Branch("jet_pfCombinedCvsLJetTags", &jet_pfCombinedCvsLJetTags);
+    objectTree->Branch("jet_pfCombinedCvsBJetTags", &jet_pfCombinedCvsBJetTags);
+    objectTree->Branch("jet_pfDeepCSVJetTags_probb", &jet_pfDeepCSVJetTags_probb);
+    objectTree->Branch("jet_pfDeepCSVJetTags_probc", &jet_pfDeepCSVJetTags_probc);
+    objectTree->Branch("jet_pfDeepCSVJetTags_probudsg", &jet_pfDeepCSVJetTags_probudsg);
+    objectTree->Branch("jet_pfDeepCSVJetTags_probbb", &jet_pfDeepCSVJetTags_probbb);
+
+    objectTree->Branch("jet_daughter_pt", &jet_daughter_pt);
+    objectTree->Branch("jet_daughter_eta", &jet_daughter_eta);
+    objectTree->Branch("jet_daughter_phi", &jet_daughter_phi);
+    objectTree->Branch("jet_daughter_energy", &jet_daughter_energy);
+    objectTree->Branch("jet_daughter_mass", &jet_daughter_mass);
+    objectTree->Branch("jet_daughter_charge", &jet_daughter_charge);
+
+    objectTree->Branch("jet_daughter_etaAtVtx", &jet_daughter_etaAtVtx);
+    objectTree->Branch("jet_daughter_phiAtVtx", &jet_daughter_phiAtVtx);
+    objectTree->Branch("jet_daughter_vx", &jet_daughter_vx);
+    objectTree->Branch("jet_daughter_vy", &jet_daughter_vy);
+    objectTree->Branch("jet_daughter_vz", &jet_daughter_vz);
+    objectTree->Branch("jet_daughter_dxy", &jet_daughter_dxy);
+    objectTree->Branch("jet_daughter_dxyError", &jet_daughter_dxyError);
+    objectTree->Branch("jet_daughter_dz", &jet_daughter_dz);
+    objectTree->Branch("jet_daughter_dzError", &jet_daughter_dzError);
+
+    objectTree->Branch("jet_daughter_pdgId", &jet_daughter_pdgId);
+
+    objectTree->Branch("jet_daughter_puppiWeight", &jet_daughter_puppiWeight);
+    objectTree->Branch("jet_daughter_puppiWeightNoLep", &jet_daughter_puppiWeightNoLep);
+
+    objectTree->Branch("jet_daughter_isIsolatedChargedHadron", &jet_daughter_isIsolatedChargedHadron);
+    objectTree->Branch("jet_daughter_isStandAloneMuon", &jet_daughter_isStandAloneMuon);
+    objectTree->Branch("jet_daughter_isTrackerMuon", &jet_daughter_isTrackerMuon);
+    objectTree->Branch("jet_daughter_isGlobalMuon", &jet_daughter_isGlobalMuon);
+    objectTree->Branch("jet_daughter_isGoodEgamma", &jet_daughter_isGoodEgamma);
+
+
+
+    /*
     objectTree->Branch("DeepDiTaujetPt", &DeepDiTaujetPt);
     objectTree->Branch("DeepDiTaujetEta", &DeepDiTaujetEta);
     objectTree->Branch("DeepDiTaujetPhi", &DeepDiTaujetPhi);
     objectTree->Branch("DeepDiTaujetEnergy", &DeepDiTaujetEnergy);
-    objectTree->Branch("recoJetCSV", &recoJetCSV); 
+    */    
+objectTree->Branch("recoJetCSV", &recoJetCSV); 
     objectTree->Branch("recoMET", &recoMET);
     objectTree->Branch("recoMETPhi", &recoMETPhi);
     objectTree->Branch("recoMETPx", &recoMETPx);
@@ -1382,6 +1773,21 @@ DiMuDiTauAnalyzer::beginJob()
         objectTree->Branch("genTauHadVisMass", &genTauHadVisMass);
         objectTree->Branch("genTauHadNPionZero", &genTauHadNPionZero);
         objectTree->Branch("genTauHadNChargedHadrons", &genTauHadNChargedHadrons);
+
+	objectTree->Branch("jet_isTauHTauH", &jet_isTauHTauH);
+	objectTree->Branch("jet_isTauHTauM", &jet_isTauHTauM);
+	objectTree->Branch("jet_isTauHTauE", &jet_isTauHTauE);
+	objectTree->Branch("jet_isTauMTauM", &jet_isTauMTauM);
+	objectTree->Branch("jet_isTauMTauE", &jet_isTauMTauE);
+	objectTree->Branch("jet_isTauETauE", &jet_isTauETauE);
+	objectTree->Branch("jet_isTauH", &jet_isTauH);
+	objectTree->Branch("jet_isTauM", &jet_isTauM);
+	objectTree->Branch("jet_isTauE", &jet_isTauE);
+	objectTree->Branch("jet_isB", &jet_isB);
+	objectTree->Branch("jet_isC", &jet_isC);
+	objectTree->Branch("jet_isS", &jet_isS);
+	objectTree->Branch("jet_isUD", &jet_isUD);
+	objectTree->Branch("jet_isG", &jet_isG);
 
         objectTree->Branch("recoNPU", &recoNPU, "recoNPU/I");
         objectTree->Branch("trueNInteraction", &trueNInteraction, "trueNInteraction/I");

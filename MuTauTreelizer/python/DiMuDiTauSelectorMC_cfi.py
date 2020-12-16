@@ -73,13 +73,13 @@ DeepDiTauProducer = cms.EDProducer("DeepDiTauProducer",
             graphDefinitions = cms.VPSet(
                 cms.PSet(
                     name = cms.string('ditau2017v1'),
-                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/ditau_2017_v1.pb'),
-                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/ditau_2017_v1_means_sigmas.txt'),
+                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/03Dec2020_constantgraph.pb'),
+                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/03Dec2020_mean_sigmas.txt'),
                 ),
                 cms.PSet(
                     name = cms.string('ditau2017MDv1'),
-                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/ditau_2017_md_v1.pb'),
-                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/ditau_2017_md_v1_means_sigmas.txt'),
+                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/03Dec2020_massdeco_constantgraph.pb'),
+                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/03Dec2020_massdeco_mean_sigmas.txt'),
                 ),
             ),
         ),
@@ -123,6 +123,7 @@ GenTauHadCandSelector = cms.EDFilter("GenTauHadCandSelector",
 )
 
 DiMuDiTauAnalyzer = cms.EDAnalyzer('DiMuDiTauAnalyzer',
+        GenParticleTag = cms.InputTag('prunedGenParticles'),
         MuTag = cms.InputTag("TrigMuMatcher"),
         EleTag = cms.InputTag("ElectronCandSelector"),
         TauTag = cms.InputTag("TauCandSelector"),
