@@ -4,9 +4,10 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing('analysis')
 
 # -------- input files. Can be changed on the command line with the option inputFiles=... ---------
-#options.inputFiles = ['/store/group/phys_higgs/HiggsExo/fengwang/SUSYGluGluToHToAA_AToMuMu_AToTauTau_M-125_M-19_TuneCUETP8M1_13TeV_madgraph_pythia8/MiniAOD_H125AA19_DiMuDiTau_Fall17DRPremix_v1/190515_140053/0000/mumutautau_1.root']
+options.inputFiles = ['/store/group/phys_higgs/HiggsExo/fengwang/SUSYGluGluToHToAA_AToMuMu_AToTauTau_M-125_M-19_TuneCUETP8M1_13TeV_madgraph_pythia8/MiniAOD_H125AA19_DiMuDiTau_Fall17DRPremix_v1/190515_140053/0000/mumutautau_1.root']
 options.register('isMC', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "Sample is MC")
 options.register('tauCluster', 2, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "different tau clusters")
+options.register('muTrigger', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "number of muons triggered")
 options.register('numThreads', 8, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "Set number of CPU cores")
 options.parseArguments()
 
@@ -16,14 +17,34 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 ########## Please specify if you are running on data (0) or MC (1) in the command line: #########################
 ########### eg: cmsRun runDiMuDiTau_cfg.py isMC=1 ###############
 ##########################################################################
-
 if options.isMC == 1:
     print " ****** we will run on sample of: MC ******"
     process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuDiTauSelectorMC_cfi")
 
-else:
-    print " ****** we will run on sample of: data ******"
-    process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuDiTauSelector_cfi")
+    if options.muTrigger == 2:
+        process.HLTFilter = cms.Sequence(process.HLTEleDiMu)
+
+        process.TrigRecoMuMatcher = cms.Sequence(process.TrigDiMuMatcher)
+#        process.DiMuDiTauEDAnalyzer = cms.Sequence(process.DiMuDiTauAnalyzerDiMuTrig)
+
+    else:
+        process.HLTFilter = cms.Sequence(process.HLTEle)
+        process.TrigRecoMuMatcher = cms.Sequence(process.TrigMuMatcher)
+#        process.DiMuDiTauEDAnalyzer = cms.Sequence(process.DiMuDiTauAnalyzer)
+
+#else:
+#    print " ****** we will run on sample of: data ******"
+#    process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuDiTauSelector_cfi")
+
+#    if options.muTrigger == 2:
+#        process.HLTFilter = cms.Sequence(process.HLTEleDiMu)
+#        process.TrigRecoMuMatcher = cms.Sequence(process.TrigDiMuMatcher)
+#        process.DiMuDiTauEDAnalyzer = cms.Sequence(process.DiMuDiTauAnalyzerDiMuTrig)
+
+#    else:
+#        process.HLTFilter = cms.Sequence(process.HLTEle)
+#        process.TrigRecoMuMatcher = cms.Sequence(process.TrigMuMatcher)
+#        process.DiMuDiTauEDAnalyzer = cms.Sequence(process.DiMuDiTauAnalyzer)
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
@@ -37,182 +58,114 @@ process.source = cms.Source("PoolSource",
 # reference: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePFTauID#Rerunning_of_the_tau_ID_on_M_AN1
 if options.tauCluster <= 0:
     print " ====== use slimmedTaus cluster ======"
-    from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTaus import *
-    myTool = TauIDEmbedder(process, cms,
-            debug = True,
-            toKeep = ["2017v2"]
-    )
-    myTool.runTauID()
-    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
-    del process.rerunDiscriminationByIsolationOldDMMVArun2017v2raw.requireDecayMode
-
-elif options.tauCluster == 1:
-    print " ====== use slimmedTausBoosted (lower Tau Pt) cluster ======"
-    from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTausBoosted import *
-    myTool = TauIDEmbedder(process, cms,
-            debug = True,
-            toKeep = ["2017v2"]
-    )
-    myTool.runTauID()
-    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
-
-elif options.tauCluster == 2:
-    print " ====== use slimmedTausMuonCleaned cluster ======"
-    from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTausMuonCleaned import *
-    myTool = TauIDEmbedder(process, cms,
-            debug = True,
-            toKeep = ["2017v2"]
-    )
-    myTool.runTauID()
-    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
-
-elif options.tauCluster == 3:
-    print " ====== use slimmedTausElectronCleaned cluster ======"
-    from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTausElectronCleaned import *
-    myTool = TauIDEmbedder(process, cms,
-            debug = True,
-            toKeep = ["2017v2"]
-    )
-    myTool.runTauID()
-    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
-
-elif options.tauCluster == 4:
-    print " ====== use slimmedTausMuonCleanedMedium cluster ======"
-    from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTausMuonCleanedMedium import *
-    myTool = TauIDEmbedder(process, cms,
-            debug = True,
-            toKeep = ["2017v2"]
-    )
-    myTool.runTauID()
-    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
-
-elif options.tauCluster == 5:
-    print " ====== use slimmedTausElectronCleanedMedium cluster ======"
-    from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTausElectronCleanedMedium import *
-    myTool = TauIDEmbedder(process, cms,
-            debug = True,
-            toKeep = ["2017v2"]
-    )
-    myTool.runTauID()
-    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
-
-elif options.tauCluster == 6:
-    print " ====== use slimmedTausMuonCleanedTight cluster ======"
-    from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTausMuonCleanedTight import *
-    myTool = TauIDEmbedder(process, cms,
-            debug = True,
-            toKeep = ["2017v2"]
-    )
-    myTool.runTauID()
-    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
-
-elif options.tauCluster == 7:
-    print " ====== use slimmedTausElectronCleanedTight cluster ======"
-    from MuMuTauTauTreeMaker.MuTauTreelizer.TauIdMVA_slimmedTausElectronCleanedTight import *
-    myTool = TauIDEmbedder(process, cms,
-            debug = True,
-            toKeep = ["2017v2"]
-    )
-    myTool.runTauID()
-    process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * process.slimmedTausNewID)
-
-elif options.tauCluster == 8:
-    print " ====== use slimmedTaus DeepID cluster ======"
     updatedTauName = "slimmedTausNewID"
     import MuMuTauTauTreeMaker.MuTauTreelizer.TauIdDeep_slimmedTaus as tauIdConfig
     tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms,
-            debug = False,
+            debug = True,
             updatedTauName = updatedTauName,
-            toKeep = ["deepTau2017v2p1"]
+            toKeep = ["deepTau2017v2p1","2017v2"]
             )
     tauIdEmbedder.runTauID()
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
-    del process.rerunDiscriminationByIsolationOldDMMVArun2017v2raw.requireDecayMode
 
-elif options.tauCluster == 9:
-    print " ====== use slimmedTausMuonCleaned DeepID cluster ======"
+elif options.tauCluster == 1:
+    print " ====== use slimmedTausMuonCleaned cluster ======"
     updatedTauName = "slimmedTausNewID"
     import MuMuTauTauTreeMaker.MuTauTreelizer.TauIdDeep_slimmedTausMuonCleaned as tauIdConfig
     tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms,
-            debug = False,
+            debug = True,
             updatedTauName = updatedTauName,
-            toKeep = ["deepTau2017v2p1"]
+            toKeep = ["deepTau2017v2p1","2017v2"]
             )
     tauIdEmbedder.runTauID()
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
 
-elif options.tauCluster == 10:
-    print " ====== use slimmedTausElectronCleaned DeepID cluster ======"
+elif options.tauCluster == 2:
+    print " ====== use slimmedTausElectronCleaned cluster ======"
     updatedTauName = "slimmedTausNewID"
     import MuMuTauTauTreeMaker.MuTauTreelizer.TauIdDeep_slimmedTausElectronCleaned as tauIdConfig
     tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms,
-            debug = False,
+            debug = True,
             updatedTauName = updatedTauName,
-            toKeep = ["deepTau2017v2p1"]
+            toKeep = ["deepTau2017v2p1","2017v2"]
             )
     tauIdEmbedder.runTauID()
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
 
-elif options.tauCluster == 11:
-    print " ====== use slimmedTausMuonCleanedMedium DeepID cluster ======"
+elif options.tauCluster == 3:
+    print " ====== use slimmedTausMuonCleanedMedium cluster ======"
     updatedTauName = "slimmedTausNewID"
     import MuMuTauTauTreeMaker.MuTauTreelizer.TauIdDeep_slimmedTausMuonCleanedMedium as tauIdConfig
     tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms,
-            debug = False,
+            debug = True,
             updatedTauName = updatedTauName,
-            toKeep = ["deepTau2017v2p1"]
+            toKeep = ["deepTau2017v2p1","2017v2"]
             )
     tauIdEmbedder.runTauID()
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
 
-elif options.tauCluster == 12:
-    print " ====== use slimmedTausElectronCleanedMedium DeepID cluster ======"
+elif options.tauCluster == 4:
+    print " ====== use slimmedTausElectronCleanedMedium cluster ======"
     updatedTauName = "slimmedTausNewID"
     import MuMuTauTauTreeMaker.MuTauTreelizer.TauIdDeep_slimmedTausElectronCleanedMedium as tauIdConfig
     tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms,
-            debug = False,
+            debug = True,
             updatedTauName = updatedTauName,
-            toKeep = ["deepTau2017v2p1"]
+            toKeep = ["deepTau2017v2p1","2017v2"]
             )
     tauIdEmbedder.runTauID()
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
 
-elif options.tauCluster == 13:
-    print " ====== use slimmedTausMuonCleanedTight DeepID cluster ======"
+elif options.tauCluster == 5:
+    print " ====== use slimmedTausMuonCleanedTight cluster ======"
     updatedTauName = "slimmedTausNewID"
     import MuMuTauTauTreeMaker.MuTauTreelizer.TauIdDeep_slimmedTausMuonCleanedTight as tauIdConfig
     tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms,
-            debug = False,
+            debug = True,
             updatedTauName = updatedTauName,
-            toKeep = ["deepTau2017v2p1"]
+            toKeep = ["deepTau2017v2p1","2017v2"]
             )
     tauIdEmbedder.runTauID()
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
 
-else:
-    print " ====== use slimmedTausElectronCleanedTight DeepID cluster ======"
+elif options.tauCluster == 6:
+    print " ====== use slimmedTausElectronCleanedTight cluster ======"
     updatedTauName = "slimmedTausNewID"
     import MuMuTauTauTreeMaker.MuTauTreelizer.TauIdDeep_slimmedTausElectronCleanedTight as tauIdConfig
     tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms,
-            debug = False,
+            debug = True,
             updatedTauName = updatedTauName,
-            toKeep = ["deepTau2017v2p1"]
+            toKeep = ["deepTau2017v2p1","2017v2"]
             )
     tauIdEmbedder.runTauID()
     process.rerunTauIDSequence = cms.Sequence(process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
+
+elif options.tauCluster == 7:
+    print " ====== use slimmedTausBoosted cluster ======"
+    updatedTauName = "slimmedTausNewID"
+    import MuMuTauTauTreeMaker.MuTauTreelizer.TauIdDeep_slimmedTausBoosted as tauIdConfig
+    tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms,
+            debug = False,
+            updatedTauName = updatedTauName,
+            PATTauProducer = cms.InputTag('cleanedSlimmedTausBoosted'),
+            srcChargedIsoPtSum = cms.string('chargedIsoPtSumNoOverLap'),
+            srcNeutralIsoPtSum = cms.string('neutralIsoPtSumNoOverLap'),
+            toKeep = ["deepTau2017v2p1","2017v2"]
+            )
+    tauIdEmbedder.runTauID()
+    process.rerunTauIDSequence = cms.Sequence(process.ca8PFJetsCHSprunedForBoostedTausPAT * getattr(process, "cleanedSlimmedTausBoosted") * process.rerunMvaIsolationSequence * getattr(process,updatedTauName))
 ############################################################
 
 if options.isMC == 1:
     process.treelizer = cms.Sequence(
             process.lumiTree*
-            process.HLTEle*
+            process.HLTFilter*
             process.MuonID*
             process.MuonSelector*
-            process.TrigMuMatcher*
+            process.TrigRecoMuMatcher*
             process.ElectronCandSelector*
             process.rerunTauIDSequence*
             process.TauCandSelector*
-            process.JetSelector*
             process.DeepDiTauProducer*
             process.JetIdEmbedder*
             process.GenMuonCandSelector*
@@ -224,25 +177,26 @@ if options.isMC == 1:
     )
 
     process.TFileService = cms.Service("TFileService",
-            fileName =  cms.string('MuMuTauTauTreelization_mc.root')
+            fileName =  cms.string('MuMuTauTauTreelization_mc_03Feb2021test.root')
     )
 
 else:
     process.treelizer = cms.Sequence(
             process.lumiTree*
-            process.HLTEle*
+            process.HLTFilter*
             process.MuonID*
             process.MuonSelector*
-            process.TrigMuMatcher*
+            process.TrigRecoMuMatcher*
             process.ElectronCandSelector*
             process.rerunTauIDSequence*
             process.TauCandSelector*
-            process.JetSelector*
+            process.DeepDiTauProducer*
+            process.JetIdEmbedder*
             process.DiMuDiTauAnalyzer
     )
 
     process.TFileService = cms.Service("TFileService",
-            fileName =  cms.string('MuMuTauTauTreelization_data_09Dec2020.root')
+            fileName =  cms.string('MuMuTauTauTreelization_data.root')
     )
 
 process.options = cms.untracked.PSet(

@@ -14,6 +14,15 @@ HLTEle = cms.EDFilter("HLTHighLevel",
         throw = cms.bool(False), # throw exception on unknown path names
 )
 
+HLTEleDiMu = cms.EDFilter("HLTHighLevel",
+        TriggerResultsTag = cms.InputTag("TriggerResults","","HLT"),
+        HLTPaths = cms.vstring("HLT_Dimuon20_Jpsi_v*", "HLT_Dimuon25_Jpsi_v*","HLT_DoubleMu4_JpsiTrk_Displaced_v*"),
+        eventSetupPathsKey = cms.string(''),
+        andOr = cms.bool(True), #----- True = OR, False = AND between the HLTPaths
+        throw = cms.bool(False), # throw exception on unknown path names
+)
+
+
 MuonID = cms.EDFilter("MuonID",
         muonTag = cms.InputTag('slimmedMuons'),
         muonID = cms.string('loose'),
@@ -78,8 +87,8 @@ DeepDiTauProducer = cms.EDProducer("DeepDiTauProducer",
                 ),
                 cms.PSet(
                     name = cms.string('ditau2017MDv1'),
-                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/03Dec2020_massdeco_constantgraph.pb'),
-                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/03Dec2020_massdeco_mean_sigmas.txt'),
+                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/21Jan2020_massdeco_sigmoid_constantgraph.pb'),
+                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/21Jan2020_massdeco_sigmoid_means_sigmas.txt'),
                 ),
             ),
         ),
