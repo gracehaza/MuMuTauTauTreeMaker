@@ -64,6 +64,33 @@ JetSelector = cms.EDFilter("JetSelector",
         ptCut = cms.double(20),
 )
 
+DeepDiTauProducer = cms.EDProducer("DeepDiTauProducer",
+        slimmedJetTag = cms.InputTag('slimmedJets'),
+        DeepDiTauConfiguration = cms.PSet(
+            memmapped = cms.bool(False),
+            graphDefinitions = cms.VPSet(
+                cms.PSet(
+                    name = cms.string('ditau2017v1'),
+                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/03Dec2020_constantgraph.pb'),
+                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/03Dec2020_mean_sigmas.txt'),
+                ),
+                cms.PSet(
+                    name = cms.string('ditau2017MDv1'),
+                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/21Jan2020_massdeco_sigmoid_constantgraph.pb'),
+                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/21Jan2020_massdeco_sigmoid_means_sigmas.txt'),
+                ),
+            ),
+        ),
+    )
+
+JetIdEmbedder = cms.EDProducer("JetIdEmbedder",
+        slimmedJetTag = cms.InputTag('slimmedJets'),
+        discriminator = cms.string('pileupJetId:fullDiscriminant'),
+        ditau2017v1 = cms.InputTag("DeepDiTauProducer","ditau2017v1"),
+        ditau2017MDv1 = cms.InputTag("DeepDiTauProducer","ditau2017MDv1"),
+    )
+
+
 DiMuDiTauAnalyzer = cms.EDAnalyzer('DiMuDiTauAnalyzer',
         MuTag = cms.InputTag("TrigMuMatcher"),
         EleTag = cms.InputTag("ElectronCandSelector"),
@@ -74,4 +101,5 @@ DiMuDiTauAnalyzer = cms.EDAnalyzer('DiMuDiTauAnalyzer',
         rhoTag = cms.InputTag("fixedGridRhoAll"),
         effAreasConfigFile = cms.FileInPath("MuMuTauTauTreeMaker/MuTauTreelizer/data/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt"),
         isMC = cms.bool(False),
+        slimmedJetTag = cms.InputTag('JetIdEmbedder'), 
 )

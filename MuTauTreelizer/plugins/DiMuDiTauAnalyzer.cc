@@ -216,6 +216,11 @@ class DiMuDiTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
   vector<float> DeepDiTauValue_genmatched;
   vector<float> DeepDiTauValueMD_genmatched;
 
+  vector<int> jet_index;
+  vector<float> jet_genparticles_pdgid;
+  vector<vector<int>> jet_index_pdgid;
+  int jetindex = 0;
+
   vector<float> jet_pt;
   vector<float> jet_eta;
   vector<float> jet_phi;
@@ -412,6 +417,7 @@ DiMuDiTauAnalyzer::DiMuDiTauAnalyzer(const edm::ParameterSet& iConfig):
   GenTauHadTag(consumes<edm::View<reco::GenParticle>>(iConfig.existsAs<edm::InputTag>("GenTauHadTag") ? iConfig.getParameter<edm::InputTag>("GenTauHadTag") : edm::InputTag())),
   GenParticleTag(consumes<edm::View<reco::GenParticle>>(iConfig.existsAs<edm::InputTag>("GenParticleTag") ? iConfig.getParameter<edm::InputTag>("GenParticleTag") : edm::InputTag()))
 //GenParticleTag(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("GenParticleTag")))  
+
 {
    //now do what ever initialization is needed
    usesResource("TFileService");
@@ -464,6 +470,7 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
    edm::Handle<edm::View<reco::GenParticle>> pGenParticles;
    iEvent.getByToken(GenParticleTag, pGenParticles);
+
 
    if (isMC)
    {
@@ -1046,14 +1053,24 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	 {
 	   if(fabs(islimJet->eta()) <= 2.5){
 	     if (islimJet->pt() > 20){
+	       jet_index.push_back(jetindex);
 	       DeepDiTauValue.push_back(islimJet->userFloat("ditau2017v1"));
 	       DeepDiTauValueMD.push_back(islimJet->userFloat("ditau2017MDv1"));
+	       jet_index_pdgid.push_back(vector<int>());
 	       jet_pt.push_back(islimJet->pt());
 	       jet_eta.push_back(islimJet->eta());
 	       jet_phi.push_back(islimJet->phi());
 	       jet_energy.push_back(islimJet->energy());
 	       jet_mass.push_back(islimJet->mass());
-	       
+	       int nDaughters = islimJet->numberOfDaughters();
+	       //	       std:: cout << "number of jet daughters: " << nDaughters << std::endl;
+	       for (int iDaughter=0; iDaughter<nDaughters; iDaughter++)
+		 {
+		   int jetdauId = islimJet->daughter(iDaughter)->pdgId();
+		   jet_genparticles_pdgid.push_back(islimJet->daughter(iDaughter)->pdgId());
+		   jet_index_pdgid[jetindex].push_back(islimJet->daughter(iDaughter)->pdgId());
+		 }
+	       jetindex++;
 	       if (isMC){
 		 int nHadronic = 0;
 		 int nMuon = 0;
@@ -1072,7 +1089,7 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		     isHadronic = false;
 		     if (abs(iParticle->pdgId())==15) {
 		       if (reco::deltaR(*islimJet,*iParticle)>0.4) continue;
-		     // get decay mode
+		      		     // get decay mode
 		       for (size_t d=0; d<iParticle->numberOfDaughters(); d++) {
 			 if (abs(iParticle->daughter(d)->pdgId())==15) {
 			   isTau = true;
@@ -1272,6 +1289,10 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    DeepDiTauValue_genmatched.clear();
    DeepDiTauValueMD_genmatched.clear();
 
+   jet_index.clear();
+   jet_genparticles_pdgid.clear();
+   jet_index_pdgid.clear();
+   
    jet_pt.clear();
    jet_eta.clear();
    jet_phi.clear();
@@ -1629,10 +1650,13 @@ DiMuDiTauAnalyzer::beginJob()
     
     objectTree->Branch("DeepDiTauValue", &DeepDiTauValue);
     objectTree->Branch("DeepDiTauValueMD", &DeepDiTauValueMD);
-
+    /*
     objectTree->Branch("DeepDiTauValue_genmatched", &DeepDiTauValue_genmatched);
     objectTree->Branch("DeepDiTauValueMD_genmatched", &DeepDiTauValueMD_genmatched);
 
+    objectTree->Branch("jet_index", &jet_index);
+    objectTree->Branch("jet_genparticles_pdgid", &jet_genparticles_pdgid);
+    */
     objectTree->Branch("jet_pt", &jet_pt);
     objectTree->Branch("jet_eta", &jet_eta);
     objectTree->Branch("jet_phi", &jet_phi);
@@ -1773,6 +1797,12 @@ objectTree->Branch("recoJetCSV", &recoJetCSV);
         objectTree->Branch("genTauHadNPionZero", &genTauHadNPionZero);
         objectTree->Branch("genTauHadNChargedHadrons", &genTauHadNChargedHadrons);
 
+	objectTree->Branch("DeepDiTauValue_genmatched", &DeepDiTauValue_genmatched);
+	objectTree->Branch("DeepDiTauValueMD_genmatched", &DeepDiTauValueMD_genmatched);
+
+	objectTree->Branch("jet_index", &jet_index);
+	objectTree->Branch("jet_genparticles_pdgid", &jet_genparticles_pdgid);
+	objectTree->Branch("jet_index_pdgid", &jet_index_pdgid);
 	objectTree->Branch("jet_isTauHTauH", &jet_isTauHTauH);
 	objectTree->Branch("jet_isTauHTauM", &jet_isTauHTauM);
 	objectTree->Branch("jet_isTauHTauE", &jet_isTauHTauE);

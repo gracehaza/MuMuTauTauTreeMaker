@@ -32,19 +32,19 @@ if options.isMC == 1:
         process.TrigRecoMuMatcher = cms.Sequence(process.TrigMuMatcher)
 #        process.DiMuDiTauEDAnalyzer = cms.Sequence(process.DiMuDiTauAnalyzer)
 
-#else:
-#    print " ****** we will run on sample of: data ******"
-#    process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuDiTauSelector_cfi")
+else:
+    print " ****** we will run on sample of: data ******"
+    process.load("MuMuTauTauTreeMaker.MuTauTreelizer.DiMuDiTauSelector_cfi")
 
-#    if options.muTrigger == 2:
-#        process.HLTFilter = cms.Sequence(process.HLTEleDiMu)
-#        process.TrigRecoMuMatcher = cms.Sequence(process.TrigDiMuMatcher)
-#        process.DiMuDiTauEDAnalyzer = cms.Sequence(process.DiMuDiTauAnalyzerDiMuTrig)
+    if options.muTrigger == 2:
+        process.HLTFilter = cms.Sequence(process.HLTEleDiMu)
+        process.TrigRecoMuMatcher = cms.Sequence(process.TrigDiMuMatcher)
+        process.DiMuDiTauEDAnalyzer = cms.Sequence(process.DiMuDiTauAnalyzerDiMuTrig)
 
-#    else:
-#        process.HLTFilter = cms.Sequence(process.HLTEle)
-#        process.TrigRecoMuMatcher = cms.Sequence(process.TrigMuMatcher)
-#        process.DiMuDiTauEDAnalyzer = cms.Sequence(process.DiMuDiTauAnalyzer)
+    else:
+        process.HLTFilter = cms.Sequence(process.HLTEle)
+        process.TrigRecoMuMatcher = cms.Sequence(process.TrigMuMatcher)
+        process.DiMuDiTauEDAnalyzer = cms.Sequence(process.DiMuDiTauAnalyzer)
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
@@ -177,7 +177,7 @@ if options.isMC == 1:
     )
 
     process.TFileService = cms.Service("TFileService",
-            fileName =  cms.string('MuMuTauTauTreelization_mc_03Feb2021test.root')
+            fileName =  cms.string('MuMuTauTauTreelization_mc_18may2021.root')
     )
 
 else:
