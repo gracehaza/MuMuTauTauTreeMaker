@@ -216,10 +216,11 @@ class DiMuDiTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
   vector<float> DeepDiTauValue_genmatched;
   vector<float> DeepDiTauValueMD_genmatched;
 
-  vector<int> jet_index;
-  vector<float> jet_genparticles_pdgid;
-  vector<vector<int>> jet_index_pdgid;
+  vector<float> jet_index;
+  vector<float> jet_daughters_index;
+  vector<float> jet_daughters_pdgid;
   int jetindex = 0;
+  // int jetdaughterindex = 0;
 
   vector<float> jet_pt;
   vector<float> jet_eta;
@@ -1053,10 +1054,12 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	 {
 	   if(fabs(islimJet->eta()) <= 2.5){
 	     if (islimJet->pt() > 20){
-	       jet_index.push_back(jetindex);
+
 	       DeepDiTauValue.push_back(islimJet->userFloat("ditau2017v1"));
 	       DeepDiTauValueMD.push_back(islimJet->userFloat("ditau2017MDv1"));
-	       jet_index_pdgid.push_back(vector<int>());
+	       //	       std::cout << "jet index: " << jetindex << std::endl;
+	       //	       jet_index.push_back(islimJet->userInt(jetindex));
+	       jet_index.push_back(jetindex);
 	       jet_pt.push_back(islimJet->pt());
 	       jet_eta.push_back(islimJet->eta());
 	       jet_phi.push_back(islimJet->phi());
@@ -1067,8 +1070,8 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	       for (int iDaughter=0; iDaughter<nDaughters; iDaughter++)
 		 {
 		   int jetdauId = islimJet->daughter(iDaughter)->pdgId();
-		   jet_genparticles_pdgid.push_back(islimJet->daughter(iDaughter)->pdgId());
-		   jet_index_pdgid[jetindex].push_back(islimJet->daughter(iDaughter)->pdgId());
+		   jet_daughters_index.push_back(jetindex);
+		   jet_daughters_pdgid.push_back(islimJet->daughter(iDaughter)->pdgId());
 		 }
 	       jetindex++;
 	       if (isMC){
@@ -1290,8 +1293,8 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    DeepDiTauValueMD_genmatched.clear();
 
    jet_index.clear();
-   jet_genparticles_pdgid.clear();
-   jet_index_pdgid.clear();
+   jet_daughters_index.clear();
+   jet_daughters_pdgid.clear();
    
    jet_pt.clear();
    jet_eta.clear();
@@ -1655,7 +1658,7 @@ DiMuDiTauAnalyzer::beginJob()
     objectTree->Branch("DeepDiTauValueMD_genmatched", &DeepDiTauValueMD_genmatched);
 
     objectTree->Branch("jet_index", &jet_index);
-    objectTree->Branch("jet_genparticles_pdgid", &jet_genparticles_pdgid);
+    objectTree->Branch("jet_daughters_pdgid", &jet_daughters_pdgid);
     */
     objectTree->Branch("jet_pt", &jet_pt);
     objectTree->Branch("jet_eta", &jet_eta);
@@ -1801,8 +1804,9 @@ objectTree->Branch("recoJetCSV", &recoJetCSV);
 	objectTree->Branch("DeepDiTauValueMD_genmatched", &DeepDiTauValueMD_genmatched);
 
 	objectTree->Branch("jet_index", &jet_index);
-	objectTree->Branch("jet_genparticles_pdgid", &jet_genparticles_pdgid);
-	objectTree->Branch("jet_index_pdgid", &jet_index_pdgid);
+	objectTree->Branch("jet_daughters_index", &jet_daughters_index);
+	objectTree->Branch("jet_daughters_pdgid", &jet_daughters_pdgid);
+
 	objectTree->Branch("jet_isTauHTauH", &jet_isTauHTauH);
 	objectTree->Branch("jet_isTauHTauM", &jet_isTauHTauM);
 	objectTree->Branch("jet_isTauHTauE", &jet_isTauHTauE);
