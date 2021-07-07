@@ -16,6 +16,20 @@ private:
   edm::EDGetTokenT<edm::View<pat::Jet> > srcToken_;
   edm::EDGetTokenT<edm::ValueMap<float>> ditau2017v1Token_;
   edm::EDGetTokenT<edm::ValueMap<float>> ditau2017MDv1Token_;
+  edm::EDGetTokenT<edm::ValueMap<float>> DeepDiTau_boostedToken_;
+  edm::EDGetTokenT<edm::ValueMap<float>> DeepDiTau_boosted_massdecoToken_;
+  edm::EDGetTokenT<edm::ValueMap<float>> DeepDiTau_boosted_nolepton_charmToken_;
+  edm::EDGetTokenT<edm::ValueMap<float>> DeepDiTau_boosted_nolepton_charm_massdecoToken_;
+  edm::EDGetTokenT<edm::ValueMap<float>> DeepDiTau_boosted_nolepton_massdecoToken_;
+  edm::EDGetTokenT<edm::ValueMap<float>> DeepDiTau_boosted_noleptonToken_;
+  edm::EDGetTokenT<edm::ValueMap<float>> DeepDiTau_massdecoToken_;
+  edm::EDGetTokenT<edm::ValueMap<float>> DeepDiTauToken_;
+  edm::EDGetTokenT<edm::ValueMap<float>> DeepDiTau_nolepton_charm_massdecoToken_;
+  edm::EDGetTokenT<edm::ValueMap<float>> DeepDiTau_nolepton_charmToken_;
+  edm::EDGetTokenT<edm::ValueMap<float>> DeepDiTau_nolepton_massdecoToken_;
+  edm::EDGetTokenT<edm::ValueMap<float>> DeepDiTau_noleptonToken_;
+
+
 };
 
 JetIdEmbedder::JetIdEmbedder(const edm::ParameterSet& pset):
@@ -24,18 +38,18 @@ JetIdEmbedder::JetIdEmbedder(const edm::ParameterSet& pset):
 {
   if (pset.exists("ditau2017v1")) { ditau2017v1Token_ = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("ditau2017v1")); }
   if (pset.exists("ditau2017MDv1")) { ditau2017MDv1Token_ = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("ditau2017MDv1")); }
-  if (pset.exists("DeepDiTau_boosted")) { DeepDiTau_boostedToken = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_boosted")); }
-  if (pset.exists("DeepDiTau_boosted_massdeco")) {DeepDiTau_boosted_massdecoToken = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_boosted_massdeco")); }
-  if (pset.exists("DeepDiTau_boosted_nolepton_charm")) { DeepDiTau_boosted_nolepton_charmToken = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_boosted_nolepton_charm")); }
-  if (pset.exists("DeepDiTau_boosted_nolepton_charm_massdeco")) { DeepDiTau_boosted_nolepton_charm_massdecoToken = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_boosted_nolepton_charm_massdeco")); }
-  if (pset.exists("DeepDiTau_boosted_nolepton_massdeco")) { DeepDiTau_boosted_nolepton_massdecoToken = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_boosted_nolepton_massdeco")); }
-  if (pset.exists("DeepDiTau_boosted_nolepton")) { DeepDiTau_boosted_noleptonToken = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_boosted_nolepton")); }
-  if (pset.exists("DeepDiTau_massdeco")) {DeepDiTau_massdecoToken = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_massdeco")); }
-  if (pset.exists("DeepDiTau")) {DeepDiTauToken = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau")); }
-  if (pset.exists("DeepDiTau_nolepton_charm_massdeco")) { DeepDiTau_nolepton_charm_massdecoToken = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_nolepton_charm_massdeco")); }
-  if (pset.exists("DeepDiTau_nolepton_charm")) { DeepDiTau_nolepton_charmToken = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_nolepton_charm")); }
-  if (pset.exists("DeepDiTau_nolepton_massdeco")) { DeepDiTau_nolepton_massdecoToken = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_nolepton_massdeco")); }
-  if (pset.exists("DeepDiTau_nolepton")) { DeepDiTau_noleptonToken = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_nolepton")); }
+  if (pset.exists("DeepDiTau_boosted")) { DeepDiTau_boostedToken_ = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_boosted")); }
+  if (pset.exists("DeepDiTau_boosted_massdeco")) {DeepDiTau_boosted_massdecoToken_ = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_boosted_massdeco")); }
+  if (pset.exists("DeepDiTau_boosted_nolepton_charm")) { DeepDiTau_boosted_nolepton_charmToken_ = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_boosted_nolepton_charm")); }
+  if (pset.exists("DeepDiTau_boosted_nolepton_charm_massdeco")) { DeepDiTau_boosted_nolepton_charm_massdecoToken_ = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_boosted_nolepton_charm_massdeco")); }
+  if (pset.exists("DeepDiTau_boosted_nolepton_massdeco")) { DeepDiTau_boosted_nolepton_massdecoToken_ = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_boosted_nolepton_massdeco")); }
+  if (pset.exists("DeepDiTau_boosted_nolepton")) { DeepDiTau_boosted_noleptonToken_ = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_boosted_nolepton")); }
+  if (pset.exists("DeepDiTau_massdeco")) {DeepDiTau_massdecoToken_ = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_massdeco")); }
+  if (pset.exists("DeepDiTau")) {DeepDiTauToken_ = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau")); }
+  if (pset.exists("DeepDiTau_nolepton_charm_massdeco")) { DeepDiTau_nolepton_charm_massdecoToken_ = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_nolepton_charm_massdeco")); }
+  if (pset.exists("DeepDiTau_nolepton_charm")) { DeepDiTau_nolepton_charmToken_ = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_nolepton_charm")); }
+  if (pset.exists("DeepDiTau_nolepton_massdeco")) { DeepDiTau_nolepton_massdecoToken_ = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_nolepton_massdeco")); }
+  if (pset.exists("DeepDiTau_nolepton")) { DeepDiTau_noleptonToken_ = consumes<edm::ValueMap<float> >(pset.getParameter<edm::InputTag>("DeepDiTau_nolepton")); }
   produces<pat::JetCollection>();
 }
 
@@ -67,7 +81,7 @@ void JetIdEmbedder::produce(edm::Event& evt, const edm::EventSetup& es) {
   bool DeepDiTau_boosted_nolepton_massdecoValid = evt.getByToken(DeepDiTau_boosted_nolepton_massdecoToken_, DeepDiTau_boosted_nolepton_massdeco);
 
   edm::Handle<edm::ValueMap<float> > DeepDiTau_boosted_nolepton;
-  bool DeepDiTau_boosted_noleptonValid = evt.getByToken(DeepDiTau_boosted_nolepton_Token_, DeepDiTau_boosted_nolepton);
+  bool DeepDiTau_boosted_noleptonValid = evt.getByToken(DeepDiTau_boosted_noleptonToken_, DeepDiTau_boosted_nolepton);
 
   edm::Handle<edm::ValueMap<float> > DeepDiTau_massdeco;
   bool DeepDiTau_massdecoValid = evt.getByToken(DeepDiTau_massdecoToken_, DeepDiTau_massdeco);
@@ -225,16 +239,16 @@ void JetIdEmbedder::produce(edm::Event& evt, const edm::EventSetup& es) {
     if (ditau2017MDv1Valid) ditau2017MDv1Value = (*ditau2017MDv1)[jRef];
     if (DeepDiTau_boostedValid) DeepDiTau_boostedValue = (*DeepDiTau_boosted)[jRef];
     if (DeepDiTau_boosted_massdecoValid) DeepDiTau_boosted_massdecoValue = (*DeepDiTau_boosted_massdeco)[jRef];
-    if (DeepDiTau_boosted_nolepton_charmValid) DeepDiTau_boosted_nolepton_charmValue = (*DeepDiTau_boosted_nolepton_charmValue)[jRef];
-    if (DeepDiTau_boosted_nolepton_charm_massdecoValid) DeepDiTau_boosted_nolepton_charm_massdecoValue = (*DeepDiTau_boosted_nolepton_charm_massdecoValue)[jRef];
-    if (DeepDiTau_boosted_nolepton_massdecoValid) DeepDiTau_boosted_nolepton_massdecoValue = (*DeepDiTau_boosted_nolepton_massdecoValue)[jRef];
-    if (DeepDiTau_boosted_noleptonValid) DeepDiTau_boosted_noleptonValue = (*DeepDiTau_boosted_noleptonValue)[jRef];
-    if (DeepDiTau_massdecoValid) DeepDiTau_massdecoValue = (*DeepDiTau_massdecoValue)[jRef];
-    if (DeepDiTauValid) DeepDiTauValue = (*DeepDiTauValue)[jRef];
-    if (DeepDiTau_nolepton_charm_massdecoValid) = (*DeepDiTau_nolepton_charm_massdecoValue)[jRef];
-    if (DeepDiTau_nolepton_charmValid) = (*DeepDiTau_nolepton_charmValue)[jRef];
-    if (DeepDiTau_nolepton_massdecoValid) = (*DeepDiTau_nolepton_massdecoValue)[jRef];
-    if (DeepDiTau_noleptonValid) = (*DeepDiTau_noleptonValue)[jRef];
+    if (DeepDiTau_boosted_nolepton_charmValid) DeepDiTau_boosted_nolepton_charmValue = (*DeepDiTau_boosted_nolepton_charm)[jRef];
+    if (DeepDiTau_boosted_nolepton_charm_massdecoValid) DeepDiTau_boosted_nolepton_charm_massdecoValue = (*DeepDiTau_boosted_nolepton_charm_massdeco)[jRef];
+    if (DeepDiTau_boosted_nolepton_massdecoValid) DeepDiTau_boosted_nolepton_massdecoValue = (*DeepDiTau_boosted_nolepton_massdeco)[jRef];
+    if (DeepDiTau_boosted_noleptonValid) DeepDiTau_boosted_noleptonValue = (*DeepDiTau_boosted_nolepton)[jRef];
+    if (DeepDiTau_massdecoValid) DeepDiTau_massdecoValue = (*DeepDiTau_massdeco)[jRef];
+    if (DeepDiTauValid) DeepDiTauValue = (*DeepDiTau)[jRef];
+    if (DeepDiTau_nolepton_charm_massdecoValid) DeepDiTau_nolepton_charm_massdecoValue = (*DeepDiTau_nolepton_charm_massdeco)[jRef];
+    if (DeepDiTau_nolepton_charmValid) DeepDiTau_nolepton_charmValue = (*DeepDiTau_nolepton_charm)[jRef];
+    if (DeepDiTau_nolepton_massdecoValid) DeepDiTau_nolepton_massdecoValue = (*DeepDiTau_nolepton_massdeco)[jRef];
+    if (DeepDiTau_noleptonValid) DeepDiTau_noleptonValue = (*DeepDiTau_nolepton)[jRef];
 
     jet.addUserFloat("ditau2017v1",ditau2017v1Value);
     jet.addUserFloat("ditau2017MDv1",ditau2017MDv1Value);
@@ -249,7 +263,7 @@ void JetIdEmbedder::produce(edm::Event& evt, const edm::EventSetup& es) {
     jet.addUserFloat("DeepDiTau_nolepton_charm_massdeco",DeepDiTau_nolepton_charm_massdecoValue);
     jet.addUserFloat("DeepDiTau_nolepton_charm",DeepDiTau_nolepton_charmValue);
     jet.addUserFloat("DeepDiTau_nolepton_massdeco",DeepDiTau_nolepton_massdecoValue);
-    jet.addUserFloat("DeepDiTau_nolepton",DeepDiTau_noleptonValue)
+    jet.addUserFloat("DeepDiTau_nolepton",DeepDiTau_noleptonValue);
 
     output->push_back(jet);
   }

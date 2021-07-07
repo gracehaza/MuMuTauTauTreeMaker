@@ -454,7 +454,7 @@ DiMuDiTauAnalyzer::~DiMuDiTauAnalyzer()
 //
 
 // ------------ method called for each event  ------------
-Void
+void
 DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
