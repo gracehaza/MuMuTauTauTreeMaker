@@ -75,6 +75,11 @@ class DeepDiTau {
       return result;
     }
 
+
+    void createJetBlockInputs_old(const pat::Jet&);
+    void createChargedHadronBlockInputs_old(const pat::Jet&);
+    void createNeutralHadronBlockInputs_old(const pat::Jet&);
+    void createPhotonBlockInputs_old(const pat::Jet&);
     void createJetBlockInputs(const pat::Jet&);
     void createChargedHadronBlockInputs(const pat::Jet&);
     void createNeutralHadronBlockInputs(const pat::Jet&);
@@ -85,6 +90,7 @@ class DeepDiTau {
     tensorflow::Tensor getPrediction(const pat::Jet&);
     void getPrediction_2017_v1(const pat::Jet&, std::vector<tensorflow::Tensor>&);
     void getPrediction_2017_md_v1(const pat::Jet&, std::vector<tensorflow::Tensor>&);
+    void getPrediction_DeepDiTau_nolepton(const pat::Jet&, std::vector<tensorflow::Tensor>&);
 
   protected:
     bool isConfigured_;

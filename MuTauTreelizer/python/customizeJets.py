@@ -65,70 +65,70 @@ def customizeJets(process,coll,srcLabel='jets',postfix='',**kwargs):
                     name = cms.string('ditau2017MDv1'),
                     path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/17Feb2021_relu_tanh_constantgraph.pb'),
                     means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/17Feb2021_relu_tanh_means_sigmas.txt'),
-                    ),
-                cms.PSet(
-                    name = cms.string('DeepDiTau_boosted'),
-                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_constantgraph.pb'),
-                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_means_sigmas.txt'),
                 ),
+#                cms.PSet(
+#                    name = cms.string('DeepDiTau_boosted'),
+#                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_constantgraph.pb'),
+#                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_means_sigmas.txt'),
+#                ),
+#                cms.PSet(
+ #                   name = cms.string('DeepDiTau_boosted_massdeco'),
+ #                   path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_massdeco_constantgraph.pb'),
+#                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_massdeco_means_sigmas.txt'),
+#                ),
+#                cms.PSet(
+#                    name = cms.string('DeepDiTau_boosted_nolepton_charm'),
+#                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_nolepton_charm_constantgraph.pb'),
+#                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_nolepton_charm_means_sigmas.txt'),
+#                ),
+#                cms.PSet(
+#                    name = cms.string('DeepDiTau_boosted_nolepton_charm_massdeco'),
+#                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_nolepton_charm_massdeco_constantgraph.pb'),
+#                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_nolepton_charm_massdeco_means_sigmas.txt'),
+#                ),
+ #               cms.PSet(
+#                    name = cms.string('DeepDiTau_boosted_nolepton_massdeco'),
+#                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_nolepton_massdeco_constantgraph.pb'),
+#                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_nolepton_massdeco_means_sigmas.txt'),
+#                ),
                 cms.PSet(
-                    name = cms.string('DeepDiTau_boosted_massdeco'),
-                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_massdeco_constantgraph.pb'),
-                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_massdeco_means_sigmas.txt'),
-                ),
-                cms.PSet(
-                    name = cms.string('DeepDiTau_boosted_nolepton_charm'),
-                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_nolepton_charm_constantgraph.pb'),
-                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_nolepton_charm_means_sigmas.txt'),
-                ),
-                cms.PSet(
-                    name = cms.string('DeepDiTau_boosted_nolepton_charm_massdeco'),
-                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_nolepton_charm_massdeco_constantgraph.pb'),
-                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_nolepton_charm_massdeco_means_sigmas.txt'),
-                ),
-                cms.PSet(
-                    name = cms.string('DeepDiTau_boosted_nolepton_massdeco'),
-                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_nolepton_massdeco_constantgraph.pb'),
-                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_nolepton_massdeco_means_sigmas.txt'),
-                ),
-                cms.PSet(
-                    name = cms.string('DeepDiTau_boosted_nolepton'),
+                    name = cms.string('DeepDiTauboostednolepton'),
                     path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_nolepton_constantgraph.pb'),
                     means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_boosted_nolepton_means_sigmas.txt'),
                 ),
+#                cms.PSet(
+#                    name = cms.string('DeepDiTau_massdeco'),
+#                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_massdeco_constantgraph.pb'),
+#                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_massdeco_means_sigmas.txt'),
+#                ),
+#                cms.PSet(
+#                    name = cms.string('DeepDiTau'),
+#                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_constantgraph.pb'),
+#                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_means_sigmas.txt'),
+#                ),
+#                cms.PSet(
+#                    name = cms.string('DeepDiTau_nolepton_charm_massdeco'),
+#                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_nolepton_charm_massdeco_constantgraph.pb'),
+#                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_nolepton_charm_massdeco_means_sigmas.txt'),
+#                ),
+#                cms.PSet(
+#                    name = cms.string('DeepDiTau_nolepton_charm'),
+##                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_nolepton_charm_constantgraph.pb'),
+#                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_nolepton_charm_means_sigmas.txt'),
+#                ),
                 cms.PSet(
-                    name = cms.string('DeepDiTau_massdeco'),
-                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_massdeco_constantgraph.pb'),
-                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_massdeco_means_sigmas.txt'),
-                ),
-                cms.PSet(
-                    name = cms.string('DeepDiTau'),
-                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_constantgraph.pb'),
-                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_means_sigmas.txt'),
-                ),
-                cms.PSet(
-                    name = cms.string('DeepDiTau_nolepton_charm_massdeco'),
-                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_nolepton_charm_massdeco_constantgraph.pb'),
-                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_nolepton_charm_massdeco_means_sigmas.txt'),
-                ),
-                cms.PSet(
-                    name = cms.string('DeepDiTau_nolepton_charm'),
-                    path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_nolepton_charm_constantgraph.pb'),
-                    means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_nolepton_charm_means_sigmas.txt'),
-                ),
-                cms.PSet(
-                    name = cms.string('DeepDiTau_nolepton_massdeco'),
+                    name = cms.string('DeepDiTaunoleptonmassdeco'),
                     path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_nolepton_massdeco_constantgraph.pb'),
                     means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_nolepton_massdeco_means_sigmas.txt'),
                 ),
                 cms.PSet(
-                    name = cms.string('DeepDiTau_nolepton'),
+                    name = cms.string('DeepDiTaunolepton'),
                     path = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_nolepton_constantgraph.pb'),
                     means = cms.FileInPath('MuMuTauTauTreeMaker/MuTauTreelizer/data/June2021_nolepton_means_sigmas.txt'),
                 ),
             ),
         ),
-)
+    )
     
     modName = 'deepDiTau{0}'.format(postfix)
     setattr(process,modName,module)
@@ -140,16 +140,16 @@ def customizeJets(process,coll,srcLabel='jets',postfix='',**kwargs):
         discriminator = cms.string('pileupJetId:fullDiscriminant'),
         ditau2017v1 = cms.InputTag("deepDiTau"+postfix,"ditau2017v1"),
         ditau2017MDv1 = cms.InputTag("deepDiTau"+postfix,"ditau2017MDv1"),
-        DeepDiTau_boosted = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_boosted"),
-        DeepDiTau_boosted_massdeco = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_boosted_massdeco"),
-        DeepDiTau_boosted_nolepton_charm = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_boosted_nolepton_charm"),
-        DeepDiTau_boosted_nolepton_charm_massdeco = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_boosted_nolepton_charm_massdeco"),
-        DeepDiTau_boosted_nolepton_massdeco = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_boosted_nolepton_massdeco"),
+ #       DeepDiTau_boosted = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_boosted"),
+#        DeepDiTau_boosted_massdeco = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_boosted_massdeco"),
+#        DeepDiTau_boosted_nolepton_charm = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_boosted_nolepton_charm"),
+#        DeepDiTau_boosted_nolepton_charm_massdeco = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_boosted_nolepton_charm_massdeco"),
+#        DeepDiTau_boosted_nolepton_massdeco = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_boosted_nolepton_massdeco"),
         DeepDiTau_boosted_nolepton = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_boosted_nolepton"),
-        DeepDiTau_massdeco = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_massdeco"),
-        DeepDiTauValue = cms.InputTag("deepDiTau"+postfix,"DeepDiTauValue"),
-        DeepDiTau_nolepton_charm_massdecoValue = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_nolepton_charm_massdeco"),
-        DeepDiTau_nolepton_charmValue = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_nolepton_charm"),
+ #       DeepDiTau_massdeco = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_massdeco"),
+#        DeepDiTauValue = cms.InputTag("deepDiTau"+postfix,"DeepDiTauValue"),
+#        DeepDiTau_nolepton_charm_massdecoValue = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_nolepton_charm_massdeco"),
+#        DeepDiTau_nolepton_charmValue = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_nolepton_charm"),
         DeepDiTau_nolepton_massdecoValue = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_nolepton_massdeco"),
         DeepDiTau_noleptonValue = cms.InputTag("deepDiTau"+postfix,"DeepDiTau_nolepton"),
     )
