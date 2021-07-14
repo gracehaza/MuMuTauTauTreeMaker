@@ -216,16 +216,13 @@ class DiMuDiTauAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
   vector<float> DeepDiTauValue_genmatched;
   vector<float> DeepDiTauValueMD_genmatched;
 
-  //  vector<float> DeepDiTau_boostedValue;
-  //vector<float> DeepDiTau_boosted_massdecoValue;
-  /*vector<float> DeepDiTau_boosted_nolepton_charmValue;
-    vector<float> DeepDiTau_boosted_nolepton_charm_massdecoValue;*/
-  //  vector<float> DeepDiTau_boosted_nolepton_massdecoValue;
+  vector<float> DeepDiTau_boosted_nolepton_charmValue;
+  vector<float> DeepDiTau_boosted_nolepton_charm_massdecoValue;
+  vector<float> DeepDiTau_boosted_nolepton_massdecoValue;
   vector<float> DeepDiTau_boosted_noleptonValue;
-  /*  vector<float> DeepDiTau_massdecoValue;
-  vector<float> DeepDiTauValue;
+
   vector<float> DeepDiTau_nolepton_charm_massdecoValue;
-  vector<float> DeepDiTau_nolepton_charmValue;*/
+  vector<float> DeepDiTau_nolepton_charmValue;
   vector<float> DeepDiTau_nolepton_massdecoValue;
   vector<float> DeepDiTau_noleptonValue;
 
@@ -1071,16 +1068,12 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 	       oldDeepDiTauValue.push_back(islimJet->userFloat("ditau2017v1"));
 	       oldDeepDiTauValueMD.push_back(islimJet->userFloat("ditau2017MDv1"));
-	       //	       DeepDiTau_boostedValue.push_back(islimJet->userFloat("DeepDiTau_boosted"));
-	       //  DeepDiTau_boosted_massdecoValue.push_back(islimJet->userFloat("DeepDiTau_boosted_massdeco"));
-	       /*DeepDiTau_boosted_nolepton_charmValue.push_back(islimJet->userFloat("DeepDiTau_boosted_nolepton_charm"));
+	       DeepDiTau_boosted_nolepton_charmValue.push_back(islimJet->userFloat("DeepDiTau_boosted_nolepton_charm"));
 	       DeepDiTau_boosted_nolepton_charm_massdecoValue.push_back(islimJet->userFloat("DeepDiTau_boosted_nolepton_charm_massdeco"));
-	       DeepDiTau_boosted_nolepton_massdecoValue.push_back(islimJet->userFloat("DeepDiTau_boosted_nolepton_massdeco"));*/
+	       DeepDiTau_boosted_nolepton_massdecoValue.push_back(islimJet->userFloat("DeepDiTau_boosted_nolepton_massdeco"));
 	       DeepDiTau_boosted_noleptonValue.push_back(islimJet->userFloat("DeepDiTau_boosted_nolepton"));
-	       /*DeepDiTau_massdecoValue.push_back(islimJet->userFloat("DeepDiTau_massdeco"));
-	       DeepDiTauValue.push_back(islimJet->userFloat("DeepDiTau"));
 	       DeepDiTau_nolepton_charm_massdecoValue.push_back(islimJet->userFloat("DeepDiTau_nolepton_charm_massdeco"));
-	       DeepDiTau_nolepton_charmValue.push_back(islimJet->userFloat("DeepDiTau_nolepton_charm"));*/
+	       DeepDiTau_nolepton_charmValue.push_back(islimJet->userFloat("DeepDiTau_nolepton_charm"));
 	       DeepDiTau_nolepton_massdecoValue.push_back(islimJet->userFloat("DeepDiTau_nolepton_massdeco"));
 	       DeepDiTau_noleptonValue.push_back(islimJet->userFloat("DeepDiTau_nolepton"));
 	       //	       std::cout << "jet index: " << jetindex << std::endl;
@@ -1318,16 +1311,13 @@ DiMuDiTauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    DeepDiTauValue_genmatched.clear();
    DeepDiTauValueMD_genmatched.clear();
 
-   //  DeepDiTau_boostedValue.clear();
-   //DeepDiTau_boosted_massdecoValue.clear();
-   /*DeepDiTau_boosted_nolepton_charmValue.clear();
-     DeepDiTau_boosted_nolepton_charm_massdecoValue.clear();*/
-   //   DeepDiTau_boosted_nolepton_massdecoValue.clear();
+   DeepDiTau_boosted_nolepton_charmValue.clear();
+   DeepDiTau_boosted_nolepton_charm_massdecoValue.clear();
+   DeepDiTau_boosted_nolepton_massdecoValue.clear();
    DeepDiTau_boosted_noleptonValue.clear();
-   /* DeepDiTau_massdecoValue.clear();
-   DeepDiTauValue.clear();*/
-   // DeepDiTau_nolepton_charm_massdecoValue.clear();
-   //DeepDiTau_nolepton_charmValue.clear();
+
+   DeepDiTau_nolepton_charm_massdecoValue.clear();
+   DeepDiTau_nolepton_charmValue.clear();
    DeepDiTau_nolepton_massdecoValue.clear();
    DeepDiTau_noleptonValue.clear();
 
@@ -1693,8 +1683,6 @@ DiMuDiTauAnalyzer::beginJob()
     objectTree->Branch("oldDeepDiTauValue", &oldDeepDiTauValue);
     objectTree->Branch("oldDeepDiTauValueMD", &oldDeepDiTauValueMD);
     /*
-    objectTree->Branch("DeepDiTauValue_genmatched", &DeepDiTauValue_genmatched);
-    objectTree->Branch("DeepDiTauValueMD_genmatched", &DeepDiTauValueMD_genmatched);
 
     objectTree->Branch("jet_index", &jet_index);
     objectTree->Branch("jet_daughters_pdgid", &jet_daughters_pdgid);
@@ -1839,16 +1827,13 @@ objectTree->Branch("recoJetCSV", &recoJetCSV);
         objectTree->Branch("genTauHadNPionZero", &genTauHadNPionZero);
         objectTree->Branch("genTauHadNChargedHadrons", &genTauHadNChargedHadrons);
 
-	//	objectTree->Branch("DeepDiTau_boostedValue", &DeepDiTau_boostedValue);
-	//objectTree->Branch("DeepDiTau_boosted_massdecoValue", &DeepDiTau_boosted_massdecoValue);
-	/*objectTree->Branch("DeepDiTau_boosted_nolepton_charmValue", &DeepDiTau_boosted_nolepton_charmValue);
+	objectTree->Branch("DeepDiTau_boosted_nolepton_charmValue", &DeepDiTau_boosted_nolepton_charmValue);
 	objectTree->Branch("DeepDiTau_boosted_nolepton_charm_massdecoValue", &DeepDiTau_boosted_nolepton_charm_massdecoValue);
-	objectTree->Branch("DeepDiTau_boosted_nolepton_massdecoValue", &DeepDiTau_boosted_nolepton_massdecoValue);*/
+	objectTree->Branch("DeepDiTau_boosted_nolepton_massdecoValue", &DeepDiTau_boosted_nolepton_massdecoValue);
 	objectTree->Branch("DeepDiTau_boosted_noleptonValue", &DeepDiTau_boosted_noleptonValue);
-	/*	objectTree->Branch("DeepDiTau_massdecoValue", &DeepDiTau_massdecoValue);
-	objectTree->Branch("DeepDiTauValue", &DeepDiTauValue);
+
 	objectTree->Branch("DeepDiTau_nolepton_charm_massdecoValue", &DeepDiTau_nolepton_charm_massdecoValue);
-	objectTree->Branch("DeepDiTau_nolepton_charmValue", &DeepDiTau_nolepton_charmValue);*/
+	objectTree->Branch("DeepDiTau_nolepton_charmValue", &DeepDiTau_nolepton_charmValue);
 	objectTree->Branch("DeepDiTau_nolepton_massdecoValue", &DeepDiTau_nolepton_massdecoValue);
 	objectTree->Branch("DeepDiTau_noleptonValue", &DeepDiTau_noleptonValue);
 

@@ -10,15 +10,13 @@
 #include <fstream>
 #include <sstream>
 
+constexpr int NumberOfOutputs = 3;
+constexpr int NumberOfOutputsCharm = 4;
+
 // Define the inputs to the DNN
 namespace {
 
-  namespace empty {
-    constexpr int NumberOfOutputs = 3; // Defines the number of elements in the output vector
-  }
-
   namespace ditauInputs_2017_v1 {
-    constexpr int NumberOfOutputs = 3;
     constexpr int NumberOfChargedHadrons = 10;
     constexpr int NumberOfNeutralHadrons = 10;
     constexpr int NumberOfMuons = 4;
@@ -166,7 +164,6 @@ namespace {
   }  // namespace ditauInputs_2017_v1
 
   namespace DeepDiTauInputs {
-    constexpr int NumberOfOutputs = 3;
     constexpr int NumberOfChargedHadrons = 10;
     constexpr int NumberOfNeutralHadrons = 10;
     constexpr int NumberOfMuons = 4;
@@ -242,53 +239,6 @@ namespace {
         NumberOfInputs
       };
     }
-    /*
-    namespace MuonBlockInputs {
-      enum vars {
-        muon_pt = 0,
-        muon_eta,
-        muon_phi,
-        muon_charge,
-        muon_etaAtVtx,
-        muon_phiAtVtx,
-        muon_vx,
-        muon_vy,
-        muon_vz,
-        muon_dxy,
-        muon_dz,
-        muon_pixelLayersWithMeasurement,
-        muon_stripLayersWithMeasurement,
-        muon_trackerLayersWithMeasurement,
-        muon_trackHighPurity,
-        muon_puppiWeight,
-        muon_isStandAloneMuon,
-	muon_isGlobalMuon,
-        NumberOfInputs
-      };
-    }
-
-    namespace ElectronBlockInputs {
-      enum vars {
-        electron_pt = 0,
-        electron_eta,
-        electron_phi,
-        electron_charge,
-        electron_etaAtVtx,
-        electron_phiAtVtx,
-        electron_vx,
-        electron_vy,
-        electron_vz,
-        electron_dxy,
-        electron_dz,
-        electron_pixelLayersWithMeasurement,
-        electron_stripLayersWithMeasurement,
-        electron_trackerLayersWithMeasurement,
-        electron_trackHighPurity,
-        electron_puppiWeight,
-        NumberOfInputs
-      };
-    }
-    */
     namespace PhotonBlockInputs {
       enum vars {
         photon_pt = 0,
@@ -303,7 +253,7 @@ namespace {
 
   }  // namespace DeepDiTauInputs
 
-}  // anonymous namespace
+} //namespace
 
   
 void DeepDiTau::configure(const edm::ParameterSet& iConfig)
@@ -382,7 +332,7 @@ void DeepDiTau::configure(const edm::ParameterSet& iConfig)
       //outputName_ = "concatenate_2/concat"; // TODO lookup, and probably rerun and give a more consistent name
       outputName_ = "ID_pred/Softmax";
     }
-    else if (name_== "DeepDiTauboostednolepton"){// || "DeepDiTau_nolepton_massdeco" || "DeepDiTau_nolepton")) {
+    else if (name_== "DeepDiTauboostednolepton"){
       inputNames_.push_back("input_1");
       inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::JetBlockInputs::NumberOfInputs});
       kJet_ = 0;
@@ -429,6 +379,84 @@ void DeepDiTau::configure(const edm::ParameterSet& iConfig)
       kPhoton_ = 3;
       outputName_ = "ID_pred/Softmax";
     }
+
+    else if (name_== "DeepDiTauboostednoleptonmassdeco"){
+      inputNames_.push_back("input_1");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::JetBlockInputs::NumberOfInputs});
+      kJet_ = 0;
+      inputNames_.push_back("input_2");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::ChargedHadronBlockInputs::NumberOfInputs, DeepDiTauInputs::NumberOfChargedHadrons});
+      kChargedHadron_ = 1;
+      inputNames_.push_back("input_3");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::NeutralHadronBlockInputs::NumberOfInputs, DeepDiTauInputs::NumberOfNeutralHadrons});
+      kNeutralHadron_ = 2;
+      inputNames_.push_back("input_4");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::PhotonBlockInputs::NumberOfInputs, DeepDiTauInputs::NumberOfPhotons});
+      kPhoton_ = 3;
+      outputName_ = "ID_pred/Softmax";
+    }
+    else if (name_== "DeepDiTauboostednoleptoncharm"){
+      inputNames_.push_back("input_1");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::JetBlockInputs::NumberOfInputs});
+      kJet_ = 0;
+      inputNames_.push_back("input_2");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::ChargedHadronBlockInputs::NumberOfInputs, DeepDiTauInputs::NumberOfChargedHadrons});
+      kChargedHadron_ = 1;
+      inputNames_.push_back("input_3");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::NeutralHadronBlockInputs::NumberOfInputs, DeepDiTauInputs::NumberOfNeutralHadrons});
+      kNeutralHadron_ = 2;
+      inputNames_.push_back("input_4");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::PhotonBlockInputs::NumberOfInputs, DeepDiTauInputs::NumberOfPhotons});
+      kPhoton_ = 3;
+      outputName_ = "ID_pred/Softmax";
+    }
+    else if (name_== "DeepDiTauboostednoleptoncharmmassdeco"){
+      inputNames_.push_back("input_1");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::JetBlockInputs::NumberOfInputs});
+      kJet_ = 0;
+      inputNames_.push_back("input_2");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::ChargedHadronBlockInputs::NumberOfInputs, DeepDiTauInputs::NumberOfChargedHadrons});
+      kChargedHadron_ = 1;
+      inputNames_.push_back("input_3");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::NeutralHadronBlockInputs::NumberOfInputs, DeepDiTauInputs::NumberOfNeutralHadrons});
+      kNeutralHadron_ = 2;
+      inputNames_.push_back("input_4");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::PhotonBlockInputs::NumberOfInputs, DeepDiTauInputs::NumberOfPhotons});
+      kPhoton_ = 3;
+      outputName_ = "ID_pred/Softmax";
+    }
+    else if (name_== "DeepDiTaunoleptoncharm"){
+      inputNames_.push_back("input_1");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::JetBlockInputs::NumberOfInputs});
+      kJet_ = 0;
+      inputNames_.push_back("input_2");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::ChargedHadronBlockInputs::NumberOfInputs, DeepDiTauInputs::NumberOfChargedHadrons});
+      kChargedHadron_ = 1;
+      inputNames_.push_back("input_3");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::NeutralHadronBlockInputs::NumberOfInputs, DeepDiTauInputs::NumberOfNeutralHadrons});
+      kNeutralHadron_ = 2;
+      inputNames_.push_back("input_4");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::PhotonBlockInputs::NumberOfInputs, DeepDiTauInputs::NumberOfPhotons});
+      kPhoton_ = 3;
+      outputName_ = "ID_pred/Softmax";
+    }
+    else if (name_== "DeepDiTaunoleptoncharmmassdeco"){
+      inputNames_.push_back("input_1");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::JetBlockInputs::NumberOfInputs});
+      kJet_ = 0;
+      inputNames_.push_back("input_2");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::ChargedHadronBlockInputs::NumberOfInputs, DeepDiTauInputs::NumberOfChargedHadrons});
+      kChargedHadron_ = 1;
+      inputNames_.push_back("input_3");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::NeutralHadronBlockInputs::NumberOfInputs, DeepDiTauInputs::NumberOfNeutralHadrons});
+      kNeutralHadron_ = 2;
+      inputNames_.push_back("input_4");
+      inputShapes_.push_back(tensorflow::TensorShape{1, DeepDiTauInputs::PhotonBlockInputs::NumberOfInputs, DeepDiTauInputs::NumberOfPhotons});
+      kPhoton_ = 3;
+      outputName_ = "ID_pred/Softmax";
+    }
+    
+
     inputTensors_.resize(inputShapes_.size());
     for (size_t i=0; i<inputShapes_.size(); i++) {
       inputTensors_[i] = tensorflow::NamedTensor(inputNames_[i], tensorflow::Tensor(tensorflow::DT_FLOAT, inputShapes_.at(i)));
@@ -436,14 +464,10 @@ void DeepDiTau::configure(const edm::ParameterSet& iConfig)
 
     // now validate the graph
     auto graph = cache_->getGraph(name_);
-    std::cout << "******" << std::endl;
     for (size_t i=0; i<inputShapes_.size(); i++){
-      std::cout << "input shape size counter: " << i <<std::endl;
-      std::cout << "input shape  size total: "<<inputShapes_.size() << std::endl;
       const auto& name = graph.node(i).name();
       // not necessary to be in same order in the input graph
       auto it = std::find(inputNames_.begin(), inputNames_.end(), name);
-      std::cout << "Input names: " << name << std::endl;
       if (it==inputNames_.end()) {
         throw cms::Exception("DeepDiTau")
           << "Processing graph " << name_ << ".\n"
@@ -490,8 +514,8 @@ tensorflow::Tensor DeepDiTau::getPrediction(const pat::Jet& jet) {
 
   if (name_=="ditau2017v1") {
     getPrediction_2017_v1(jet, pred_vector);
-    prediction = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, ditauInputs_2017_v1::NumberOfOutputs});
-    for (int k = 0; k < ditauInputs_2017_v1::NumberOfOutputs; ++k) {
+    prediction = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, NumberOfOutputs+1});
+    for (int k = 0; k < NumberOfOutputs; ++k) {
       const float pred = pred_vector[0].flat<float>()(k); // just one prediction vector for now
       if (!(pred >= 0 && pred <= 1)) {
         throw cms::Exception("DeepDiTau")
@@ -502,8 +526,8 @@ tensorflow::Tensor DeepDiTau::getPrediction(const pat::Jet& jet) {
   } // ditau2017v1
   else if (name_=="ditau2017MDv1") {
     getPrediction_2017_md_v1(jet, pred_vector);
-    prediction = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, ditauInputs_2017_v1::NumberOfOutputs+1});
-    for (int k = 0; k < ditauInputs_2017_v1::NumberOfOutputs; ++k) {
+    prediction = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, NumberOfOutputs+1});
+    for (int k = 0; k < NumberOfOutputs; ++k) {
       const float pred = pred_vector[0].flat<float>()(k); // just one prediction vector for now
       if (!(pred >= 0 && pred <= 1)) {
         throw cms::Exception("DeepDiTau")
@@ -511,23 +535,24 @@ tensorflow::Tensor DeepDiTau::getPrediction(const pat::Jet& jet) {
       } 
       prediction.matrix<float>()(0, k) = pred;
     }
-  } // ditau2019MDv1
+  } // ditau2017MDv1
   else if (name_=="DeepDiTauboostednolepton"){// || "DeepDiTau_nolepton_massdeco" || "DeepDiTau_nolepton")) {
     getPrediction_DeepDiTau_nolepton(jet, pred_vector);
-    prediction = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, DeepDiTauInputs::NumberOfOutputs+1});
-    for (int k = 0; k < DeepDiTauInputs::NumberOfOutputs; ++k) {
-      const float pred = pred_vector[0].flat<float>()(k); // just one prediction vector for now                                                            
+    prediction = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, NumberOfOutputs+1});
+    for (int k = 0; k < NumberOfOutputs; ++k) {
+      const float pred = pred_vector[0].flat<float>()(k); // just one prediction vector for now            
       if (!(pred >= 0 && pred <= 1)) {
         throw cms::Exception("DeepDiTau")
 	  << "invalid prediction = " << pred << " for pred_index = " << k;
       }
       prediction.matrix<float>()(0, k) = pred;
     }
-  } // DeepDiTau_nolepton
+  } // DeepDiTau, boosted, no lepton
+
   else if (name_=="DeepDiTaunoleptonmassdeco") {                                                   
     getPrediction_DeepDiTau_nolepton(jet, pred_vector);
-    prediction = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, DeepDiTauInputs::NumberOfOutputs+1});
-    for (int k = 0; k < DeepDiTauInputs::NumberOfOutputs; ++k) {
+    prediction = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, NumberOfOutputs+1});
+    for (int k = 0; k < NumberOfOutputs; ++k) {
       const float pred = pred_vector[0].flat<float>()(k); // just one prediction vector for now
       if (!(pred >= 0 && pred <= 1)) {
         throw cms::Exception("DeepDiTau")
@@ -535,13 +560,12 @@ tensorflow::Tensor DeepDiTau::getPrediction(const pat::Jet& jet) {
       }
       prediction.matrix<float>()(0, k) = pred;
     }
-  } // DeepDiTau_nolepton   
-
+  } // DeepDiTau, no lepton, mass deco
 
   else if (name_=="DeepDiTaunolepton") {
     getPrediction_DeepDiTau_nolepton(jet, pred_vector);
-    prediction = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, DeepDiTauInputs::NumberOfOutputs+1});
-    for (int k = 0; k < DeepDiTauInputs::NumberOfOutputs; ++k) {
+    prediction = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, NumberOfOutputs+1});
+    for (int k = 0; k < NumberOfOutputs; ++k) {
       const float pred = pred_vector[0].flat<float>()(k); // just one prediction vector for now                                                                   
       if (!(pred >= 0 && pred <= 1)) {
         throw cms::Exception("DeepDiTau")
@@ -549,11 +573,77 @@ tensorflow::Tensor DeepDiTau::getPrediction(const pat::Jet& jet) {
       }
       prediction.matrix<float>()(0, k) = pred;
     }
-  } // DeepDiTau_nolepton 
+  } // DeepDiTau, nolepton 
+
+  else if (name_=="DeepDiTauboostednoleptonmassdeco"){
+    getPrediction_DeepDiTau_nolepton(jet, pred_vector);
+    prediction = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, NumberOfOutputs+1});
+    for (int k = 0; k < NumberOfOutputs; ++k) {
+      const float pred = pred_vector[0].flat<float>()(k); // just one prediction vector for now
+      if (!(pred >= 0 && pred <= 1)) {
+        throw cms::Exception("DeepDiTau")
+          << "invalid prediction = " << pred << " for pred_index = " << k;
+      }
+      prediction.matrix<float>()(0, k) = pred;
+    }
+  } // DeepDiTau, boosted, no lepton, mass deco
+
+  else if (name_=="DeepDiTauboostednoleptoncharm"){
+    getPrediction_DeepDiTau_nolepton(jet, pred_vector);
+    prediction = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, NumberOfOutputsCharm+1});
+    for (int k = 0; k < NumberOfOutputsCharm; ++k) {
+      const float pred = pred_vector[0].flat<float>()(k); // just one prediction vector for now                                                                        
+      if (!(pred >= 0 && pred <= 1)) {
+        throw cms::Exception("DeepDiTau")
+          << "invalid prediction = " << pred << " for pred_index = " << k;
+      }
+      prediction.matrix<float>()(0, k) = pred;
+    }
+  } // DeepDiTau, boosted, no lepton, charm
+
+  else if (name_=="DeepDiTauboostednoleptoncharmmassdeco"){
+    getPrediction_DeepDiTau_nolepton(jet, pred_vector);
+    prediction = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, NumberOfOutputsCharm+1});
+    for (int k = 0; k < NumberOfOutputsCharm; ++k) {
+      const float pred = pred_vector[0].flat<float>()(k); // just one prediction vector for now
+      if (!(pred >= 0 && pred <= 1)) {
+        throw cms::Exception("DeepDiTau")
+          << "invalid prediction = " << pred << " for pred_index = " << k;
+      }
+      prediction.matrix<float>()(0, k) = pred;
+    }
+  } // DeepDiTau, boosted, no lepton, charm, mass deco
 
 
+  else if (name_=="DeepDiTaunoleptoncharm"){
+    getPrediction_DeepDiTau_nolepton(jet, pred_vector);
+    prediction = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, NumberOfOutputsCharm+1});
+    for (int k = 0; k < NumberOfOutputsCharm; ++k) {
+      const float pred = pred_vector[0].flat<float>()(k); // just one prediction vector for now
+      if (!(pred >= 0 && pred <= 1)) {
+        throw cms::Exception("DeepDiTau")
+          << "invalid prediction = " << pred << " for pred_index = " << k;
+      }
+      prediction.matrix<float>()(0, k) = pred;
+    }
+  } // DeepDiTau, no lepton, charm   
+
+  else if (name_=="DeepDiTaunoleptoncharmmassdeco"){
+    getPrediction_DeepDiTau_nolepton(jet, pred_vector);
+    prediction = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, NumberOfOutputsCharm+1});
+    for (int k = 0; k < NumberOfOutputsCharm; ++k) {
+      const float pred = pred_vector[0].flat<float>()(k); // just one prediction vector for now
+      if (!(pred >= 0 && pred <= 1)) {
+        throw cms::Exception("DeepDiTau")
+          << "invalid prediction = " << pred << " for pred_index = " << k;
+      }
+      prediction.matrix<float>()(0, k) = pred;
+    }
+  } // DeepDiTau, no lepton, charm, mass deco
+
+   
   else {
-    prediction = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, empty::NumberOfOutputs});
+    prediction = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, NumberOfOutputs});
     prediction.matrix<float>().setZero();
     prediction.matrix<float>()(0, 2) = -1.0; // hard coded for now
   }
@@ -622,7 +712,6 @@ void DeepDiTau::getPrediction_DeepDiTau_nolepton(const pat::Jet& jet, std::vecto
                   {outputName_},
                   &pred_vector);
 }
-
 
 void DeepDiTau::createMassInput(const pat::Jet& jet) {
     tensorflow::Tensor& inputs = inputTensors_.at(kMass_).second;
@@ -852,7 +941,6 @@ void DeepDiTau::createChargedHadronBlockInputs(const pat::Jet& jet) {
     inputs.flat<float>().setZero();
 
     namespace dnnj = DeepDiTauInputs::JetBlockInputs;
-    //namespace dnn = ditauInputs_2017_v1::ChargedHadronBlockInputs;
     namespace dnn = DeepDiTauInputs::ChargedHadronBlockInputs;
     // in the means list, the charged hadron are after the jet
     int n = dnnj::NumberOfInputs;
@@ -1126,11 +1214,9 @@ void DeepDiTau::createPhotonBlockInputs(const pat::Jet& jet) {
   namespace dnnj = DeepDiTauInputs::JetBlockInputs;
   namespace dnnch = DeepDiTauInputs::ChargedHadronBlockInputs;
   namespace dnnnh = DeepDiTauInputs::NeutralHadronBlockInputs;
-  //namespace dnnm = DeepDiTauInputs::MuonBlockInputs;                                                                                                          
-  //namespace dnne = DeepDiTauInputs::ElectronBlockInputs;                                                                                                      
   namespace dnn = DeepDiTauInputs::PhotonBlockInputs;
-  // in the means list, the photon are after the jet, charged hadron, neutral hadron, muon, photon                                                              
-  int n = dnnj::NumberOfInputs + dnnch::NumberOfInputs + dnnnh::NumberOfInputs;// + dnnm::NumberOfInputs + dnne::NumberOfInputs;                                
+  // in the means list, the photon are after the jet, charged hadron, neutral hadron                                                              
+  int n = dnnj::NumberOfInputs + dnnch::NumberOfInputs + dnnnh::NumberOfInputs;
   int v;
   int idh = 0;
   for (size_t d=0; d<jet.numberOfDaughters(); d++) {
